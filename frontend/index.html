@@ -6,109 +6,204 @@
     <title>Machine Fault Investigator</title>
   </head>
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <h1>Machine Fault Investigator</h1>
-        <p>Motor-and-bearing diagnosis workspace</p>
-      </div>
-      <div class="casebar">
-        <label for="case">Recording</label>
-        <select id="case"><option value="">Loading cases…</option></select>
-        <label for="question">Question</label>
-        <input id="question" type="text" value="What is the condition of this bearing?" />
-        <button id="go" disabled>Investigate</button>
-        <button id="reset" class="ghost">Reset</button>
-        <details class="upload">
-          <summary>Upload CSV</summary>
-          <div class="upload-form">
-            <input id="up-file" type="file" accept=".csv" aria-label="CSV file, one vibration sample per line" />
-            <input id="up-fs" type="number" value="64000" aria-label="Sampling rate in Hz" title="Sampling rate (Hz)" />
-            <input id="up-rpm" type="number" value="1500" aria-label="Shaft speed in rpm" title="Speed (rpm)" />
-            <input id="up-unit" type="text" value="g" aria-label="Unit" title="Unit" />
-            <button id="up-go" type="button">Upload</button>
+    <div id="error" class="alert-error" hidden></div>
+
+    <!-- ============ HERO ============ -->
+    <div id="route-hero">
+      <header class="site-nav">
+        <a class="wordmark" href="#/">Machine Fault Investigator</a>
+        <nav aria-label="Workspace">
+          <a href="#/app/investigate">Investigate</a>
+          <a href="#/app/assembly">Assembly</a>
+          <a href="#/app/assistant">Assistant</a>
+          <a href="#/app/guide">Guide</a>
+          <a href="#/app/inventory">Inventory</a>
+        </nav>
+        <a class="btn btn-dark btn-sm" href="#/app/investigate">Open workspace</a>
+      </header>
+      <main class="hero">
+        <div class="hero-copy">
+          <h1>The agent that shows its work.</h1>
+          <p class="lede">Vibration in. Cited evidence out. Every number traces to a tool result — and the misses are published too.</p>
+          <p class="hero-cta">
+            <a class="btn btn-primary" href="#/app/investigate">Open live workspace</a>
+            <a class="quiet" href="#machines">or meet the machines ↓</a>
+          </p>
+          <dl class="spec" id="hero-stats" aria-label="Project figures"></dl>
+        </div>
+        <div class="hero-stage">
+          <div id="hero-assembly"></div>
+          <p class="caption">Live model — the rig assembly, orbiting. Open Assembly to explode it.</p>
+        </div>
+      </main>
+      <section class="machines" id="machines" aria-label="Machines">
+        <h2>Machines on the bench</h2>
+        <div id="machine-cards" class="machine-cards"></div>
+      </section>
+      <section class="how" aria-label="How a run works">
+        <h2>How a run works</h2>
+        <ol class="run-steps">
+          <li><span class="n">1</span><div><strong>Pick a recording.</strong> Labels stay hidden until you freeze and reveal.</div></li>
+          <li><span class="n">2</span><div><strong>Start an investigation.</strong> The agent picks analyses; every tool call and output is shown.</div></li>
+          <li><span class="n">3</span><div><strong>Inspect the evidence.</strong> Spectra, measurements, and manual citations open inline.</div></li>
+          <li><span class="n">4</span><div><strong>See the suspect.</strong> The bearing explodes and the suspected ring highlights.</div></li>
+          <li><span class="n">5</span><div><strong>Freeze, then reveal.</strong> Your conclusion locks before the documented fault appears.</div></li>
+        </ol>
+      </section>
+      <footer class="site-foot">
+        <p>Local demo. Vibration data: Paderborn Bearing DataCenter (use under review).
+        Manuals: local-only references. The agent lost to the fixed workflow on the final split
+        (10/60 vs 22/60) — the misses ship in <code>evals/</code>, not in a footnote.</p>
+      </footer>
+    </div>
+
+    <!-- ============ APP ============ -->
+    <div id="route-app" hidden>
+      <header class="app-nav">
+        <a class="wordmark" href="#/">MFI</a>
+        <nav aria-label="Views" id="view-nav">
+          <a href="#/app/investigate" data-view="investigate">Investigate</a>
+          <a href="#/app/assembly" data-view="assembly">Assembly</a>
+          <a href="#/app/assistant" data-view="assistant">Assistant</a>
+          <a href="#/app/guide" data-view="guide">Guide</a>
+          <a href="#/app/inventory" data-view="inventory">Inventory</a>
+          <a href="#/app/build" data-view="build">Build</a>
+        </nav>
+      </header>
+
+      <section class="view" data-view="investigate" aria-label="Investigate">
+        <div class="casebar card">
+          <div class="field">
+            <label for="case">Recording</label>
+            <select id="case"><option value="">Loading cases…</option></select>
           </div>
-        </details>
-      </div>
-    </header>
-    <div id="error" class="error" hidden></div>
-    <main class="grid">
-      <section class="panel" aria-label="Assembly">
-        <h2>Assembly</h2>
-        <div id="machine-tabs" class="tabs" role="group" aria-label="Machine"></div>
-        <div id="assembly"></div>
-        <h3>Components</h3>
-        <ul id="components" class="components"></ul>
-        <div id="role" class="role"><p class="muted">Select a component to see its role.</p></div>
-        <details class="draft">
-          <summary>New machine from manual</summary>
+          <div class="field grow">
+            <label for="question">Question</label>
+            <input id="question" type="text" value="What is the condition of this bearing?" />
+          </div>
+          <div class="field buttons">
+            <button id="go" class="btn btn-primary" disabled>Investigate</button>
+            <button id="reset" class="btn btn-ghost">Reset</button>
+          </div>
+          <details class="upload">
+            <summary>Upload CSV</summary>
+            <div class="upload-form">
+              <input id="up-file" type="file" accept=".csv" aria-label="CSV file, one vibration sample per line" />
+              <input id="up-fs" type="number" value="64000" aria-label="Sampling rate in Hz" title="Sampling rate (Hz)" />
+              <input id="up-rpm" type="number" value="1500" aria-label="Shaft speed in rpm" title="Speed (rpm)" />
+              <input id="up-unit" type="text" value="g" aria-label="Unit" title="Unit" />
+              <button id="up-go" class="btn btn-ghost" type="button">Upload</button>
+            </div>
+          </details>
+        </div>
+        <div class="inv-grid">
+          <section class="card" aria-label="Evidence">
+            <div class="card-head"><h2>Evidence</h2></div>
+            <div id="evidence-list" class="evidence-list"></div>
+            <div id="plot"></div>
+            <div id="evidence-detail" class="detail"><p class="muted">No evidence yet — import a recording and investigate.</p></div>
+          </section>
+          <section class="card" aria-label="Investigation steps">
+            <div class="card-head"><h2>Investigation</h2></div>
+            <div id="status" class="status">Select a recording to begin.</div>
+            <ol id="steps" class="steps"></ol>
+          </section>
+        </div>
+        <section class="card" aria-label="Report">
+          <div class="card-head"><h2>Report</h2></div>
+          <div id="report"><p class="muted">No investigation yet.</p></div>
+          <div class="row">
+            <button id="export" class="btn btn-ghost" disabled>Export report JSON</button>
+            <button id="reveal" class="btn btn-ghost" disabled>Freeze &amp; reveal documented fault</button>
+          </div>
+          <div id="reveal-out"></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="assembly" aria-label="Assembly" hidden>
+        <section class="card">
+          <div class="card-head"><h2>Assembly</h2></div>
+          <div id="machine-tabs" class="tabs" role="group" aria-label="Machine"></div>
+          <div id="assembly"></div>
+          <h3>Components</h3>
+          <ul id="components" class="components"></ul>
+          <div id="role" class="role"><p class="muted">Select a component to see its role.</p></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="assistant" aria-label="Assistant" hidden>
+        <section class="card">
+          <div class="card-head">
+            <h2>Assistant</h2>
+            <p class="muted">Supervisor + vision, sound, and manual specialists. Replies cite the manual.</p>
+          </div>
+          <div class="assist-form">
+            <select id="assist-machine" aria-label="Machine"></select>
+            <input id="assist-msg" type="text" placeholder="Ask, e.g. how do I set the coupling height?" aria-label="Message" />
+            <input id="assist-photo" type="file" accept="image/*" aria-label="Photo (optional)" title="Photo (optional)" />
+            <input id="assist-wav" type="file" accept=".wav,audio/wav" aria-label="Audio WAV (optional)" title="Audio WAV (optional)" />
+            <button id="assist-mic" class="btn btn-ghost" type="button" title="Dictate message (browser speech recognition)">Mic</button>
+            <button id="assist-say" class="btn btn-ghost" type="button" aria-pressed="false" title="Speak replies aloud">Speak: off</button>
+            <button id="assist-go" class="btn btn-primary" type="button">Send</button>
+          </div>
+          <div id="assist-out" class="assist-out"><p class="muted">Turn-based help: text + optional photo or WAV. Replies cite the manual.</p></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="guide" aria-label="Guided check" hidden>
+        <section class="card">
+          <div class="card-head">
+            <h2>Guided check</h2>
+            <p class="muted">Pick a symptom and verify each check step by step.</p>
+          </div>
+          <div class="guide-form">
+            <select id="guide-machine" aria-label="Machine"></select>
+            <select id="guide-playbook" aria-label="Symptom"></select>
+            <button id="guide-go" class="btn btn-primary" type="button">Start</button>
+          </div>
+          <div id="guide-out" class="guide-out"><p class="muted">Pick a symptom and verify each check step by step.</p></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="inventory" aria-label="Inventory" hidden>
+        <section class="card">
+          <div class="card-head">
+            <h2>Inventory</h2>
+            <p class="muted">Sandbox — simulated vendor, no real order is placed.</p>
+          </div>
+          <div class="inv-form">
+            <input id="inv-q" type="text" placeholder="Search parts, e.g. seal" aria-label="Search parts" />
+            <button id="inv-go" class="btn btn-ghost" type="button">Search</button>
+          </div>
+          <div id="inv-results" class="inv-results"></div>
+          <h3>Draft order</h3>
+          <div id="inv-cart" class="inv-cart"><p class="muted">Cart is empty.</p></div>
+          <div class="inv-form">
+            <input id="inv-budget" type="number" value="500" aria-label="Budget cap USD" title="Budget cap (USD)" />
+            <button id="inv-draft" class="btn btn-ghost" type="button">Draft</button>
+            <button id="inv-confirm" class="btn btn-ghost" type="button" disabled>Confirm</button>
+            <button id="inv-submit" class="btn btn-primary" type="button" disabled>Submit (simulated)</button>
+          </div>
+          <div id="inv-status" class="inv-status"></div>
+        </section>
+      </section>
+
+      <section class="view" data-view="build" aria-label="Pack builder" hidden>
+        <section class="card">
+          <div class="card-head">
+            <h2>New machine from manual</h2>
+            <p class="muted">Upload a manual PDF. The agent drafts parts, reviews them with you, and builds the pack + 3D.</p>
+          </div>
           <div class="draft-form">
             <input id="draft-machine" type="text" value="" placeholder="machine id, e.g. gearmotor" aria-label="Machine id" />
             <input id="draft-title" type="text" value="" placeholder="Manual title" aria-label="Manual title" />
             <input id="draft-file" type="file" accept=".pdf" aria-label="Manual PDF" />
-            <button id="draft-go" type="button">Upload &amp; draft</button>
+            <button id="draft-go" class="btn btn-primary" type="button">Upload &amp; draft</button>
           </div>
           <div id="draft" class="draft-body"></div>
-        </details>
+        </section>
       </section>
-      <section class="panel" aria-label="Evidence">
-        <h2>Evidence</h2>
-        <div id="evidence-list" class="evidence-list"></div>
-        <div id="plot"></div>
-        <div id="evidence-detail" class="detail"></div>
-      </section>
-      <section class="panel" aria-label="Investigation steps">
-        <h2>Investigation</h2>
-        <div id="status" class="status">Select a recording to begin.</div>
-        <ol id="steps" class="steps"></ol>
-      </section>
-    </main>
-    <section class="panel assist" aria-label="Assistant">
-      <h2>Assistant (supervisor + specialists)</h2>
-      <div class="assist-form">
-        <select id="assist-machine" aria-label="Machine"></select>
-        <input id="assist-msg" type="text" placeholder="Ask, e.g. how do I set the coupling height?" aria-label="Message" />
-        <input id="assist-photo" type="file" accept="image/*" aria-label="Photo (optional)" title="Photo (optional)" />
-        <input id="assist-wav" type="file" accept=".wav,audio/wav" aria-label="Audio WAV (optional)" title="Audio WAV (optional)" />
-        <button id="assist-mic" type="button" title="Dictate message (browser speech recognition)">Mic</button>
-        <button id="assist-say" type="button" aria-pressed="false" title="Speak replies aloud">Speak: off</button>
-        <button id="assist-go" type="button">Send</button>
-      </div>
-      <div id="assist-out" class="assist-out"><p class="muted">Turn-based help: text + optional photo. Replies cite the manual.</p></div>
-    </section>
-    <section class="panel inv" aria-label="Inventory">
-      <h2>Inventory (sandbox)</h2>
-      <p class="muted">Simulated vendor — no real order is placed.</p>
-      <div class="inv-form">
-        <input id="inv-q" type="text" placeholder="Search parts, e.g. seal" aria-label="Search parts" />
-        <button id="inv-go" type="button">Search</button>
-      </div>
-      <div id="inv-results" class="inv-results"></div>
-      <h3>Draft order</h3>
-      <div id="inv-cart" class="inv-cart"><p class="muted">Cart is empty.</p></div>
-      <div class="inv-form">
-        <input id="inv-budget" type="number" value="500" aria-label="Budget cap USD" title="Budget cap (USD)" />
-        <button id="inv-draft" type="button">Draft</button>
-        <button id="inv-confirm" type="button" disabled>Confirm</button>
-        <button id="inv-submit" type="button" disabled>Submit (simulated)</button>
-      </div>
-      <div id="inv-status" class="inv-status"></div>
-    </section>
-    <section class="panel guide" aria-label="Guided check">
-      <h2>Guided check</h2>
-      <div class="guide-form">
-        <select id="guide-machine" aria-label="Machine"></select>
-        <select id="guide-playbook" aria-label="Symptom"></select>
-        <button id="guide-go" type="button">Start</button>
-      </div>
-      <div id="guide-out" class="guide-out"><p class="muted">Pick a symptom and verify each check step by step.</p></div>
-    </section>
-    <section class="panel report" aria-label="Report">
-      <h2>Report</h2>
-      <div id="report"><p class="muted">No investigation yet.</p></div>
-      <button id="export" class="ghost" disabled>Export report JSON</button>
-      <button id="reveal" class="ghost" disabled>Freeze &amp; reveal documented fault</button>
-      <div id="reveal-out"></div>
-    </section>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

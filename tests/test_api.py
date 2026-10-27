@@ -91,3 +91,12 @@ def test_packs_endpoints():
     pump = client.get("/api/packs/cr-pump").json()
     assert len(pump["playbooks"]) == 4
     assert sum(p["checks"] for p in pump["playbooks"]) == 30
+
+
+def test_meta_stats_computed():
+    meta = client.get("/api/meta").json()
+    assert meta["packs"] >= 2  # user-drafted packs may add more
+    assert meta["components"] >= 7 + 58
+    assert meta["checks"] >= 30
+    assert meta["eval_rows"] == 528
+    assert meta["unsupported_claims"] == {"n": 0, "of": 164}

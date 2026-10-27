@@ -215,6 +215,32 @@ def packs() -> dict:
     return {"packs": list_packs()}
 
 
+@app.get("/api/meta")
+def meta() -> dict:
+    """Honest headline stats for the hero. All values computed locally."""
+    import re
+
+    packs = list_packs()
+    components = sum(p["components"] for p in packs)
+    checks = 0
+    for p in packs:
+        loaded = load_pack(p["machine"])
+        if loaded:
+            checks += sum(pb["checks"] for pb in loaded["playbooks"])
+    eval_rows = 0
+    if os.path.exists("evals/results.jsonl"):
+        with open("evals/results.jsonl") as f:
+            eval_rows = sum(1 for line in f if line.strip())
+    unsupported = None
+    if os.path.exists("evals/analysis.md"):
+        with open("evals/analysis.md") as f:
+            m = re.search(r"Unsupported claims:\s*(\d+)/(\d+)", f.read())
+        if m:
+            unsupported = {"n": int(m.group(1)), "of": int(m.group(2))}
+    return {"packs": len(packs), "components": components, "checks": checks,
+            "eval_rows": eval_rows, "unsupported_claims": unsupported}
+
+
 @app.get("/api/packs/{machine}")
 def pack(machine: str) -> dict:
     loaded = load_pack(machine)

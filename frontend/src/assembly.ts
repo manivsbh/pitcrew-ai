@@ -9,6 +9,7 @@ export interface AssemblyHandle {
   select(id: string): void;
   setSuspect(id: string | null): void;
   setExplode(f: number): void;
+  setPaused(p: boolean): void;
   dispose(): void;
 }
 
@@ -357,11 +358,14 @@ export function initAssembly(
     labelFor: (id: string) => string;
     machine: string;
     components: PackComponent[];
+    orbit?: boolean;
+    chrome?: boolean;
   },
 ): AssemblyHandle {
   const W = () => el.clientWidth || 300;
   const H = 380;
   const vertical = opts.machine !== 'rig';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(W(), H);
@@ -387,6 +391,8 @@ export function initAssembly(
   controls.enableDamping = true;
   controls.minDistance = 3;
   controls.maxDistance = 22;
+  controls.autoRotate = opts.orbit === true && !reduceMotion;
+  controls.autoRotateSpeed = 0.8;
 
   scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa39a, 0.5));
   const key = new THREE.DirectionalLight(0xffffff, 1.6);
@@ -428,7 +434,6 @@ export function initAssembly(
 
   let selected: string | null = null;
   let suspect: string | null = null;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function materialsOf(id: string): THREE.MeshStandardMaterial[] {
     const out: THREE.MeshStandardMaterial[] = [];
@@ -456,8 +461,10 @@ export function initAssembly(
     }
   }
 
+  const showChrome = opts.chrome !== false;
   const bar = document.createElement('div');
   bar.className = 'explode-row';
+  if (!showChrome) bar.hidden = true;
   const lab = document.createElement('label');
   lab.textContent = 'Explode';
   const slider = document.createElement('input');
@@ -470,10 +477,12 @@ export function initAssembly(
   bar.appendChild(lab);
   el.appendChild(bar);
 
-  const caption = document.createElement('p');
-  caption.className = 'muted';
-  caption.textContent = 'Illustrative model — proportions approximate, not to scale.';
-  el.appendChild(caption);
+  if (showChrome) {
+    const caption = document.createElement('p');
+    caption.className = 'muted';
+    caption.textContent = 'Illustrative model — proportions approximate, not to scale.';
+    el.appendChild(caption);
+  }
 
   const tag = document.createElement('div');
   tag.className = 'part-tag';
@@ -542,7 +551,9 @@ export function initAssembly(
   });
   ro.observe(el);
 
+  let paused = false;
   renderer.setAnimationLoop((now: number) => {
+    if (paused) return;
     controls.update();
     repaint(now);
     updateTag();
@@ -562,6 +573,9 @@ export function initAssembly(
       explodeF = Math.min(1, Math.max(0, f));
       slider.value = String(Math.round(explodeF * 100));
       applyExplode();
+    },
+    setPaused(p: boolean): void {
+      paused = p;
     },
     dispose(): void {
       renderer.setAnimationLoop(null);

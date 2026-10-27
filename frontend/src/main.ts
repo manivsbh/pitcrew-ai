@@ -1,3 +1,4 @@
+import './fonts.css';
 import './style.css';
 import { api, assistApi, draftApi, guideApi, invApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
@@ -25,7 +26,8 @@ const state: {
   guide: GuideView | null;
   cart: { part: InvPart; qty: number }[];
   order: InvOrder | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null, cart: [], order: null };
+  hero: AssemblyHandle | null;
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null, cart: [], order: null, hero: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -884,9 +886,94 @@ async function onInvSubmit(): Promise<void> {
   }
 }
 
+const VIEWS = ['investigate', 'assembly', 'assistant', 'guide', 'inventory', 'build'];
+let heroInit = false;
+
+function route(): void {
+  const m = window.location.hash.match(/^#\/app\/(\w+)/);
+  const hero = el('route-hero');
+  const app = el('route-app');
+  if (!m) {
+    hero.hidden = false;
+    app.hidden = true;
+    state.hero?.setPaused(false);
+    document.title = 'Machine Fault Investigator';
+    void ensureHero();
+    return;
+  }
+  hero.hidden = true;
+  app.hidden = false;
+  state.hero?.setPaused(true);
+  const view = VIEWS.includes(m[1]) ? m[1] : 'investigate';
+  document.querySelectorAll<HTMLElement>('.view').forEach((s) => {
+    const on = s.dataset.view === view;
+    s.hidden = !on;
+    if (on) {
+      s.classList.remove('view-enter');
+      void s.offsetWidth;
+      s.classList.add('view-enter');
+    }
+  });
+  document.querySelectorAll('#view-nav a').forEach((a) => {
+    if ((a as HTMLElement).dataset.view === view) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  });
+  document.title = 'MFI — ' + view;
+  window.scrollTo(0, 0);
+}
+
+async function ensureHero(): Promise<void> {
+  if (!heroInit) {
+    heroInit = true;
+    state.hero = initAssembly(el('hero-assembly'), {
+      onSelect: () => {},
+      labelFor: (id) => id,
+      machine: 'rig',
+      components: [],
+      orbit: true,
+      chrome: false,
+    });
+  }
+  try {
+    const meta = await api.meta();
+    const unc = meta.unsupported_claims ? meta.unsupported_claims.n + ' of ' + meta.unsupported_claims.of : '—';
+    const rows: [string, string][] = [
+      ['eval rows', String(meta.eval_rows)],
+      ['unsupported claims', unc],
+      ['registry components', String(meta.components)],
+      ['guided checks', String(meta.checks)],
+    ];
+    el('hero-stats').innerHTML = rows
+      .map(([k, v]) => '<dt>' + escapeHtml(k) + '</dt><dd>' + escapeHtml(v) + '</dd>')
+      .join('');
+  } catch {
+    el('hero-stats').innerHTML = '';
+  }
+  try {
+    const { packs } = await api.packs();
+    const box = el('machine-cards');
+    box.innerHTML = '';
+    for (const p of packs) {
+      const a = document.createElement('a');
+      a.className = 'machine-card';
+      a.href = '#/app/assembly';
+      a.innerHTML =
+        '<h3>' + escapeHtml(p.name) + '</h3>' +
+        '<p>' + escapeHtml(p.kind) + ' · ' + p.components + ' components</p>' +
+        '<span class="go">Open in Assembly →</span>';
+      a.addEventListener('click', () => void switchMachine(p.machine));
+      box.appendChild(a);
+    }
+  } catch {
+    el('machine-cards').innerHTML = '';
+  }
+}
+
 void buildMachineTabs().then(() => switchMachine('rig'));
 void buildAssistMachines();
 void buildGuideMachines();
+window.addEventListener('hashchange', route);
+route();
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);

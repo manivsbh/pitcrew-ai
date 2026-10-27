@@ -1,0 +1,39 @@
+# Surface brief: hero + app shell (impeccable)
+
+Scope: `frontend/index.html`, `frontend/src/style.css`, `frontend/src/main.ts`
+(hero view, hash router, app nav). 3D builders, API wrappers, and backend
+behavior stay untouched except a new read-only stats endpoint.
+Visitor mode: Persuade (hero) + Operate (app shell).
+Audience/job/action: hackathon judges -> believe the agent is honest ->
+open the live workspace and run the demo. Proof: live stat strip
+(528 eval rows, 0 unsupported claims), live 3D rig canvas, machine cards.
+Constraints: vanilla TS + Vite (no framework migration); shadcn token
+language hand-built in CSS; taste anti-slop bans; reduced-motion support;
+all existing element IDs keep working.
+
+Chosen direction: left-aligned editorial hero (approved mockup
+`generated_images/call_01a17e2a6b35723f9d5c0fc92ee68788.png`), live rig
+canvas leading right, TE restraint + shadcn pills/cards/badges.
+Memorable moment: the hero 3D is the real assembly, slowly orbiting.
+Unresolved: none. Pinned shadcn direction beat the dice roll per
+new-work (user-pinned beats the roll, always).
+
+## Direction contract
+
+THESIS: One honest instrument, not a startup page. Refuses the centered
+pill-headline-2CTA hero and the 3-card icon grid; the artifact (live 3D
++ live stats) does the persuading.
+OWN-WORLD: shadcn light tokens on #eef1ee ground; ink #161918; primary
+deep teal #0e6b5e; amber reserved for suspect/warn; pill buttons and
+tabs, 10px cards, 6px inputs; mono kickers; 1px hairline borders, no
+glows, no gradients.
+STORY: Visitor learns in seconds this agent shows cited work, sees the
+numbers are real and the misses reported, and opens the workspace.
+FIRST VIEWPORT: top nav (wordmark, 6 view links, dark CTA); left column
+kicker, 6-word headline, subcopy, teal CTA, 4-stat strip; right half
+live orbiting rig canvas; machine cards start below the fold.
+FORM: assigned index 4 fused with pinned shadcn/TE material; position 4
+of 7; seed:57fe54637a368357.
+FINISH: unreviewed and undocumented is unfinished; this build ends with
+the finish review, the verdict, DESIGN.md, and every shipping raster
+carrying its provenance

@@ -91,7 +91,16 @@ export const api = {
       '/api/packs',
     ),
   pack: (machine: string) => req<Pack>(`/api/packs/${machine}`),
+  meta: () => req<Meta>('/api/meta'),
 };
+
+export interface Meta {
+  packs: number;
+  components: number;
+  checks: number;
+  eval_rows: number;
+  unsupported_claims: { n: number; of: number } | null;
+}
 
 export interface PackComponent {
   id: string;
