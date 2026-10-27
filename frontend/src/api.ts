@@ -151,6 +151,29 @@ async function formReq<T>(path: string, form: FormData): Promise<T> {
   return body;
 }
 
+export interface AssistTurn {
+  session: string;
+  reply: string;
+  specialists: string[];
+  vision: { part_id: string | null; confidence: number; rationale: string } | null;
+  sound: Record<string, unknown> | null;
+  chat: { answer: string; citations: { file: string; quote: string }[]; citations_dropped: number };
+  playbook: { id: string; symptom: string } | null;
+  next_checks: string[];
+  needs: string[];
+}
+
+export const assistApi = {
+  send: (machine: string, message: string, session: string | null, photo: File | null) => {
+    const form = new FormData();
+    form.append('machine', machine);
+    form.append('message', message);
+    if (session) form.append('session', session);
+    if (photo) form.append('photo', photo);
+    return formReq<AssistTurn>('/api/assist', form);
+  },
+};
+
 export const draftApi = {
   upload: (machine: string, title: string, file: File) => {
     const form = new FormData();

@@ -12,6 +12,7 @@ from .agent import default_client_factory, load_trace, new_investigation_id, run
 from .config import ALLOWED_ORIGINS, REFS_PATH, model_api_key
 from .docs_store import DocsStore
 from .evidence import series_for, waveform
+from .assist import assist_turn, load_session, parse_signal_csv, parse_wav
 from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
                           reason_with_model)
 from .packs import list_packs, load_pack
@@ -259,6 +260,54 @@ def draft_answer(draft_id: str, body: DraftAnswer) -> dict:
     if draft["status"] == "finalized":
         return {"error": "draft already finalized"}
     return _draft_view(apply_edits(draft, body.edits, body.new_components))
+
+
+@app.post("/api/assist")
+async def assist(session: str | None = Form(None),
+                 machine: str = Form(...), message: str = Form(...),
+                 fs: float = Form(0.0), rpm: float | None = Form(None),
+                 photo: UploadFile | None = File(None),
+                 signal_csv: UploadFile | None = File(None),
+                 wav: UploadFile | None = File(None)) -> dict:
+    try:
+        key = model_api_key()
+    except RuntimeError as e:
+        return {"error": str(e)}
+    photo_bytes = None
+    if photo is not None:
+        photo_bytes = await photo.read()
+        if len(photo_bytes) > 5_000_000:
+            return {"error": "photo exceeds the 5 MB cap"}
+        if not photo_bytes:
+            return {"error": "empty photo upload"}
+    signal = None
+    if signal_csv is not None:
+        if fs <= 0:
+            return {"error": "signal_csv needs fs (Hz)"}
+        raw = (await signal_csv.read()).decode("utf-8", "replace")
+        if len(raw) > 10_000_000:
+            return {"error": "signal_csv exceeds the 10 MB cap"}
+        signal = (parse_signal_csv(raw), fs)
+    if wav is not None:
+        data = await wav.read()
+        if len(data) > 10_000_000:
+            return {"error": "wav exceeds the 10 MB cap"}
+        try:
+            signal = parse_wav(data)
+        except Exception as e:
+            return {"error": f"could not read wav: {e}"}
+    return assist_turn(machine, message, default_client_factory(key),
+                       session=session, photo=photo_bytes, signal=signal,
+                       rpm=rpm)
+
+
+@app.get("/api/assist/{session_id}")
+def assist_history(session_id: str) -> dict:
+    sess = load_session(session_id)
+    if sess is None:
+        return {"error": f"unknown assist session {session_id}"}
+    return {"session": sess["session"], "machine": sess["machine"],
+            "turns": sess["turns"]}
 
 
 @app.post("/api/packs/draft/{draft_id}/finalize")

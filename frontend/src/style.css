@@ -114,6 +114,15 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 .draft-table th, .draft-table td { text-align: left; padding: 2px 6px 2px 0; border-bottom: 1px solid var(--line); }
 .draft-table input[type="text"] { font: inherit; width: 100%; max-width: 220px; }
 .draft-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+.assist { margin: 0 20px 20px; }
+.assist-form { display: grid; grid-template-columns: 200px 1fr auto auto; gap: 6px; margin-bottom: 8px; }
+.assist-form input, .assist-form select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.assist-out { font-size: 13px; max-height: 320px; overflow-y: auto; }
+.assist-out .turn { border-top: 1px solid var(--line); padding: 6px 0; }
+.assist-out .who { font-weight: 700; }
+.assist-out .cite { color: var(--muted); font-size: 12px; }
+.assist-out ul { margin: 4px 0; padding-left: 20px; }
 .components button {
   background: #fff; color: var(--ink); border-color: var(--line);
   padding: 4px 10px; font-size: 13px;

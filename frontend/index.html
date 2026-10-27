@@ -62,6 +62,16 @@
         <ol id="steps" class="steps"></ol>
       </section>
     </main>
+    <section class="panel assist" aria-label="Assistant">
+      <h2>Assistant (supervisor + specialists)</h2>
+      <div class="assist-form">
+        <select id="assist-machine" aria-label="Machine"></select>
+        <input id="assist-msg" type="text" placeholder="Ask, e.g. how do I set the coupling height?" aria-label="Message" />
+        <input id="assist-photo" type="file" accept="image/*" aria-label="Photo (optional)" />
+        <button id="assist-go" type="button">Send</button>
+      </div>
+      <div id="assist-out" class="assist-out"><p class="muted">Turn-based help: text + optional photo. Replies cite the manual.</p></div>
+    </section>
     <section class="panel report" aria-label="Report">
       <h2>Report</h2>
       <div id="report"><p class="muted">No investigation yet.</p></div>

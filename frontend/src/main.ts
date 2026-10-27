@@ -1,5 +1,5 @@
 import './style.css';
-import { api, draftApi, labelForCase, type Draft, type PackComponent, type Step, type Trace } from './api';
+import { api, assistApi, draftApi, labelForCase, type Draft, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -20,7 +20,8 @@ const state: {
   machine: string;
   components: PackComponent[];
   draft: Draft | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null };
+  assistSession: string | null;
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -531,7 +532,88 @@ async function onDraftFinalize(): Promise<void> {
   }
 }
 
+function miniMd(s: string): string {
+  const esc = escapeHtml(s);
+  const lines = esc.split('\n');
+  let html = '';
+  let inList = false;
+  for (const ln of lines) {
+    if (ln.startsWith('### ')) {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += '<p><strong>' + ln.slice(4) + '</strong></p>';
+    } else if (ln.startsWith('- ') || ln.startsWith('* ')) {
+      if (!inList) { html += '<ul>'; inList = true; }
+      html += '<li>' + ln.slice(2) + '</li>';
+    } else if (ln.trim() === '') {
+      if (inList) { html += '</ul>'; inList = false; }
+    } else {
+      if (inList) { html += '</ul>'; inList = false; }
+      html += '<p>' + ln.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') + '</p>';
+    }
+  }
+  if (inList) html += '</ul>';
+  return html;
+}
+
+async function onAssistSend(): Promise<void> {
+  clearError();
+  const msg = el<HTMLInputElement>('assist-msg').value.trim();
+  const machine = el<HTMLSelectElement>('assist-machine').value;
+  if (!msg) return;
+  const photo = el<HTMLInputElement>('assist-photo').files?.[0] ?? null;
+  const out = el('assist-out');
+  const wait = document.createElement('p');
+  wait.className = 'muted';
+  wait.textContent = 'Consulting specialists…';
+  out.appendChild(wait);
+  try {
+    const r = await assistApi.send(machine, msg, state.assistSession, photo);
+    state.assistSession = r.session;
+    el<HTMLInputElement>('assist-msg').value = '';
+    el<HTMLInputElement>('assist-photo').value = '';
+    wait.remove();
+    const div = document.createElement('div');
+    div.className = 'turn';
+    const seen = r.vision && r.vision.part_id
+      ? '<p>Photo: <strong>' + escapeHtml(r.vision.part_id) + '</strong> (' +
+        r.vision.confidence.toFixed(2) + ') — ' + escapeHtml(r.vision.rationale) + '</p>'
+      : '';
+    const cites = r.chat.citations
+      .map((c) => '<li><span class="cite">' + escapeHtml(c.file) + ':</span> “' + escapeHtml(c.quote) + '”</li>')
+      .join('');
+    div.innerHTML =
+      '<p><span class="who">You:</span> ' + escapeHtml(msg) + '</p>' +
+      '<p><span class="who">Assistant</span> <span class="cite">[' +
+      r.specialists.map(escapeHtml).join(', ') + ']</span></p>' +
+      seen + miniMd(r.reply) +
+      (cites ? '<ul>' + cites + '</ul>' : '') +
+      (r.playbook ? '<p>Playbook: <strong>' + escapeHtml(r.playbook.id) + '</strong> — ' + escapeHtml(r.playbook.symptom) + '</p>' : '');
+    out.appendChild(div);
+    out.scrollTop = out.scrollHeight;
+  } catch (e) {
+    wait.remove();
+    showError('Assist failed: ' + (e as Error).message);
+  }
+}
+
+async function buildAssistMachines(): Promise<void> {
+  try {
+    const { packs } = await api.packs();
+    const sel = el<HTMLSelectElement>('assist-machine');
+    sel.innerHTML = '';
+    for (const p of packs) {
+      const o = document.createElement('option');
+      o.value = p.machine;
+      o.textContent = p.name;
+      sel.appendChild(o);
+    }
+  } catch (e) {
+    showError('Failed to load machines: ' + (e as Error).message);
+  }
+}
+
 void buildMachineTabs().then(() => switchMachine('rig'));
+void buildAssistMachines();
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);
@@ -539,4 +621,5 @@ el<HTMLButtonElement>('export').addEventListener('click', () => void onExport())
 el<HTMLButtonElement>('reveal').addEventListener('click', () => void onReveal());
 el<HTMLButtonElement>('up-go').addEventListener('click', () => void onUpload());
 el<HTMLButtonElement>('draft-go').addEventListener('click', () => void onDraftUpload());
+el<HTMLButtonElement>('assist-go').addEventListener('click', () => void onAssistSend());
 void loadCases();
