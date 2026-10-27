@@ -13,7 +13,48 @@ packs/<machine>/
   components.json   # component registry: every modelled part + its role
   playbooks.json    # guided verification playbooks (symptom -> checks)
   inventory.json    # (Phase 6) orderable parts; schema reserved, file optional
+  scenarios.json    # run-simulation fault scenarios (part refs + effects)
+  assembly.json     # real-world assembly order (steps + captions)
 ```
+
+## scenarios.json
+
+Array of:
+
+```json
+{
+  "id": "outer-ring-damage",
+  "label": "Outer-ring damage",
+  "illustrative": false,
+  "parts": ["ring_outer"],
+  "slow": 0.85,
+  "wobble": 0.6,
+  "note": "Outer raceway damage raises energy at the outer-ring fault frequency.",
+  "source": "Evaluation label"
+}
+```
+
+Rules:
+
+- `parts` must resolve to component ids (empty = healthy baseline).
+- `slow` in (0, 1]: motion speed factor during the fault.
+- `wobble` in [0, 1]: vibration amplitude on affected parts.
+- `illustrative: true` marks simulations with no measured data behind
+  them (all pump scenarios); the UI must label them as illustrative.
+
+## assembly.json
+
+```json
+{
+  "source": "CR-H service manual, Reassembly Procedures pp. 11-19",
+  "order": [{"parts": ["base-oring", "suction-discharge-base"],
+             "caption": "Seat the base O-ring into the base groove."}]
+}
+```
+
+Rules: every component id appears in exactly one step; captions cite
+the manual step or torque where one exists. Machines without this file
+fall back to parents-first order with generated captions.
 
 ## pack.json
 

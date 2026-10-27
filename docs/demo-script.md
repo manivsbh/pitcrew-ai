@@ -17,9 +17,13 @@ Setup: `source .venv/bin/activate`, `uvicorn backend.app.main:app
 5. **Assembly (45s).** The suspect ring is highlighted and the bearing
    exploded automatically. Drag to orbit; use the Explode slider; pick
    parts from the keyboard-accessible component list.
-6. **Freeze & reveal (30s).** Read the frozen finding, press "Freeze &
+6. **Simulation (60s).** On the pump: Parts sheet lays out all groups;
+   Assemble rebuilds in the 13 manual-verified steps with captions;
+   pick Worn impeller and Run — the stack spins at 70% speed with red
+   fault markers, wobble, and an impacted-output caption.
+7. **Freeze & reveal (30s).** Read the frozen finding, press "Freeze &
    reveal documented fault": MATCH against the dataset record.
-7. **Abstention (60s).** Upload CSV: 64000 zeros at 64 kHz / 1500 rpm.
+8. **Abstention (60s).** Upload CSV: 64000 zeros at 64 kHz / 1500 rpm.
    Investigate: flat signal, no references, agent submits
    insufficient_evidence with a concrete next measurement. No forced
    diagnosis.

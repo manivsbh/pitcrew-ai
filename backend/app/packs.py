@@ -45,4 +45,15 @@ def load_pack(machine: str) -> dict | None:
             for pb in json.load(f):
                 playbooks.append({"id": pb["id"], "symptom": pb["symptom"],
                                   "checks": len(pb.get("checks", []))})
-    return {"meta": meta, "components": components, "playbooks": playbooks}
+    scenarios: list[dict] = []
+    sc_path = os.path.join(base, "scenarios.json")
+    if os.path.isfile(sc_path):
+        with open(sc_path) as f:
+            scenarios = json.load(f)
+    assembly = None
+    asm_path = os.path.join(base, "assembly.json")
+    if os.path.isfile(asm_path):
+        with open(asm_path) as f:
+            assembly = json.load(f)
+    return {"meta": meta, "components": components, "playbooks": playbooks,
+            "scenarios": scenarios, "assembly": assembly}

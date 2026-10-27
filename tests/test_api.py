@@ -93,6 +93,24 @@ def test_packs_endpoints():
     assert sum(p["checks"] for p in pump["playbooks"]) == 30
 
 
+def test_scenarios_and_assembly_validate():
+    for machine in ("rig", "cr-pump"):
+        pack = client.get(f"/api/packs/{machine}").json()
+        ids = {c["id"] for c in pack["components"]}
+        assert pack["scenarios"], machine
+        for sc in pack["scenarios"]:
+            for key in ("id", "label", "parts", "slow", "wobble", "note"):
+                assert key in sc, (machine, sc.get("id"))
+            assert set(sc["parts"]) <= ids, (machine, sc["id"])
+            assert 0 < sc["slow"] <= 1
+            assert 0 <= sc["wobble"] <= 1
+        assert pack["assembly"] and pack["assembly"]["order"], machine
+        covered = [p for s in pack["assembly"]["order"] for p in s["parts"]]
+        assert set(covered) == ids, machine
+        assert len(covered) == len(ids), machine  # exactly once
+        assert all(s["caption"] for s in pack["assembly"]["order"])
+
+
 def test_meta_stats_computed():
     meta = client.get("/api/meta").json()
     assert meta["packs"] >= 2  # user-drafted packs may add more

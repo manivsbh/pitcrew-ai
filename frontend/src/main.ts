@@ -1,6 +1,6 @@
 import './fonts.css';
 import './style.css';
-import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackComponent, type Step, type Trace } from './api';
+import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackAssemblyStep, type PackComponent, type PackScenario, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -20,6 +20,9 @@ const state: {
   assembly: AssemblyHandle | null;
   machine: string;
   components: PackComponent[];
+  scenarios: PackScenario[];
+  asmSteps: PackAssemblyStep[];
+  simRunning: boolean;
   draft: Draft | null;
   assistSession: string | null;
   speakOn: boolean;
@@ -27,7 +30,7 @@ const state: {
   cart: { part: InvPart; qty: number }[];
   order: InvOrder | null;
   hero: AssemblyHandle | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null, cart: [], order: null, hero: null };
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], scenarios: [], asmSteps: [], simRunning: false, draft: null, assistSession: null, speakOn: false, guide: null, cart: [], order: null, hero: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -136,12 +139,87 @@ function buildComponentList(): void {
   }
 }
 
+function currentScenario(): PackScenario | null {
+  const sel = el<HTMLSelectElement>('sim-fault');
+  return state.scenarios.find((s) => s.id === sel.value) ?? state.scenarios[0] ?? null;
+}
+
+function setSimCaption(msg: string): void {
+  el('sim-caption').textContent = msg;
+}
+
+function setSimLayout(layout: 'assembled' | 'sheet'): void {
+  state.assembly?.setLayout(layout);
+  el<HTMLButtonElement>('sim-assembled').setAttribute('aria-pressed', layout === 'assembled' ? 'true' : 'false');
+  el<HTMLButtonElement>('sim-sheet').setAttribute('aria-pressed', layout === 'sheet' ? 'true' : 'false');
+  setSimCaption(layout === 'sheet' ? `Parts sheet — ${state.components.length} components laid out before assembly.` : 'Assembled.');
+}
+
+function onAssemble(): void {
+  const steps = state.asmSteps;
+  if (!state.assembly || steps.length === 0) {
+    setSimCaption('No assembly sequence for this machine.');
+    return;
+  }
+  const btn = el<HTMLButtonElement>('sim-assemble');
+  btn.disabled = true;
+  el<HTMLButtonElement>('sim-assembled').setAttribute('aria-pressed', 'true');
+  el<HTMLButtonElement>('sim-sheet').setAttribute('aria-pressed', 'false');
+  let done = false;
+  void state.assembly.assemble(steps.map((s) => s.parts), (k, n) => {
+    setSimCaption(k < n ? `Step ${k + 1}/${n}: ${steps[k].caption}` : `Assembled in ${n} steps from the manual sequence.`);
+    if (k >= n) done = true;
+  }).then(() => {
+    btn.disabled = false;
+    if (!done) setSimCaption('Assembly interrupted.');
+  });
+}
+
+function onRunToggle(): void {
+  state.simRunning = !state.simRunning;
+  state.assembly?.setRun(state.simRunning);
+  const btn = el<HTMLButtonElement>('sim-run');
+  btn.textContent = state.simRunning ? 'Stop' : 'Run';
+  btn.setAttribute('aria-pressed', state.simRunning ? 'true' : 'false');
+  onFaultApply();
+}
+
+function onFaultApply(): void {
+  const sc = currentScenario();
+  if (!sc) return;
+  state.assembly?.setFault(sc.parts, sc.wobble);
+  state.assembly?.setSpinSpeed(sc.slow);
+  setSimCaption(`${sc.label}: ${sc.note} Output ${Math.round(sc.slow * 100)}% speed${sc.illustrative ? ' (illustrative).' : '.'}`);
+}
+
+function resetSim(): void {
+  state.simRunning = false;
+  const run = el<HTMLButtonElement>('sim-run');
+  run.textContent = 'Run';
+  run.setAttribute('aria-pressed', 'false');
+  state.assembly?.setRun(false);
+  state.assembly?.setSpinSpeed(1);
+  state.assembly?.setFault([], 0);
+  const sel = el<HTMLSelectElement>('sim-fault');
+  sel.innerHTML = '';
+  for (const s of state.scenarios) {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = s.label;
+    sel.appendChild(o);
+  }
+  el<HTMLButtonElement>('sim-assemble').disabled = state.asmSteps.length === 0;
+  setSimCaption('');
+}
+
 async function switchMachine(machine: string): Promise<void> {
   clearError();
   try {
     const pack = await api.pack(machine);
     state.machine = machine;
     state.components = pack.components;
+    state.scenarios = pack.scenarios ?? [];
+    state.asmSteps = pack.assembly?.order ?? [];
     state.assembly?.dispose();
     state.assembly = initAssembly(el('assembly'), {
       onSelect: (id) => selectComponent(id),
@@ -151,6 +229,7 @@ async function switchMachine(machine: string): Promise<void> {
     });
     buildComponentList();
     renderRole('');
+    resetSim();
     document.querySelectorAll<HTMLButtonElement>('#machine-tabs button').forEach((b) => {
       b.setAttribute('aria-pressed', b.dataset.machine === machine ? 'true' : 'false');
     });
@@ -1010,6 +1089,11 @@ void buildGuideMachines();
 window.addEventListener('hashchange', route);
 route();
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
+el<HTMLButtonElement>('sim-assembled').addEventListener('click', () => setSimLayout('assembled'));
+el<HTMLButtonElement>('sim-sheet').addEventListener('click', () => setSimLayout('sheet'));
+el<HTMLButtonElement>('sim-assemble').addEventListener('click', onAssemble);
+el<HTMLButtonElement>('sim-run').addEventListener('click', onRunToggle);
+el<HTMLSelectElement>('sim-fault').addEventListener('change', onFaultApply);
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);
 el<HTMLButtonElement>('export').addEventListener('click', () => void onExport());

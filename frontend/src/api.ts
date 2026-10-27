@@ -114,10 +114,28 @@ export interface PackComponent {
   failure_source?: string | null;
 }
 
+export interface PackScenario {
+  id: string;
+  label: string;
+  note: string;
+  parts: string[];
+  slow: number;
+  wobble: number;
+  illustrative: boolean;
+  source: string;
+}
+
+export interface PackAssemblyStep {
+  caption: string;
+  parts: string[];
+}
+
 export interface Pack {
   meta: { machine: string; name: string; kind: string };
   components: PackComponent[];
   playbooks: { id: string; symptom: string; checks: number }[];
+  scenarios: PackScenario[];
+  assembly: { source?: string; order: PackAssemblyStep[] } | null;
 }
 
 export interface DraftCandidate {

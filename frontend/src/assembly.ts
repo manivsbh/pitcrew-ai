@@ -9,6 +9,12 @@ export interface AssemblyHandle {
   select(id: string): void;
   setSuspect(id: string | null): void;
   setExplode(f: number): void;
+  setLayout(layout: 'assembled' | 'sheet', instant?: boolean): void;
+  assemble(visualIds: string[][], onStep?: (k: number, n: number) => void): Promise<void>;
+  setRun(run: boolean): void;
+  setSpinSpeed(f: number): void;
+  setFault(regIds: string[], wobble: number): void;
+  setCameraHome(): void;
   setPaused(p: boolean): void;
   dispose(): void;
 }
@@ -116,6 +122,8 @@ function buildRig(P: Parts): void {
 
   const cage = makePart(P, 'cage', 0.95, 0);
   const brass = std(0xb08d3e, 1.0, 0.35);
+  // direction markers so cage rotation is visible (illustrative)
+  for (const dx of [-0.28, 0.28]) mesh(cage, new THREE.SphereGeometry(0.075, 10, 8), brass, BX + dx, 0.835, 0);
   for (const dx of [-0.28, 0.28]) {
     const t = new THREE.Mesh(new THREE.TorusGeometry(0.835, 0.05, 12, 64), brass);
     t.rotation.y = Math.PI / 2;
@@ -432,6 +440,137 @@ export function initAssembly(
     if (!regOf.has(vis)) regOf.set(vis, reg);
   }
 
+  /* ---- simulation state: layouts, spin, fault ---- */
+  const FLOOR = -1.78;
+  const grid = new THREE.GridHelper(24, 24, 0x9aa39a, 0xd8dcd8);
+  grid.position.y = FLOOR + 0.01;
+  (grid.material as THREE.Material).transparent = true;
+  (grid.material as THREE.Material).opacity = 0.55;
+  grid.visible = false;
+  scene.add(grid);
+
+  const pos = new Map<string, THREE.Vector3>();
+  const homeOf = new Map<string, THREE.Vector3>();
+  const sheetOf = new Map<string, THREE.Vector3>();
+  const centerOf = new Map<string, THREE.Vector3>();
+  const idList = [...P.parts.keys()];
+  const cols = Math.max(1, Math.ceil(Math.sqrt(idList.length)));
+  const cell = vertical ? 1.7 : 2.6;
+  idList.forEach((id, i) => {
+    const g = P.parts.get(id)!;
+    homeOf.set(id, g.position.clone());
+    const box = new THREE.Box3().setFromObject(g);
+    centerOf.set(id, box.getCenter(new THREE.Vector3()).sub(g.position));
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    sheetOf.set(id, new THREE.Vector3(
+      (col - (cols - 1) / 2) * cell, FLOOR + 0.03 - box.min.y, (row - Math.ceil(idList.length / cols) / 2 + 0.5) * cell,
+    ));
+    pos.set(id, g.position.clone());
+  });
+
+  // spin map verified against pack documentation (illustrative motion)
+  const SPIN: Record<string, { ax: 'x' | 'y'; rate: number }> = opts.machine === 'rig'
+    ? { shaft: { ax: 'x', rate: 1 }, ring_inner: { ax: 'x', rate: 1 }, rollers: { ax: 'x', rate: 0.4 }, cage: { ax: 'x', rate: 0.4 } }
+    : { shaft: { ax: 'y', rate: 1 }, impeller: { ax: 'y', rate: 1 }, 'coupling-half': { ax: 'y', rate: 1 } };
+
+  let layout: 'assembled' | 'sheet' = 'assembled';
+  const anims = new Map<string, { from: THREE.Vector3; to: THREE.Vector3; t0: number; dur: number }>();
+  const ease = (t: number): number => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  let explodeF = 0;
+  const targetOf = (id: string): THREE.Vector3 => (layout === 'sheet' ? sheetOf.get(id)! : (() => {
+    const g = P.parts.get(id)!;
+    const h = homeOf.get(id)!;
+    return new THREE.Vector3(
+      h.x + (g.userData.explodeX as number ?? 0) * explodeF,
+      h.y + (g.userData.explodeY as number ?? 0) * explodeF,
+      h.z,
+    );
+  })());
+  function tweenTo(id: string, to: THREE.Vector3, dur: number): void {
+    anims.set(id, { from: pos.get(id)!.clone(), to: to.clone(), t0: performance.now(), dur: reduceMotion ? 1 : dur });
+  }
+  function frameCamera(): void {
+    if (layout === 'sheet') {
+      const span = Math.max(cols, Math.ceil(idList.length / cols)) * cell;
+      controls.target.set(0, FLOOR + 0.8, 0);
+      camera.position.set(span * 0.62, span * 0.55, span * 0.85);
+    } else if (vertical) {
+      controls.target.set(0, 1.4, 0);
+      camera.position.set(6.5, 3.2, 7.5);
+    } else {
+      controls.target.set(0, 0, 0);
+      camera.position.set(5.4, 3.4, 6.2);
+    }
+  }
+  let assembleEpoch = 0;
+  function setLayout(l: 'assembled' | 'sheet', instant = false): void {
+    assembleEpoch++;
+    layout = l;
+    grid.visible = l === 'sheet';
+    for (const id of idList) {
+      if (instant) {
+        anims.delete(id);
+        pos.set(id, targetOf(id));
+      } else {
+        tweenTo(id, targetOf(id), 550);
+      }
+    }
+    frameCamera();
+  }
+
+  let running = false;
+  let spinSpeed = 1;
+  let angle = 0;
+  let faultVisuals: string[] = [];
+  let faultWobble = 0;
+  const dotGeo = new THREE.SphereGeometry(0.1, 12, 10);
+  // annotation overlay: always visible so fault markers can't hide inside geometry
+  const dotMat = new THREE.MeshBasicMaterial({ color: 0xdc2626, depthTest: false, transparent: true });
+  const dots: { m: THREE.Mesh; id: string; r: number; ph: number }[] = [];
+  function setFault(regIds: string[], wobble: number): void {
+    for (const d of dots) scene.remove(d.m);
+    dots.length = 0;
+    faultVisuals = [...new Set(regIds.map((r) => resolve(r)).filter((v): v is string => v !== null))];
+    faultWobble = wobble;
+    for (const id of faultVisuals) {
+      const box = new THREE.Box3().setFromObject(P.parts.get(id)!);
+      const s = box.getSize(new THREE.Vector3());
+      const r = Math.max(s.x, s.y, s.z) / 2 + 0.22;
+      for (let k = 0; k < 3; k++) {
+        const m = new THREE.Mesh(dotGeo, dotMat);
+        m.renderOrder = 999;
+        scene.add(m);
+        dots.push({ m, id, r, ph: (k / 3) * Math.PI * 2 });
+      }
+    }
+  }
+  const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+  async function assembleSteps(visualSteps: string[][], onStep?: (k: number, n: number) => void): Promise<void> {
+    running = false;
+    setLayout('sheet', true);
+    const ep = assembleEpoch; // adopt post-reset epoch; later setLayout calls cancel us
+    const placed = new Set<string>();
+    for (let i = 0; i < visualSteps.length; i++) {
+      if (ep !== assembleEpoch) return;
+      for (const id of visualSteps[i]) {
+        const v = resolve(id);
+        if (v && !placed.has(v)) {
+          placed.add(v);
+          tweenTo(v, homeOf.get(v)!, 650);
+        }
+      }
+      onStep?.(i, visualSteps.length);
+      await wait(reduceMotion ? 80 : 720);
+    }
+    if (ep !== assembleEpoch) return;
+    for (const id of idList) if (!placed.has(id)) tweenTo(id, homeOf.get(id)!, 650);
+    layout = 'assembled';
+    grid.visible = false;
+    frameCamera();
+    onStep?.(visualSteps.length, visualSteps.length);
+  }
+
   let selected: string | null = null;
   let suspect: string | null = null;
 
@@ -489,12 +628,11 @@ export function initAssembly(
   tag.hidden = true;
   el.appendChild(tag);
 
-  let explodeF = 0;
   function applyExplode(): void {
-    for (const g of P.parts.values()) {
-      g.position.x = ((g.userData.baseX as number) ?? 0) + (g.userData.explodeX as number) * explodeF;
-      g.position.y = ((g.userData.baseY as number) ?? 0) + (g.userData.explodeY as number) * explodeF;
-      g.position.z = (g.userData.baseZ as number) ?? 0;
+    if (layout !== 'assembled') return;
+    for (const id of idList) {
+      anims.delete(id);
+      pos.set(id, targetOf(id));
     }
   }
   slider.addEventListener('input', () => {
@@ -552,9 +690,39 @@ export function initAssembly(
   ro.observe(el);
 
   let paused = false;
+  let prevNow = 0;
   renderer.setAnimationLoop((now: number) => {
     if (paused) return;
     controls.update();
+    const dt = prevNow ? Math.min(0.05, (now - prevNow) / 1000) : 0;
+    prevNow = now;
+    for (const [id, a] of [...anims]) {
+      const t = Math.min(1, (now - a.t0) / a.dur);
+      pos.get(id)!.lerpVectors(a.from, a.to, ease(t));
+      if (t >= 1) anims.delete(id);
+    }
+    if (running) angle += spinSpeed * dt * 2.4;
+    const wob = Math.sin(now / 55) * 0.045 * faultWobble;
+    for (const id of idList) {
+      const p = pos.get(id)!;
+      const g = P.parts.get(id)!;
+      const isFault = faultWobble > 0 && faultVisuals.includes(id);
+      g.position.set(p.x + (isFault && !vertical ? 0 : isFault ? wob : 0), p.y, p.z + (isFault && !vertical ? wob : 0));
+      const sp = SPIN[id];
+      if (sp) {
+        if (sp.ax === 'x') g.rotation.x = angle * sp.rate;
+        else g.rotation.y = angle * sp.rate;
+      }
+      g.updateMatrixWorld();
+    }
+    for (const d of dots) {
+      const base = pos.get(d.id)!.clone().add(centerOf.get(d.id)!);
+      const a = now / 700 + d.ph;
+      const pulse = reduceMotion ? 1 : 1 + 0.28 * Math.sin(now / 160 + d.ph);
+      if (vertical) d.m.position.set(base.x + Math.cos(a) * d.r, base.y, base.z + Math.sin(a) * d.r);
+      else d.m.position.set(base.x, base.y + Math.cos(a) * d.r, base.z + Math.sin(a) * d.r);
+      d.m.scale.setScalar(pulse);
+    }
     repaint(now);
     updateTag();
     renderer.render(scene, camera);
@@ -573,6 +741,24 @@ export function initAssembly(
       explodeF = Math.min(1, Math.max(0, f));
       slider.value = String(Math.round(explodeF * 100));
       applyExplode();
+    },
+    setLayout(l: 'assembled' | 'sheet', instant?: boolean): void {
+      setLayout(l, instant);
+    },
+    assemble(visualSteps: string[][], onStep?: (k: number, n: number) => void): Promise<void> {
+      return assembleSteps(visualSteps, onStep);
+    },
+    setRun(r: boolean): void {
+      running = r;
+    },
+    setSpinSpeed(f: number): void {
+      spinSpeed = f;
+    },
+    setFault(regIds: string[], wobble: number): void {
+      setFault(regIds, wobble);
+    },
+    setCameraHome(): void {
+      frameCamera();
     },
     setPaused(p: boolean): void {
       paused = p;
