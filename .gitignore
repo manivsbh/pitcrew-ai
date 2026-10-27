@@ -15,6 +15,7 @@ __pycache__/
 data/manuals/
 data/recordings/
 data/assist/
+data/guide/
 data/pack_drafts/
 data/reports/
 data/registry.json

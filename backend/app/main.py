@@ -13,6 +13,8 @@ from .config import ALLOWED_ORIGINS, REFS_PATH, model_api_key
 from .docs_store import DocsStore
 from .evidence import series_for, waveform
 from .assist import assist_turn, load_session, parse_signal_csv, parse_wav
+from .guide import answer as guide_answer
+from .guide import get_playbook, start as guide_start
 from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
                           reason_with_model)
 from .packs import list_packs, load_pack
@@ -57,6 +59,17 @@ class Reveal(BaseModel):
 class DraftAnswer(BaseModel):
     edits: list[dict] = []
     new_components: list[dict] = []
+
+
+class GuideStart(BaseModel):
+    machine: str
+    playbook_id: str
+
+
+class GuideAnswer(BaseModel):
+    result: str
+    note: str = ""
+    action: str = "continue"
 
 
 @app.get("/api/health")
@@ -299,6 +312,24 @@ async def assist(session: str | None = Form(None),
     return assist_turn(machine, message, default_client_factory(key),
                        session=session, photo=photo_bytes, signal=signal,
                        rpm=rpm)
+
+
+@app.get("/api/packs/{machine}/playbooks/{playbook_id}")
+def playbook_full(machine: str, playbook_id: str) -> dict:
+    pb = get_playbook(machine, playbook_id)
+    if pb is None:
+        return {"error": f"unknown playbook {playbook_id} for {machine}"}
+    return pb
+
+
+@app.post("/api/guide/start")
+def guide_start_route(body: GuideStart) -> dict:
+    return guide_start(body.machine, body.playbook_id)
+
+
+@app.post("/api/guide/{guide_id}/answer")
+def guide_answer_route(guide_id: str, body: GuideAnswer) -> dict:
+    return guide_answer(guide_id, body.result, body.note, body.action)
 
 
 @app.get("/api/assist/{session_id}")

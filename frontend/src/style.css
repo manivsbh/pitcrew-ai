@@ -116,8 +116,19 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 .draft-actions { display: flex; gap: 6px; margin-top: 6px; }
 
 .assist { margin: 0 20px 20px; }
-.assist-form { display: grid; grid-template-columns: 200px 1fr auto auto; gap: 6px; margin-bottom: 8px; }
+.assist-form { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.assist-form input[type="text"] { flex: 1; min-width: 200px; }
 .assist-form input, .assist-form select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.assist-form button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+
+.guide { margin: 0 20px 20px; }
+.guide-form { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.guide-form select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.guide-out { font-size: 13px; }
+.guide-out .severe { color: var(--danger); font-weight: 700; }
+.guide-out .path { color: var(--muted); }
+.guide-out input[type="text"] { font: inherit; width: 100%; max-width: 420px; margin: 4px 0; }
+.guide-actions { display: flex; gap: 6px; margin-top: 6px; }
 .assist-out { font-size: 13px; max-height: 320px; overflow-y: auto; }
 .assist-out .turn { border-top: 1px solid var(--line); padding: 6px 0; }
 .assist-out .who { font-weight: 700; }

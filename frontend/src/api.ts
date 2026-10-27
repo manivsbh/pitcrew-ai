@@ -164,14 +164,50 @@ export interface AssistTurn {
 }
 
 export const assistApi = {
-  send: (machine: string, message: string, session: string | null, photo: File | null) => {
+  send: (machine: string, message: string, session: string | null, photo: File | null, wav: File | null) => {
     const form = new FormData();
     form.append('machine', machine);
     form.append('message', message);
     if (session) form.append('session', session);
     if (photo) form.append('photo', photo);
+    if (wav) form.append('wav', wav);
     return formReq<AssistTurn>('/api/assist', form);
   },
+};
+
+export interface GuideCheck {
+  id: string;
+  ask: string;
+  how?: string;
+  expect_ok?: string;
+  severe?: boolean;
+}
+
+export interface GuideView {
+  id: string;
+  machine: string;
+  playbook: string;
+  symptom: string;
+  source: string;
+  done: boolean;
+  outcome: string | null;
+  path: { check: string; result: string; note: string }[];
+  current: GuideCheck | null;
+  remedy?: string;
+  severe?: boolean;
+}
+
+export const guideApi = {
+  start: (machine: string, playbookId: string) =>
+    req<GuideView>('/api/guide/start', {
+      method: 'POST',
+      body: JSON.stringify({ machine: machine, playbook_id: playbookId }),
+    }),
+  answer: (id: string, result: string, note: string, action: string) =>
+    req<GuideView>(`/api/guide/${id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ result: result, note: note, action: action }),
+    }),
 };
 
 export const draftApi = {

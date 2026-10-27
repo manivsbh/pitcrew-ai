@@ -67,10 +67,22 @@
       <div class="assist-form">
         <select id="assist-machine" aria-label="Machine"></select>
         <input id="assist-msg" type="text" placeholder="Ask, e.g. how do I set the coupling height?" aria-label="Message" />
-        <input id="assist-photo" type="file" accept="image/*" aria-label="Photo (optional)" />
+        <input id="assist-photo" type="file" accept="image/*" aria-label="Photo (optional)" title="Photo (optional)" />
+        <input id="assist-wav" type="file" accept=".wav,audio/wav" aria-label="Audio WAV (optional)" title="Audio WAV (optional)" />
+        <button id="assist-mic" type="button" title="Dictate message (browser speech recognition)">Mic</button>
+        <button id="assist-say" type="button" aria-pressed="false" title="Speak replies aloud">Speak: off</button>
         <button id="assist-go" type="button">Send</button>
       </div>
       <div id="assist-out" class="assist-out"><p class="muted">Turn-based help: text + optional photo. Replies cite the manual.</p></div>
+    </section>
+    <section class="panel guide" aria-label="Guided check">
+      <h2>Guided check</h2>
+      <div class="guide-form">
+        <select id="guide-machine" aria-label="Machine"></select>
+        <select id="guide-playbook" aria-label="Symptom"></select>
+        <button id="guide-go" type="button">Start</button>
+      </div>
+      <div id="guide-out" class="guide-out"><p class="muted">Pick a symptom and verify each check step by step.</p></div>
     </section>
     <section class="panel report" aria-label="Report">
       <h2>Report</h2>

@@ -1,5 +1,5 @@
 import './style.css';
-import { api, assistApi, draftApi, labelForCase, type Draft, type PackComponent, type Step, type Trace } from './api';
+import { api, assistApi, draftApi, guideApi, labelForCase, type Draft, type GuideView, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -21,7 +21,9 @@ const state: {
   components: PackComponent[];
   draft: Draft | null;
   assistSession: string | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null };
+  speakOn: boolean;
+  guide: GuideView | null;
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -561,16 +563,19 @@ async function onAssistSend(): Promise<void> {
   const machine = el<HTMLSelectElement>('assist-machine').value;
   if (!msg) return;
   const photo = el<HTMLInputElement>('assist-photo').files?.[0] ?? null;
+  const wav = el<HTMLInputElement>('assist-wav').files?.[0] ?? null;
   const out = el('assist-out');
   const wait = document.createElement('p');
   wait.className = 'muted';
   wait.textContent = 'Consulting specialists…';
   out.appendChild(wait);
   try {
-    const r = await assistApi.send(machine, msg, state.assistSession, photo);
+    const r = await assistApi.send(machine, msg, state.assistSession, photo, wav);
     state.assistSession = r.session;
     el<HTMLInputElement>('assist-msg').value = '';
     el<HTMLInputElement>('assist-photo').value = '';
+    el<HTMLInputElement>('assist-wav').value = '';
+    if (state.speakOn) speak(r.reply);
     wait.remove();
     const div = document.createElement('div');
     div.className = 'turn';
@@ -612,8 +617,156 @@ async function buildAssistMachines(): Promise<void> {
   }
 }
 
+interface SpeechRecog {
+  lang: string;
+  onresult: ((e: { results: { 0: { transcript: string } }[] }) => void) | null;
+  onerror: ((e: { error: string }) => void) | null;
+  start(): void;
+}
+
+function speak(text: string): void {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const plain = text.replace(/[#*_`]/g, '').slice(0, 600);
+  window.speechSynthesis.speak(new SpeechSynthesisUtterance(plain));
+}
+
+function onMic(): void {
+  const w = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecog;
+    webkitSpeechRecognition?: new () => SpeechRecog;
+  };
+  const Ctor = w.SpeechRecognition ?? w.webkitSpeechRecognition;
+  if (!Ctor) {
+    showError('Speech recognition is not supported in this browser.');
+    return;
+  }
+  clearError();
+  const rec = new Ctor();
+  rec.lang = 'en-US';
+  rec.onresult = (e) => {
+    el<HTMLInputElement>('assist-msg').value = e.results[0][0].transcript;
+  };
+  rec.onerror = (e) => showError('Dictation failed: ' + e.error);
+  rec.start();
+}
+
+function onSpeakToggle(): void {
+  state.speakOn = !state.speakOn;
+  const b = el<HTMLButtonElement>('assist-say');
+  b.textContent = state.speakOn ? 'Speak: on' : 'Speak: off';
+  b.setAttribute('aria-pressed', state.speakOn ? 'true' : 'false');
+  if (!state.speakOn && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+async function buildGuideMachines(): Promise<void> {
+  try {
+    const { packs } = await api.packs();
+    const sel = el<HTMLSelectElement>('guide-machine');
+    sel.innerHTML = '';
+    for (const p of packs) {
+      const o = document.createElement('option');
+      o.value = p.machine;
+      o.textContent = p.name;
+      sel.appendChild(o);
+    }
+    await buildGuidePlaybooks();
+  } catch (e) {
+    showError('Failed to load machines: ' + (e as Error).message);
+  }
+}
+
+async function buildGuidePlaybooks(): Promise<void> {
+  try {
+    const machine = el<HTMLSelectElement>('guide-machine').value;
+    const pack = await api.pack(machine);
+    const sel = el<HTMLSelectElement>('guide-playbook');
+    sel.innerHTML = '';
+    for (const p of pack.playbooks) {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.symptom + ' (' + p.checks + ' checks)';
+      sel.appendChild(o);
+    }
+  } catch (e) {
+    showError('Failed to load playbooks: ' + (e as Error).message);
+  }
+}
+
+async function onGuideStart(): Promise<void> {
+  clearError();
+  try {
+    const machine = el<HTMLSelectElement>('guide-machine').value;
+    const pb = el<HTMLSelectElement>('guide-playbook').value;
+    state.guide = await guideApi.start(machine, pb);
+    renderGuide();
+  } catch (e) {
+    showError('Guide failed: ' + (e as Error).message);
+  }
+}
+
+async function onGuideAnswer(result: string, action: string): Promise<void> {
+  if (!state.guide) return;
+  clearError();
+  try {
+    const note = el<HTMLInputElement>('guide-note')?.value ?? '';
+    state.guide = await guideApi.answer(state.guide.id, result, note, action);
+    renderGuide();
+  } catch (e) {
+    showError('Guide failed: ' + (e as Error).message);
+  }
+}
+
+function renderGuide(): void {
+  const g = state.guide;
+  const box = el('guide-out');
+  if (!g) return;
+  const path = g.path.map((p) => p.check + ':' + p.result).join(' → ');
+  if (g.done) {
+    box.innerHTML =
+      '<p><strong>Finished.</strong> ' + escapeHtml(g.outcome ?? '') + '</p>' +
+      '<p class="path">Path: ' + escapeHtml(path) + '</p>';
+    if (state.speakOn) speak('Check complete. ' + (g.outcome ?? ''));
+    return;
+  }
+  const c = g.current;
+  if (!c) return;
+  const remedy = g.remedy
+    ? '<p><strong>Remedy.</strong> ' + escapeHtml(g.remedy) + '</p>' +
+      (g.severe ? '<p class="severe">Lock out power before touching this.</p>' : '')
+    : '';
+  box.innerHTML =
+    '<p class="path">' + escapeHtml(g.symptom) + ' — step ' + (g.path.length + 1) + '</p>' +
+    '<p><strong>' + escapeHtml(c.ask) + '</strong></p>' +
+    (c.how ? '<p>' + escapeHtml(c.how) + '</p>' : '') +
+    (c.expect_ok ? '<p>Looks OK means: ' + escapeHtml(c.expect_ok) + '</p>' : '') +
+    remedy +
+    '<input id="guide-note" type="text" placeholder="Note (optional)" aria-label="Note" />' +
+    '<div class="guide-actions">' +
+    (g.remedy
+      ? '<button id="g-retry" type="button">Retry same check</button>' +
+        '<button id="g-skip" type="button">Skip to next</button>' +
+        '<button id="g-stop" type="button">Stop</button>'
+      : '<button id="g-ok" type="button">Looks OK</button>' +
+        '<button id="g-bad" type="button">Problem found</button>') +
+    '</div>' +
+    '<p class="path">Path: ' + escapeHtml(path || '—') + '</p>';
+  if (state.speakOn) speak(c.ask);
+  const ok = document.getElementById('g-ok');
+  if (ok) ok.addEventListener('click', () => void onGuideAnswer('ok', 'continue'));
+  const bad = document.getElementById('g-bad');
+  if (bad) bad.addEventListener('click', () => void onGuideAnswer('bad', 'continue'));
+  const retry = document.getElementById('g-retry');
+  if (retry) retry.addEventListener('click', () => void onGuideAnswer('bad', 'continue'));
+  const skip = document.getElementById('g-skip');
+  if (skip) skip.addEventListener('click', () => void onGuideAnswer('bad', 'skip'));
+  const stop = document.getElementById('g-stop');
+  if (stop) stop.addEventListener('click', () => void onGuideAnswer('bad', 'stop'));
+}
+
 void buildMachineTabs().then(() => switchMachine('rig'));
 void buildAssistMachines();
+void buildGuideMachines();
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);
@@ -622,4 +775,8 @@ el<HTMLButtonElement>('reveal').addEventListener('click', () => void onReveal())
 el<HTMLButtonElement>('up-go').addEventListener('click', () => void onUpload());
 el<HTMLButtonElement>('draft-go').addEventListener('click', () => void onDraftUpload());
 el<HTMLButtonElement>('assist-go').addEventListener('click', () => void onAssistSend());
+el<HTMLButtonElement>('assist-mic').addEventListener('click', onMic);
+el<HTMLButtonElement>('assist-say').addEventListener('click', onSpeakToggle);
+el<HTMLButtonElement>('guide-go').addEventListener('click', () => void onGuideStart());
+el<HTMLSelectElement>('guide-machine').addEventListener('change', () => void buildGuidePlaybooks());
 void loadCases();
