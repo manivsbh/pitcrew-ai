@@ -129,6 +129,15 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 .guide-out .path { color: var(--muted); }
 .guide-out input[type="text"] { font: inherit; width: 100%; max-width: 420px; margin: 4px 0; }
 .guide-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+.inv { margin: 0 20px 20px; }
+.inv-form { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.inv-form input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.inv-form input[type="text"] { flex: 1; min-width: 180px; }
+.inv-results, .inv-cart { font-size: 13px; }
+.inv-results table, .inv-cart table { border-collapse: collapse; width: 100%; }
+.inv-results th, .inv-results td, .inv-cart th, .inv-cart td { text-align: left; padding: 2px 8px 2px 0; border-bottom: 1px solid var(--line); }
+.inv-status { font-size: 13px; margin-top: 4px; }
 .assist-out { font-size: 13px; max-height: 320px; overflow-y: auto; }
 .assist-out .turn { border-top: 1px solid var(--line); padding: 6px 0; }
 .assist-out .who { font-weight: 700; }

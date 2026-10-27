@@ -1,5 +1,5 @@
 import './style.css';
-import { api, assistApi, draftApi, guideApi, labelForCase, type Draft, type GuideView, type PackComponent, type Step, type Trace } from './api';
+import { api, assistApi, draftApi, guideApi, invApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -23,7 +23,9 @@ const state: {
   assistSession: string | null;
   speakOn: boolean;
   guide: GuideView | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null };
+  cart: { part: InvPart; qty: number }[];
+  order: InvOrder | null;
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null, assistSession: null, speakOn: false, guide: null, cart: [], order: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -98,7 +100,22 @@ function renderRole(id: string): void {
     `${c.pos ? ` <span class="muted">Pos. ${escapeHtml(c.pos)}</span>` : ''}</p>` +
     `<p>${escapeHtml(c.role)}</p>` +
     `<p class="muted">Ref: ${escapeHtml(c.service_ref)}</p>` +
-    fails;
+    fails +
+    `<p class="muted" id="role-stock">Checking stock…</p>`;
+  void invApi.byComponent(state.machine, id).then(
+    (p) => {
+      const s = document.getElementById('role-stock');
+      if (s) {
+        s.innerHTML =
+          'Stock: <strong>' + p.stock_qty + '</strong> × (' + escapeHtml(p.sku) + ') — ' +
+          p.unit_price.toFixed(2) + ' ' + escapeHtml(p.currency) + ', ' + p.lead_days + 'd lead (sandbox).';
+      }
+    },
+    () => {
+      const s = document.getElementById('role-stock');
+      if (s) s.textContent = 'Not orderable (no catalog entry).';
+    },
+  );
 }
 
 function buildComponentList(): void {
@@ -764,6 +781,109 @@ function renderGuide(): void {
   if (stop) stop.addEventListener('click', () => void onGuideAnswer('bad', 'stop'));
 }
 
+let invResults: InvPart[] = [];
+
+async function onInvSearch(): Promise<void> {
+  clearError();
+  try {
+    const q = el<HTMLInputElement>('inv-q').value;
+    const r = await invApi.search(state.machine, q);
+    invResults = r.parts;
+    const box = el('inv-results');
+    if (!r.parts.length) {
+      box.innerHTML = '<p class="muted">No parts found.</p>';
+      return;
+    }
+    const rows = r.parts
+      .map(
+        (p, i) =>
+          '<tr><td>' + escapeHtml(p.name) + '</td><td>' + escapeHtml(p.sku) + '</td>' +
+          '<td>' + p.stock_qty + '</td><td>' + p.unit_price.toFixed(2) + '</td>' +
+          '<td><button type="button" data-add="' + i + '">Add</button></td></tr>',
+      )
+      .join('');
+    box.innerHTML = '<table><tr><th>Part</th><th>SKU</th><th>Stock</th><th>USD</th><th></th></tr>' + rows + '</table>';
+    box.querySelectorAll<HTMLButtonElement>('button[data-add]').forEach((b) => {
+      b.addEventListener('click', () => {
+        const part = invResults[Number(b.dataset.add)];
+        const line = state.cart.find((l) => l.part.id === part.id);
+        if (line) line.qty += 1;
+        else state.cart.push({ part: part, qty: 1 });
+        renderCart();
+      });
+    });
+  } catch (e) {
+    showError('Search failed: ' + (e as Error).message);
+  }
+}
+
+function renderCart(): void {
+  const box = el('inv-cart');
+  if (!state.cart.length) {
+    box.innerHTML = '<p class="muted">Cart is empty.</p>';
+    return;
+  }
+  const rows = state.cart
+    .map(
+      (l) =>
+        '<tr><td>' + escapeHtml(l.part.name) + '</td><td>' + l.qty + '</td>' +
+        '<td>' + (l.qty * l.part.unit_price).toFixed(2) + '</td></tr>',
+    )
+    .join('');
+  const total = state.cart.reduce((s, l) => s + l.qty * l.part.unit_price, 0);
+  box.innerHTML =
+    '<table><tr><th>Part</th><th>Qty</th><th>USD</th></tr>' + rows + '</table>' +
+    '<p>Total estimate: <strong>' + total.toFixed(2) + '</strong></p>';
+}
+
+function invStatus(msg: string): void {
+  el('inv-status').textContent = msg;
+}
+
+async function onInvDraft(): Promise<void> {
+  clearError();
+  if (!state.cart.length) {
+    showError('Cart is empty.');
+    return;
+  }
+  try {
+    const budget = Number(el<HTMLInputElement>('inv-budget').value) || null;
+    const lines = state.cart.map((l) => ({ part_id: l.part.id, qty: l.qty }));
+    state.order = await invApi.draft(state.machine, lines, budget);
+    invStatus('Draft ' + state.order.id + ': ' + state.order.total.toFixed(2) + ' USD — review, then Confirm.');
+    el<HTMLButtonElement>('inv-confirm').disabled = false;
+  } catch (e) {
+    showError('Draft failed: ' + (e as Error).message);
+  }
+}
+
+async function onInvConfirm(): Promise<void> {
+  if (!state.order) return;
+  clearError();
+  try {
+    state.order = await invApi.confirm(state.order.id);
+    invStatus('Order ' + state.order.id + ' confirmed — Submit to place (simulated).');
+    el<HTMLButtonElement>('inv-submit').disabled = false;
+    el<HTMLButtonElement>('inv-confirm').disabled = true;
+  } catch (e) {
+    showError('Confirm failed: ' + (e as Error).message);
+  }
+}
+
+async function onInvSubmit(): Promise<void> {
+  if (!state.order) return;
+  clearError();
+  try {
+    state.order = await invApi.submit(state.order.id);
+    invStatus('Submitted (simulated). Confirmation: ' + (state.order.confirmation ?? '—'));
+    el<HTMLButtonElement>('inv-submit').disabled = true;
+    state.cart = [];
+    renderCart();
+  } catch (e) {
+    showError('Submit failed: ' + (e as Error).message);
+  }
+}
+
 void buildMachineTabs().then(() => switchMachine('rig'));
 void buildAssistMachines();
 void buildGuideMachines();
@@ -779,4 +899,8 @@ el<HTMLButtonElement>('assist-mic').addEventListener('click', onMic);
 el<HTMLButtonElement>('assist-say').addEventListener('click', onSpeakToggle);
 el<HTMLButtonElement>('guide-go').addEventListener('click', () => void onGuideStart());
 el<HTMLSelectElement>('guide-machine').addEventListener('change', () => void buildGuidePlaybooks());
+el<HTMLButtonElement>('inv-go').addEventListener('click', () => void onInvSearch());
+el<HTMLButtonElement>('inv-draft').addEventListener('click', () => void onInvDraft());
+el<HTMLButtonElement>('inv-confirm').addEventListener('click', () => void onInvConfirm());
+el<HTMLButtonElement>('inv-submit').addEventListener('click', () => void onInvSubmit());
 void loadCases();

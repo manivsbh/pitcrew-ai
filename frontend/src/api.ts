@@ -197,6 +197,38 @@ export interface GuideView {
   severe?: boolean;
 }
 
+export interface InvPart {
+  id: string;
+  name: string;
+  sku: string;
+  unit_price: number;
+  currency: string;
+  stock_qty: number;
+  lead_days: number;
+}
+
+export interface InvOrder {
+  id: string;
+  status: string;
+  total: number;
+  confirmation: string | null;
+  lines: { part_id: string; qty: number; unit_price: number; name: string; sku: string }[];
+}
+
+export const invApi = {
+  search: (machine: string, q: string) =>
+    req<{ parts: InvPart[] }>(`/api/inventory/search?machine=${machine}&q=${encodeURIComponent(q)}`),
+  byComponent: (machine: string, component: string) =>
+    req<InvPart>(`/api/inventory/by-component/${machine}/${component}`),
+  draft: (machine: string, lines: { part_id: string; qty: number }[], budget: number | null) =>
+    req<InvOrder>('/api/inventory/orders', {
+      method: 'POST',
+      body: JSON.stringify({ machine: machine, lines: lines, budget_cap: budget }),
+    }),
+  confirm: (id: string) => req<InvOrder>(`/api/inventory/orders/${id}/confirm`, { method: 'POST' }),
+  submit: (id: string) => req<InvOrder>(`/api/inventory/orders/${id}/submit`, { method: 'POST' }),
+};
+
 export const guideApi = {
   start: (machine: string, playbookId: string) =>
     req<GuideView>('/api/guide/start', {

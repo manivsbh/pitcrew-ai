@@ -15,6 +15,9 @@ from .evidence import series_for, waveform
 from .assist import assist_turn, load_session, parse_signal_csv, parse_wav
 from .guide import answer as guide_answer
 from .guide import get_playbook, start as guide_start
+from .inventory import audit_trail, cancel, confirm, connect, create_draft
+from .inventory import get_order as inv_get_order
+from .inventory import part_for_component, search, submit
 from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
                           reason_with_model)
 from .packs import list_packs, load_pack
@@ -70,6 +73,12 @@ class GuideAnswer(BaseModel):
     result: str
     note: str = ""
     action: str = "continue"
+
+
+class OrderDraft(BaseModel):
+    machine: str
+    lines: list[dict]
+    budget_cap: float | None = None
 
 
 @app.get("/api/health")
@@ -330,6 +339,58 @@ def guide_start_route(body: GuideStart) -> dict:
 @app.post("/api/guide/{guide_id}/answer")
 def guide_answer_route(guide_id: str, body: GuideAnswer) -> dict:
     return guide_answer(guide_id, body.result, body.note, body.action)
+
+
+@app.get("/api/inventory/search")
+def inv_search(machine: str, q: str = "") -> dict:
+    with connect() as conn:
+        return {"parts": search(conn, machine, q), "sandbox": True}
+
+
+@app.get("/api/inventory/by-component/{machine}/{component_id}")
+def inv_component(machine: str, component_id: str) -> dict:
+    with connect() as conn:
+        part = part_for_component(conn, machine, component_id)
+    if part is None:
+        return {"error": f"no orderable part for {component_id}"}
+    part["sandbox"] = True
+    return part
+
+
+@app.post("/api/inventory/orders")
+def inv_draft(body: OrderDraft) -> dict:
+    with connect() as conn:
+        return create_draft(conn, body.machine, body.lines, body.budget_cap)
+
+
+@app.get("/api/inventory/orders/{order_id}")
+def inv_order(order_id: str) -> dict:
+    with connect() as conn:
+        return inv_get_order(conn, order_id)
+
+
+@app.post("/api/inventory/orders/{order_id}/confirm")
+def inv_confirm(order_id: str) -> dict:
+    with connect() as conn:
+        return confirm(conn, order_id)
+
+
+@app.post("/api/inventory/orders/{order_id}/submit")
+def inv_submit(order_id: str) -> dict:
+    with connect() as conn:
+        return submit(conn, order_id)
+
+
+@app.post("/api/inventory/orders/{order_id}/cancel")
+def inv_cancel(order_id: str) -> dict:
+    with connect() as conn:
+        return cancel(conn, order_id)
+
+
+@app.get("/api/inventory/audit")
+def inv_audit() -> dict:
+    with connect() as conn:
+        return {"audit": audit_trail(conn)}
 
 
 @app.get("/api/assist/{session_id}")

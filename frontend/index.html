@@ -75,6 +75,24 @@
       </div>
       <div id="assist-out" class="assist-out"><p class="muted">Turn-based help: text + optional photo. Replies cite the manual.</p></div>
     </section>
+    <section class="panel inv" aria-label="Inventory">
+      <h2>Inventory (sandbox)</h2>
+      <p class="muted">Simulated vendor — no real order is placed.</p>
+      <div class="inv-form">
+        <input id="inv-q" type="text" placeholder="Search parts, e.g. seal" aria-label="Search parts" />
+        <button id="inv-go" type="button">Search</button>
+      </div>
+      <div id="inv-results" class="inv-results"></div>
+      <h3>Draft order</h3>
+      <div id="inv-cart" class="inv-cart"><p class="muted">Cart is empty.</p></div>
+      <div class="inv-form">
+        <input id="inv-budget" type="number" value="500" aria-label="Budget cap USD" title="Budget cap (USD)" />
+        <button id="inv-draft" type="button">Draft</button>
+        <button id="inv-confirm" type="button" disabled>Confirm</button>
+        <button id="inv-submit" type="button" disabled>Submit (simulated)</button>
+      </div>
+      <div id="inv-status" class="inv-status"></div>
+    </section>
     <section class="panel guide" aria-label="Guided check">
       <h2>Guided check</h2>
       <div class="guide-form">
