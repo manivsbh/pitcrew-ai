@@ -55,10 +55,14 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 }
 
-function selectComponent(id: string): void {
+function syncList(id: string): void {
   document.querySelectorAll<HTMLButtonElement>('#components button').forEach((b) => {
     b.setAttribute('aria-pressed', b.dataset.comp === id ? 'true' : 'false');
   });
+}
+
+function selectComponent(id: string): void {
+  syncList(id);
   state.assembly?.select(id);
 }
 
@@ -162,6 +166,9 @@ function renderFinding(t: Trace): void {
   if (!f) return;
   setStatus(`Complete in ${t.steps.length} steps, ${(t.latency_s ?? 0).toFixed(0)}s.`);
   selectComponent(f.component);
+  const suspect = f.component === 'ring_inner' || f.component === 'ring_outer' ? f.component : null;
+  state.assembly?.setSuspect(suspect);
+  if (suspect) state.assembly?.setExplode(0.85);
   const box = el('evidence-list');
   box.innerHTML = '';
   for (const eid of Object.keys(t.evidence ?? {})) {
@@ -273,11 +280,14 @@ function onReset(): void {
   el('evidence-detail').innerHTML = '';
   el('report').innerHTML = '<p class="muted">No investigation yet.</p>';
   clearPlot(el('plot'));
+  state.assembly?.setSuspect(null);
+  state.assembly?.setExplode(0);
+  syncList('');
   clearError();
   setStatus('Select a recording to begin.');
 }
 
-state.assembly = initAssembly(el('assembly'));
+state.assembly = initAssembly(el('assembly'), { onSelect: (id) => syncList(id) });
 buildComponentList();
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
