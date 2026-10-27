@@ -18,6 +18,7 @@ from .guide import get_playbook, start as guide_start
 from .inventory import audit_trail, cancel, confirm, connect, create_draft
 from .inventory import get_order as inv_get_order
 from .inventory import part_for_component, search, submit
+from .segment import segment_photo
 from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
                           reason_with_model)
 from .packs import list_packs, load_pack
@@ -417,6 +418,19 @@ def inv_cancel(order_id: str) -> dict:
 def inv_audit() -> dict:
     with connect() as conn:
         return {"audit": audit_trail(conn)}
+
+
+@app.post("/api/vision/segment")
+async def vision_segment(photo: UploadFile = File(...)) -> dict:
+    data = await photo.read()
+    if not data:
+        return {"error": "empty photo upload"}
+    if len(data) > 5_000_000:
+        return {"error": "photo exceeds the 5 MB cap"}
+    try:
+        return segment_photo(data)
+    except Exception as e:
+        return {"error": f"segmentation failed: {e}"}
 
 
 @app.get("/api/assist/{session_id}")

@@ -329,6 +329,7 @@ label { font-size: 12.5px; font-weight: 600; color: var(--muted); display: block
 .assist-out .cite { color: var(--faint); font-size: 12px; }
 .assist-out ul { margin: 4px 0; padding-left: 20px; }
 .assist-out p { margin: 6px 0; }
+.seg-overlay { max-width: 100%; border-radius: var(--radius); border: 1px solid var(--border); margin: 6px 0; }
 .loading-dots::after { content: '…'; animation: dots 1.2s steps(4) infinite; }
 @keyframes dots { 0% { content: ''; } 50% { content: '…'; } }
 .guide-out { font-size: 13.5px; max-width: 80ch; }

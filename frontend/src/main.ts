@@ -1,6 +1,6 @@
 import './fonts.css';
 import './style.css';
-import { api, assistApi, draftApi, guideApi, invApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackComponent, type Step, type Trace } from './api';
+import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Draft, type GuideView, type InvOrder, type InvPart, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -670,6 +670,41 @@ function onMic(): void {
   rec.start();
 }
 
+async function onVisionSegment(): Promise<void> {
+  clearError();
+  const photo = el<HTMLInputElement>('assist-photo').files?.[0] ?? null;
+  if (!photo) {
+    showError('Attach a photo first, then Segment.');
+    return;
+  }
+  const out = el('assist-out');
+  const wait = document.createElement('p');
+  wait.className = 'muted';
+  wait.innerHTML = '<span class="loading-dots">Segmenting locally</span>';
+  out.appendChild(wait);
+  try {
+    const r = await visionApi.segment(photo);
+    wait.remove();
+    const div = document.createElement('div');
+    div.className = 'turn';
+    const chips = r.regions
+      .map((g) => '<li>#' + g.id + ' — area ' + g.area + 'px, IoU ' + g.iou.toFixed(2) + '</li>')
+      .join('');
+    div.innerHTML =
+      '<p><span class="who">Segmentation</span> <span class="cite">local SAM 2 · ' +
+      escapeHtml(r.device) + ' · ' + r.elapsed_ms + 'ms · ' + r.regions.length + ' regions</span></p>' +
+      '<img class="seg-overlay" alt="Segmented photo with outlined regions" src="data:image/png;base64,' +
+      r.overlay_b64 + '" />' +
+      '<ul>' + chips + '</ul>' +
+      '<p class="cite">' + escapeHtml(r.note) + '</p>';
+    out.appendChild(div);
+    out.scrollTop = out.scrollHeight;
+  } catch (e) {
+    wait.remove();
+    showError('Segment failed: ' + (e as Error).message);
+  }
+}
+
 function onSpeakToggle(): void {
   state.speakOn = !state.speakOn;
   const b = el<HTMLButtonElement>('assist-say');
@@ -982,6 +1017,7 @@ el<HTMLButtonElement>('reveal').addEventListener('click', () => void onReveal())
 el<HTMLButtonElement>('up-go').addEventListener('click', () => void onUpload());
 el<HTMLButtonElement>('draft-go').addEventListener('click', () => void onDraftUpload());
 el<HTMLButtonElement>('assist-go').addEventListener('click', () => void onAssistSend());
+el<HTMLButtonElement>('assist-seg').addEventListener('click', () => void onVisionSegment());
 el<HTMLButtonElement>('assist-mic').addEventListener('click', onMic);
 el<HTMLButtonElement>('assist-say').addEventListener('click', onSpeakToggle);
 el<HTMLButtonElement>('guide-go').addEventListener('click', () => void onGuideStart());

@@ -251,6 +251,23 @@ export const guideApi = {
     }),
 };
 
+export interface SegmentResult {
+  regions: { id: number; bbox: number[]; area: number; iou: number }[];
+  overlay_b64: string;
+  image_size: number[];
+  device: string;
+  elapsed_ms: number;
+  note: string;
+}
+
+export const visionApi = {
+  segment: (photo: File) => {
+    const form = new FormData();
+    form.append('photo', photo);
+    return formReq<SegmentResult>('/api/vision/segment', form);
+  },
+};
+
 export const draftApi = {
   upload: (machine: string, title: string, file: File) => {
     const form = new FormData();

@@ -16,6 +16,7 @@ data/manuals/
 data/recordings/
 data/assist/
 data/inventory.db
+data/models/
 data/guide/
 data/pack_drafts/
 data/reports/
