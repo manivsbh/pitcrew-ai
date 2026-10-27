@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Machine Fault Investigator</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <h1>Machine Fault Investigator</h1>
+        <p>Motor-and-bearing diagnosis workspace</p>
+      </div>
+      <div class="casebar">
+        <label for="case">Recording</label>
+        <select id="case"><option value="">Loading cases…</option></select>
+        <label for="question">Question</label>
+        <input id="question" type="text" value="What is the condition of this bearing?" />
+        <button id="go" disabled>Investigate</button>
+        <button id="reset" class="ghost">Reset</button>
+      </div>
+    </header>
+    <div id="error" class="error" hidden></div>
+    <main class="grid">
+      <section class="panel" aria-label="Assembly">
+        <h2>Assembly</h2>
+        <div id="assembly"></div>
+        <h3>Components</h3>
+        <ul id="components" class="components"></ul>
+      </section>
+      <section class="panel" aria-label="Evidence">
+        <h2>Evidence</h2>
+        <div id="evidence-list" class="evidence-list"></div>
+        <div id="plot"></div>
+        <div id="evidence-detail" class="detail"></div>
+      </section>
+      <section class="panel" aria-label="Investigation steps">
+        <h2>Investigation</h2>
+        <div id="status" class="status">Select a recording to begin.</div>
+        <ol id="steps" class="steps"></ol>
+      </section>
+    </main>
+    <section class="panel report" aria-label="Report">
+      <h2>Report</h2>
+      <div id="report"><p class="muted">No investigation yet.</p></div>
+      <button id="export" class="ghost" disabled>Export report JSON</button>
+    </section>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

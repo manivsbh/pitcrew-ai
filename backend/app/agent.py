@@ -35,10 +35,15 @@ def _is_retryable(exc: Exception) -> bool:
     return type(exc).__name__ in _RETRYABLE
 
 
+def new_investigation_id() -> str:
+    return f"inv_{uuid.uuid4().hex[:8]}"
+
+
 def run(store, docs, refs: dict, recording_id: str, question: str,
         client_factory=None, key: str | None = None,
         max_calls: int = MAX_TOOL_CALLS,
-        timeout_s: float = INVESTIGATION_TIMEOUT_S) -> dict:
+        timeout_s: float = INVESTIGATION_TIMEOUT_S,
+        investigation_id: str | None = None) -> dict:
     """Run one investigation to a finding or an explicit incomplete state."""
     if client_factory is None:
         if not key:
@@ -47,7 +52,7 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
         client_factory = default_client_factory(key)
     client = client_factory()
     ctx = ToolContext(store, docs, refs)
-    inv_id = f"inv_{uuid.uuid4().hex[:8]}"
+    inv_id = investigation_id or new_investigation_id()
     trace: dict = {
         "investigation_id": inv_id, "recording_id": recording_id,
         "question": question, "model_id": MODEL_ID,
@@ -90,6 +95,8 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
             trace["steps"].append({"turn": len(trace["steps"]) + 1,
                                    "type": "text",
                                    "text": str(resp.output_text)[:2000]})
+            trace["status"] = "running"
+            save_trace(trace)
             if stalls >= 2:
                 trace["incomplete_reason"] = "stalled: no tool call or finding"
                 break
@@ -122,6 +129,9 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
             outputs.append({"type": "function_call_output",
                             "call_id": fc.call_id,
                             "output": json.dumps(result)[:8000]})
+            trace["status"] = "running"
+            trace["evidence"] = ctx.evidence.items
+            save_trace(trace)
             if fc.name == "submit_finding" and result["status"] == "success":
                 trace["status"] = "complete"
                 trace["finding"] = result["data"]["finding"]
@@ -134,6 +144,7 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
             continue
         break  # cap reached inside the for loop
 
+    trace["status"] = "incomplete"  # incremental saves set "running"
     trace["evidence"] = ctx.evidence.items
     trace["latency_s"] = round(time.monotonic() - t0, 1)
     save_trace(trace)

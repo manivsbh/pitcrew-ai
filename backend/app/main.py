@@ -8,9 +8,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from .agent import REPORTS_DIR, load_trace, run
+from .agent import load_trace, new_investigation_id, run
 from .config import ALLOWED_ORIGINS, REFS_PATH
 from .docs_store import DocsStore
+from .evidence import series_for, waveform
 from .store import Store
 
 app = FastAPI(title="Machine Fault Investigator")
@@ -54,19 +55,31 @@ def import_recording(body: ImportCase) -> dict:
         return {"error": str(e)}
 
 
+@app.get("/api/recordings/{recording_id}/waveform")
+def recording_waveform(recording_id: str, max_points: int = 8000) -> dict:
+    try:
+        rec = store.load(recording_id)
+    except KeyError:
+        return {"error": f"unknown recording {recording_id}"}
+    return waveform(rec, max_points=max_points)
+
+
 @app.post("/api/investigations")
 def create_investigation(body: NewInvestigation, bg: BackgroundTasks) -> dict:
     if body.recording_id not in store.recordings:
         return {"error": f"unknown recording {body.recording_id}"}
     job_id = f"job_{len(jobs) + 1:04d}"
-    jobs[job_id] = {"state": "running", "recording_id": body.recording_id}
-    bg.add_task(_run_job, job_id, body.recording_id, body.question)
-    return {"job_id": job_id, "state": "running"}
+    inv_id = new_investigation_id()
+    jobs[job_id] = {"state": "running", "recording_id": body.recording_id,
+                    "investigation_id": inv_id}
+    bg.add_task(_run_job, job_id, body.recording_id, body.question, inv_id)
+    return {"job_id": job_id, "state": "running", "investigation_id": inv_id}
 
 
-def _run_job(job_id: str, recording_id: str, question: str) -> None:
+def _run_job(job_id: str, recording_id: str, question: str, inv_id: str) -> None:
     try:
-        trace = run(store, docs, refs, recording_id, question)
+        trace = run(store, docs, refs, recording_id, question,
+                    investigation_id=inv_id)
     except Exception as exc:  # noqa: BLE001 - boundary: never lose the job
         jobs[job_id] = {"state": "error", "error": f"{type(exc).__name__}"}
         return
@@ -79,10 +92,30 @@ def investigation_status(job_id: str) -> dict:
     job = jobs.get(job_id)
     if job is None:
         return {"error": f"unknown job {job_id}"}
-    if job["state"] in ("complete", "incomplete"):
+    try:
         trace = load_trace(job["investigation_id"])
-        return {"state": job["state"], "trace": trace}
-    return job
+    except FileNotFoundError:
+        return {"state": job["state"]}
+    if job["state"] == "running":
+        return {"state": "running", "steps": trace.get("steps", []),
+                "usage": trace.get("usage", {})}
+    return {"state": job["state"], "trace": trace}
+
+
+@app.get("/api/evidence/{investigation_id}/{evidence_id}")
+def evidence_series(investigation_id: str, evidence_id: str) -> dict:
+    try:
+        trace = load_trace(investigation_id)
+    except FileNotFoundError:
+        return {"error": f"unknown investigation {investigation_id}"}
+    item = trace.get("evidence", {}).get(evidence_id)
+    if item is None:
+        return {"error": f"unknown evidence {evidence_id}"}
+    try:
+        rec = store.load(trace["recording_id"])
+    except KeyError:
+        return {"error": "recording unavailable"}
+    return series_for(rec, item)
 
 
 @app.get("/api/report/{investigation_id}")
