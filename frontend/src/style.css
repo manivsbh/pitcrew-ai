@@ -104,6 +104,16 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 
 .role { font-size: 13px; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
 .role p { margin: 4px 0; }
+
+.draft { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 6px; }
+.draft summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.draft-form { display: grid; gap: 6px; padding: 8px 0; }
+.draft-form input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.draft-body { font-size: 13px; }
+.draft-table { border-collapse: collapse; width: 100%; margin: 6px 0; }
+.draft-table th, .draft-table td { text-align: left; padding: 2px 6px 2px 0; border-bottom: 1px solid var(--line); }
+.draft-table input[type="text"] { font: inherit; width: 100%; max-width: 220px; }
+.draft-actions { display: flex; gap: 6px; margin-top: 6px; }
 .components button {
   background: #fff; color: var(--ink); border-color: var(--line);
   padding: 4px 10px; font-size: 13px;

@@ -3,15 +3,17 @@
 import json
 import os
 
-from fastapi import BackgroundTasks, FastAPI
+from fastapi import BackgroundTasks, FastAPI, File, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from .agent import load_trace, new_investigation_id, run
-from .config import ALLOWED_ORIGINS, REFS_PATH
+from .agent import default_client_factory, load_trace, new_investigation_id, run
+from .config import ALLOWED_ORIGINS, REFS_PATH, model_api_key
 from .docs_store import DocsStore
 from .evidence import series_for, waveform
+from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
+                          reason_with_model)
 from .packs import list_packs, load_pack
 from .store import Store
 
@@ -49,6 +51,11 @@ class UploadRecording(BaseModel):
 
 class Reveal(BaseModel):
     investigation_id: str
+
+
+class DraftAnswer(BaseModel):
+    edits: list[dict] = []
+    new_components: list[dict] = []
 
 
 @app.get("/api/health")
@@ -191,6 +198,80 @@ def pack(machine: str) -> dict:
     if loaded is None:
         return {"error": f"unknown machine pack {machine}"}
     return loaded
+
+
+def _draft_view(draft: dict) -> dict:
+    return {"id": draft["id"], "machine": draft["machine"],
+            "title": draft["title"], "status": draft["status"],
+            "candidates": draft["candidates"],
+            "assessment": draft["assessment"], "review": draft["review"]}
+
+
+@app.post("/api/packs/draft")
+async def draft_upload(machine: str = Form(...), title: str = Form(...),
+                       file: UploadFile = File(...)) -> dict:
+    data = await file.read()
+    if len(data) > 30_000_000:
+        return {"error": "PDF exceeds the 30 MB draft cap"}
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        return {"error": "upload a .pdf manual"}
+    try:
+        draft = new_draft(machine.strip().lower().replace(" ", "-"), title,
+                          data)
+    except Exception as e:
+        return {"error": f"could not read PDF: {e}"}
+    return _draft_view(draft)
+
+
+@app.get("/api/packs/draft/{draft_id}")
+def draft_get(draft_id: str) -> dict:
+    draft = load_draft(draft_id)
+    if draft is None:
+        return {"error": f"unknown draft {draft_id}"}
+    return _draft_view(draft)
+
+
+@app.post("/api/packs/draft/{draft_id}/reason")
+def draft_reason(draft_id: str) -> dict:
+    draft = load_draft(draft_id)
+    if draft is None:
+        return {"error": f"unknown draft {draft_id}"}
+    try:
+        key = model_api_key()
+    except RuntimeError as e:
+        return {"error": str(e)}
+    from .packbuilder import save_draft
+    review = reason_with_model(draft["text"], draft["candidates"],
+                               default_client_factory(key))
+    draft["review"] = review
+    save_draft(draft)
+    auto = (draft["assessment"]["score"] >= 80
+            and review.get("verdict") == "enough"
+            and len(draft["candidates"]) >= 8)
+    return {"review": review, "auto_finalize": auto}
+
+
+@app.post("/api/packs/draft/{draft_id}/answer")
+def draft_answer(draft_id: str, body: DraftAnswer) -> dict:
+    draft = load_draft(draft_id)
+    if draft is None:
+        return {"error": f"unknown draft {draft_id}"}
+    if draft["status"] == "finalized":
+        return {"error": "draft already finalized"}
+    return _draft_view(apply_edits(draft, body.edits, body.new_components))
+
+
+@app.post("/api/packs/draft/{draft_id}/finalize")
+def draft_finalize(draft_id: str) -> dict:
+    draft = load_draft(draft_id)
+    if draft is None:
+        return {"error": f"unknown draft {draft_id}"}
+    if draft["status"] == "finalized":
+        return {"error": "draft already finalized"}
+    try:
+        return finalize(draft)
+    except ValueError as e:
+        return {"error": str(e)}
 
 
 def _hashes() -> dict:

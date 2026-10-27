@@ -1,5 +1,5 @@
 import './style.css';
-import { api, labelForCase, type PackComponent, type Step, type Trace } from './api';
+import { api, draftApi, labelForCase, type Draft, type PackComponent, type Step, type Trace } from './api';
 import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
@@ -19,7 +19,8 @@ const state: {
   assembly: AssemblyHandle | null;
   machine: string;
   components: PackComponent[];
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [] };
+  draft: Draft | null;
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [], draft: null };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -410,6 +411,126 @@ function onReset(): void {
   setStatus('Select a recording to begin.');
 }
 
+async function onDraftUpload(): Promise<void> {
+  clearError();
+  const box = el('draft');
+  const file = el<HTMLInputElement>('draft-file').files?.[0];
+  const machine = el<HTMLInputElement>('draft-machine').value.trim();
+  const title = el<HTMLInputElement>('draft-title').value.trim() || machine;
+  if (!file || !machine) {
+    showError('Enter a machine id and choose a PDF manual first.');
+    return;
+  }
+  box.innerHTML = '<p class="muted">Extracting candidates…</p>';
+  try {
+    state.draft = await draftApi.upload(machine, title, file);
+    renderDraft();
+  } catch (e) {
+    showError(`Draft failed: ${(e as Error).message}`);
+  }
+}
+
+function renderDraft(): void {
+  const d = state.draft;
+  const box = el('draft');
+  if (!d) return;
+  const a = d.assessment;
+  const rev = d.review
+    ? `<p><strong>Agent review: ${escapeHtml(d.review.verdict)}</strong> ` +
+      `(confidence ${(d.review.confidence ?? 0).toFixed(2)}) — ${escapeHtml(d.review.summary ?? '')}</p>` +
+      '<ul>' +
+      (d.review.questions ?? []).map((q) => '<li>' + escapeHtml(q) + '</li>').join('') +
+      '</ul>'
+    : '<p class="muted">No agent review yet.</p>';
+  const rows = d.candidates
+    .map(
+      (c) =>
+        `<tr><td><input type="checkbox" data-drop="${c.id}" aria-label="Drop ${escapeHtml(c.id)}" /></td>` +
+        `<td><input type="text" data-name="${c.id}" value="${escapeHtml(c.name)}" aria-label="Name" /></td>` +
+        `<td>${escapeHtml(c.pos ?? '—')}</td>` +
+        `<td><input type="text" data-parent="${c.id}" value="${escapeHtml(c.parent ?? '')}" ` +
+        `placeholder="parent id" aria-label="Parent" /></td></tr>`,
+    )
+    .join('');
+  box.innerHTML =
+    `<p><strong>${escapeHtml(d.title)}</strong> — readiness <strong>${a.score}/100</strong> ` +
+    `(${a.n_candidates} parts, ${a.with_pos} numbered, ` +
+    `${a.has_exploded ? 'parts-list found' : 'no parts-list'}, ${a.has_steps ? 'steps found' : 'no steps'})</p>` +
+    '<ul>' +
+    a.questions.map((q) => '<li>' + escapeHtml(q) + '</li>').join('') +
+    '</ul>' +
+    rev +
+    `<table class="draft-table"><tr><th>Drop</th><th>Name</th><th>Pos</th><th>Parent</th></tr>${rows}</table>` +
+    `<div class="draft-actions"><button id="draft-reason" type="button">Ask agent</button> ` +
+    `<button id="draft-save" type="button">Save answers</button> ` +
+    `<button id="draft-final" type="button">Finalize pack</button></div>`;
+  el<HTMLButtonElement>('draft-reason').addEventListener('click', () => void onDraftReason());
+  el<HTMLButtonElement>('draft-save').addEventListener('click', () => void onDraftSave());
+  el<HTMLButtonElement>('draft-final').addEventListener('click', () => void onDraftFinalize());
+}
+
+function collectEdits(): object[] {
+  const edits: object[] = [];
+  document.querySelectorAll<HTMLInputElement>('#draft input[data-drop]').forEach((chk) => {
+    const id = chk.dataset.drop ?? '';
+    const name = document.querySelector<HTMLInputElement>(`#draft input[data-name="${id}"]`)?.value ?? '';
+    const parent = document.querySelector<HTMLInputElement>(`#draft input[data-parent="${id}"]`)?.value ?? '';
+    edits.push({ id, drop: chk.checked, name, parent: parent || null });
+  });
+  return edits;
+}
+
+async function onDraftReason(): Promise<void> {
+  if (!state.draft) return;
+  clearError();
+  try {
+    const r = await draftApi.reason(state.draft.id);
+    if (state.draft) state.draft.review = r.review;
+    renderDraft();
+    const box = el('draft');
+    const p = document.createElement('p');
+    p.innerHTML = r.auto_finalize
+      ? '<strong>Draft passes the auto-finalize bar.</strong> Review the list, then Finalize.'
+      : '<strong>Below the auto bar</strong> — please correct the list above, Save, then Finalize.';
+    box.prepend(p);
+  } catch (e) {
+    showError(`Agent review failed: ${(e as Error).message}`);
+  }
+}
+
+async function onDraftSave(): Promise<void> {
+  if (!state.draft) return;
+  clearError();
+  try {
+    state.draft = await draftApi.answer(state.draft.id, collectEdits(), []);
+    renderDraft();
+  } catch (e) {
+    showError(`Save failed: ${(e as Error).message}`);
+  }
+}
+
+async function onDraftFinalize(): Promise<void> {
+  if (!state.draft) return;
+  clearError();
+  try {
+    state.draft = await draftApi.answer(state.draft.id, collectEdits(), []);
+    const r = await draftApi.finalize(state.draft.id);
+    const dropped = r.dropped_by_review ?? [];
+    el('draft').innerHTML =
+      '<p>Pack <strong>' + escapeHtml(r.machine) + '</strong> built: ' +
+      r.components + ' components' +
+      (dropped.length
+        ? ' (' + dropped.length + ' dropped by agent review: ' + escapeHtml(dropped.join(', ')) + ')'
+        : '') +
+      '.</p>';
+    state.draft = null;
+    await buildMachineTabs();
+    await switchMachine(r.machine);
+  } catch (e) {
+    showError(`Finalize failed: ${(e as Error).message}`);
+  }
+}
+
 void buildMachineTabs().then(() => switchMachine('rig'));
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
@@ -417,4 +538,5 @@ el<HTMLButtonElement>('reset').addEventListener('click', onReset);
 el<HTMLButtonElement>('export').addEventListener('click', () => void onExport());
 el<HTMLButtonElement>('reveal').addEventListener('click', () => void onReveal());
 el<HTMLButtonElement>('up-go').addEventListener('click', () => void onUpload());
+el<HTMLButtonElement>('draft-go').addEventListener('click', () => void onDraftUpload());
 void loadCases();

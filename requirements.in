@@ -11,3 +11,4 @@ pytest>=8.0
 graphifyy>=0.1  # code-graph tooling (dev only)
 pypdf>=6.0
 fonttools>=4.0  # cleaner PDF text extraction
+python-multipart>=0.0.18  # PDF manual uploads

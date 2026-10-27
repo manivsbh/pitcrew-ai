@@ -111,6 +111,71 @@ export interface Pack {
   playbooks: { id: string; symptom: string; checks: number }[];
 }
 
+export interface DraftCandidate {
+  id: string;
+  name: string;
+  pos: string | null;
+  mentions: number;
+  parent?: string | null;
+}
+
+export interface Draft {
+  id: string;
+  machine: string;
+  title: string;
+  status: string;
+  candidates: DraftCandidate[];
+  assessment: {
+    score: number;
+    n_candidates: number;
+    with_pos: number;
+    has_exploded: boolean;
+    has_steps: boolean;
+    questions: string[];
+  };
+  review: {
+    verdict: string;
+    confidence: number;
+    summary: string;
+    questions: string[];
+  } | null;
+}
+
+async function formReq<T>(path: string, form: FormData): Promise<T> {
+  const r = await fetch(path, { method: 'POST', body: form });
+  if (!r.ok) throw new Error(`HTTP ${r.status} on ${path}`);
+  const body = (await r.json()) as T & { error?: string };
+  if (body && typeof body === 'object' && 'error' in body && body.error) {
+    throw new Error(String(body.error));
+  }
+  return body;
+}
+
+export const draftApi = {
+  upload: (machine: string, title: string, file: File) => {
+    const form = new FormData();
+    form.append('machine', machine);
+    form.append('title', title);
+    form.append('file', file);
+    return formReq<Draft>('/api/packs/draft', form);
+  },
+  reason: (id: string) =>
+    req<{ review: Draft['review']; auto_finalize: boolean }>(
+      `/api/packs/draft/${id}/reason`,
+      { method: 'POST' },
+    ),
+  answer: (id: string, edits: object[], news: object[]) =>
+    req<Draft>(`/api/packs/draft/${id}/answer`, {
+      method: 'POST',
+      body: JSON.stringify({ edits: edits, new_components: news }),
+    }),
+  finalize: (id: string) =>
+    req<{ machine: string; components: number; dropped_by_review: string[] }>(
+      `/api/packs/draft/${id}/finalize`,
+      { method: 'POST' },
+    ),
+};
+
 /** Anonymized label: operating point only, never the bearing code. */
 export function labelForCase(c: string, i: number): string {
   const m = c.match(/^(N\d+_M\d+_F\d+)_/);

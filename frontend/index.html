@@ -39,6 +39,16 @@
         <h3>Components</h3>
         <ul id="components" class="components"></ul>
         <div id="role" class="role"><p class="muted">Select a component to see its role.</p></div>
+        <details class="draft">
+          <summary>New machine from manual</summary>
+          <div class="draft-form">
+            <input id="draft-machine" type="text" value="" placeholder="machine id, e.g. gearmotor" aria-label="Machine id" />
+            <input id="draft-title" type="text" value="" placeholder="Manual title" aria-label="Manual title" />
+            <input id="draft-file" type="file" accept=".pdf" aria-label="Manual PDF" />
+            <button id="draft-go" type="button">Upload &amp; draft</button>
+          </div>
+          <div id="draft" class="draft-body"></div>
+        </details>
       </section>
       <section class="panel" aria-label="Evidence">
         <h2>Evidence</h2>

@@ -257,6 +257,97 @@ function buildPump(P: Parts): void {
   mapVisual(P, 'motor', ['motor']);
 }
 
+/* ---------------- generic builder (any registry) ---------------- */
+
+function shapeFor(name: string): 'ring' | 'rod' | 'ball' | 'plate' | 'box' {
+  const n = name.toLowerCase();
+  if (/(ring|seal|bearing|washer|gasket|o-ring|retainer|coupling|flange|nut)/.test(n)) return 'ring';
+  if (/(shaft|bolt|screw|pin|rod|spring|spacer|strap|plug|rail|staybolt)/.test(n)) return 'rod';
+  if (/(ball|roller|impeller|bushing)/.test(n)) return 'ball';
+  if (/(plate|cover|disk|disc|guard|base|stool|head|sleeve|chamber|housing|motor|stator|rotor)/.test(n)) return 'plate';
+  return 'box';
+}
+
+function buildGeneric(P: Parts, components: PackComponent[]): void {
+  const ids = new Set(components.map((c) => c.id));
+  const kids = new Map<string, PackComponent[]>();
+  const roots: PackComponent[] = [];
+  for (const c of components) {
+    if (c.parent && ids.has(c.parent)) {
+      const list = kids.get(c.parent) ?? [];
+      list.push(c);
+      kids.set(c.parent, list);
+    } else {
+      roots.push(c);
+    }
+  }
+  // BFS levels from roots
+  const level = new Map<string, number>();
+  const queue: [PackComponent, number][] = roots.map((r) => [r, 0]);
+  for (const c of components) if (!level.has(c.id) && !queue.some(([q]) => q.id === c.id)) queue.push([c, 0]);
+  while (queue.length) {
+    const [c, lv] = queue.shift()!;
+    if (level.has(c.id)) continue;
+    level.set(c.id, lv);
+    for (const k of kids.get(c.id) ?? []) queue.push([k, lv + 1]);
+  }
+  const byLevel = new Map<number, PackComponent[]>();
+  for (const c of components) {
+    const lv = level.get(c.id) ?? 0;
+    const list = byLevel.get(lv) ?? [];
+    list.push(c);
+    byLevel.set(lv, list);
+  }
+  let maxLv = 0;
+  for (const lv of byLevel.keys()) maxLv = Math.max(maxLv, lv);
+  const levels = [...byLevel.entries()];
+  levels.sort((x, y) => x[0] - y[0]);
+  const palette = [0x2f5d8a, 0x3a6b5f, 0x8a6d2f, 0x6b3a5d, 0x4a4e57, 0x2f8a6d];
+  let i = 0;
+  for (const entry of levels) {
+    const lv = entry[0];
+    const group = entry[1];
+    const y = (maxLv - lv) * 1.1 - maxLv * 0.55;
+    group.forEach((c, j) => {
+      const a = group.length > 1 ? (j / group.length) * Math.PI * 2 : 0;
+      const rad = group.length > 1 ? 1.6 : 0;
+      const x = Math.cos(a) * rad;
+      const z = Math.sin(a) * rad;
+      const g = makePart(P, c.id, x * 0.6, (lv - maxLv / 2) * -0.9);
+      const mat = std(palette[i++ % palette.length], 0.7, 0.4);
+      const s = Math.max(0.55, 1.05 - lv * 0.12);
+      switch (shapeFor(c.name)) {
+        case 'ring': {
+          const t = new THREE.Mesh(new THREE.TorusGeometry(0.42 * s, 0.13 * s, 12, 32), mat);
+          t.rotation.x = Math.PI / 2;
+          t.castShadow = true;
+          g.add(t);
+          break;
+        }
+        case 'rod':
+          mesh(g, new THREE.CylinderGeometry(0.11 * s, 0.11 * s, 0.9 * s, 14), mat);
+          break;
+        case 'ball':
+          mesh(g, new THREE.SphereGeometry(0.3 * s, 20, 14), mat);
+          break;
+        case 'plate':
+          mesh(g, new THREE.CylinderGeometry(0.5 * s, 0.55 * s, 0.22 * s, 24), mat);
+          break;
+        default:
+          mesh(g, new THREE.BoxGeometry(0.5 * s, 0.5 * s, 0.5 * s), mat);
+      }
+      g.position.x = x;
+      g.position.z = z;
+      g.position.y = y;
+      // explode offsets are relative; bake base pos into userData
+      g.userData.baseX = x;
+      g.userData.baseY = y;
+      g.userData.baseZ = z;
+      P.visualOf.set(c.id, c.id);
+    });
+  }
+}
+
 /* ---------------- viewer ---------------- */
 
 export function initAssembly(
@@ -317,8 +408,9 @@ export function initAssembly(
   scene.add(ground);
 
   const P: Parts = { parts: new Map(), visualOf: new Map(), scene };
-  if (vertical) buildPump(P);
-  else buildRig(P);
+  if (opts.machine === 'rig') buildRig(P);
+  else if (opts.machine === 'cr-pump') buildPump(P);
+  else buildGeneric(P, opts.components);
 
   // registry ids without explicit visuals fall back to their own part id
   for (const c of opts.components) {
@@ -391,8 +483,9 @@ export function initAssembly(
   let explodeF = 0;
   function applyExplode(): void {
     for (const g of P.parts.values()) {
-      g.position.x = (g.userData.explodeX as number) * explodeF;
-      g.position.y = (g.userData.explodeY as number) * explodeF;
+      g.position.x = ((g.userData.baseX as number) ?? 0) + (g.userData.explodeX as number) * explodeF;
+      g.position.y = ((g.userData.baseY as number) ?? 0) + (g.userData.explodeY as number) * explodeF;
+      g.position.z = (g.userData.baseZ as number) ?? 0;
     }
   }
   slider.addEventListener('input', () => {
