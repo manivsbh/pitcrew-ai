@@ -1,0 +1,28 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Secrets / local config
+.env
+.env.*
+
+# Measured recordings and derived reports (local only, never commit)
+*.mat
+data/recordings/
+data/reports/
+reports/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# OS / editors
+.DS_Store
+*.swp
+.vscode/
+.idea/
