@@ -6,8 +6,14 @@ MODEL_ID = "muse-spark-1.3"
 API_BASE_URL = "https://api.meta.ai/v1"
 
 # Bounded investigation loop (application-enforced).
+# Timeout calibrated from live runs: ~20-40 s per serial tool turn.
 MAX_TOOL_CALLS = 8
-INVESTIGATION_TIMEOUT_S = 120
+INVESTIGATION_TIMEOUT_S = 300
+# Low reasoning effort: this loop needs tool orchestration, not deep reasoning.
+REASONING_EFFORT = "low"
+
+# Reference stats built from K001 development repetitions.
+REFS_PATH = "backend/app/refs.json"
 
 # Local serving.
 HOST = "127.0.0.1"

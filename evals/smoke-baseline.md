@@ -13,10 +13,15 @@ One real Responses API tool round-trip, `muse-spark-1.3`, Standard mode.
 - Investigation arm (~5 calls): ~$0.008/recording
 - 60 recordings x both arms: roughly $0.60 total. Credits-only, no overage.
 
-## Latency note
+## Live-run calibration (Day 3, dev data)
 
-At ~18 s per serial call, 8 calls would exceed the 120 s investigation
-timeout. The cap and the timeout are independent guards: typical paths
-(inspect -> analyze -> compare -> finding, 4-5 calls) fit in ~70-90 s;
-longer runs time out explicitly as incomplete investigations. Reasoning
-effort stays at the model default until dev-set tuning says otherwise.
+First real run timed out at 120 s after 3 calls (~40 s/call with default
+reasoning and doc-heavy history). Calibrated on dev data:
+
+- `INVESTIGATION_TIMEOUT_S`: 120 -> 300 (guard, not target)
+- `REASONING_EFFORT`: default -> low (tool orchestration, not deep reasoning)
+- Prompt inv-v1 -> inv-v2 (inspect first, analyze early, docs on demand)
+
+Second run (KA04 outer-ring damage): complete in 8 calls / 113.7 s, correct
+outer_ring_damage finding with BPFO 76.25 vs 76.35 Hz target. Cost ~$0.035.
+Revised full-eval projection: 60 recordings x ~$0.04 ~= $2.50 worst case.
