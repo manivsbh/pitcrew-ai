@@ -2,7 +2,7 @@
 
 Sources:
 
-- PHM paper, Table 1 (bearing damage categorization, FAG 6203)
+- PHM paper, Table 1 (FAG 6203 designation data)
   https://papers.phmsociety.org/index.php/phme/article/download/1577/542
 - Bearing DataCenter, "Test rig and measurement equipment"
   https://mb.uni-paderborn.de/en/kat/research/bearing-datacenter/test-rig-and-measurement-equipment

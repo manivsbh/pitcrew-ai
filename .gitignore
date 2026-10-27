@@ -14,6 +14,7 @@ __pycache__/
 *.mat
 data/recordings/
 data/reports/
+data/registry.json
 reports/
 
 # Frontend
