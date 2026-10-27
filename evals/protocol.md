@@ -21,12 +21,16 @@ bearing (majority vote per bearing as a secondary view).
 
 ## Arms (same 60 cases each)
 
-1. `baseline` — deterministic numerical rules only (no model). Rule, fixed
-   here: compute envelope BPFO/BPFI hits (band 2-8 kHz) plus reference
-   z-scores; predict the ring whose fault frequency has the strongest
-   envelope hit when its amplitude exceeds 3x the other ring's, else healthy
-   when all |z| < 5, else abstain. (Rule parameters were set from dev-set
-   inspection of KA04/KI04/K001 only.)
+1. `baseline` — deterministic numerical rules only (no model). Rule v2
+   (amended 2026-10-27 from dev-set inspection, before any final-bearing
+   contact): envelope BPFO/BPFI hits (band 2-8 kHz) plus reference z-scores.
+   Damage call requires BOTH a >2x dominant fault-frequency amplitude AND
+   max|z| > 5; healthy requires max|z| < 5 AND no dominant peak; anything
+   else abstains. (v1 used a 3x ratio without the z-gate and scored 25/36
+   on dev with 10 inner-ring abstentions; v2 scores 33/36 with 0 confident
+   errors. K001 healthy max ratio was 1.81, KI04 damaged min ratio 1.80,
+   so the ratio alone cannot separate them — the z-gate carries the
+   separation.)
 2. `fixed` — one model call (text.format structured finding) over a fixed
    evidence bundle: time stats, envelope peaks, fault-match hits, reference
    z-scores. No tool choices.
