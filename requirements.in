@@ -10,3 +10,4 @@ httpx>=0.27
 pytest>=8.0
 graphifyy>=0.1  # code-graph tooling (dev only)
 pypdf>=6.0
+fonttools>=4.0  # cleaner PDF text extraction

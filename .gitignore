@@ -12,6 +12,7 @@ __pycache__/
 
 # Measured recordings and derived reports (local only, never commit)
 *.mat
+data/manuals/
 data/recordings/
 data/reports/
 data/registry.json
