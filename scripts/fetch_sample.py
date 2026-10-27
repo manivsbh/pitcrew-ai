@@ -69,15 +69,24 @@ def main() -> int:
     print(f"sha256: {digest}")
 
     tool = unrar_tool()
-    listed = subprocess.run(
-        [tool, "l", rar] if tool == "unrar" else [tool, "-l", rar],
-        capture_output=True, text=True, check=True,
-    )
-    mats = sorted(
-        line.split()[-1]
-        for line in listed.stdout.splitlines()
-        if line.strip().lower().endswith(".mat")
-    )
+    if tool == "unrar":
+        listed = subprocess.run(
+            [tool, "l", rar], capture_output=True, text=True, check=True
+        )
+        mats = sorted(
+            line.split()[-1]
+            for line in listed.stdout.splitlines()
+            if line.strip().lower().endswith(".mat")
+        )
+    else:  # unar ships lsar as its listing companion
+        listed = subprocess.run(
+            ["lsar", rar], capture_output=True, text=True, check=True
+        )
+        mats = sorted(
+            line.strip()
+            for line in listed.stdout.splitlines()
+            if line.strip().lower().endswith(".mat")
+        )
     print(f"archive holds {len(mats)} .mat files")
     if not mats:
         print("ERROR: no .mat files listed", file=sys.stderr)
