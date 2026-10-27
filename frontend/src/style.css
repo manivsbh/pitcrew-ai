@@ -88,7 +88,22 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 
 .report { margin: 0 20px 20px; }
 
-.components { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.tabs button {
+  background: #fff; color: var(--ink); border-color: var(--line);
+  padding: 4px 10px; font-size: 12px; border-radius: 999px;
+}
+.tabs button[aria-pressed="true"] {
+  background: var(--ink); color: #fff; border-color: var(--ink);
+}
+
+.components {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: 180px; overflow-y: auto;
+}
+
+.role { font-size: 13px; margin-top: 8px; border-top: 1px solid var(--line); padding-top: 6px; }
+.role p { margin: 4px 0; }
 .components button {
   background: #fff; color: var(--ink); border-color: var(--line);
   padding: 4px 10px; font-size: 13px;

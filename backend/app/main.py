@@ -12,6 +12,7 @@ from .agent import load_trace, new_investigation_id, run
 from .config import ALLOWED_ORIGINS, REFS_PATH
 from .docs_store import DocsStore
 from .evidence import series_for, waveform
+from .packs import list_packs, load_pack
 from .store import Store
 
 app = FastAPI(title="Machine Fault Investigator")
@@ -177,6 +178,19 @@ def report(investigation_id: str) -> dict:
             "limitations": ["vibration unit undocumented; geometry FAG 6203 +/-2%"],
         },
     }
+
+
+@app.get("/api/packs")
+def packs() -> dict:
+    return {"packs": list_packs()}
+
+
+@app.get("/api/packs/{machine}")
+def pack(machine: str) -> dict:
+    loaded = load_pack(machine)
+    if loaded is None:
+        return {"error": f"unknown machine pack {machine}"}
+    return loaded
 
 
 def _hashes() -> dict:

@@ -74,3 +74,20 @@ def test_unknown_ids_return_errors():
     assert "error" in client.post("/api/investigations",
                                   json={"recording_id": "rec_9999",
                                         "question": "q"}).json()
+    assert "error" in client.get("/api/packs/nope").json()
+
+
+def test_packs_endpoints():
+    packs = client.get("/api/packs").json()["packs"]
+    by_id = {p["machine"]: p for p in packs}
+    assert by_id["rig"]["components"] == 7
+    assert by_id["cr-pump"]["components"] >= 50
+    rig = client.get("/api/packs/rig").json()
+    ids = {c["id"] for c in rig["components"]}
+    assert {"motor", "ring_inner", "ring_outer"} <= ids
+    for c in rig["components"]:
+        assert c["role"] and c["role_source"] in ("manual", "standard")
+        assert c["parent"] is None or c["parent"] in ids
+    pump = client.get("/api/packs/cr-pump").json()
+    assert len(pump["playbooks"]) == 4
+    assert sum(p["checks"] for p in pump["playbooks"]) == 30

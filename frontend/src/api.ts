@@ -86,7 +86,30 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ investigation_id: inv }),
     }),
+  packs: () =>
+    req<{ packs: { machine: string; name: string; kind: string; components: number }[] }>(
+      '/api/packs',
+    ),
+  pack: (machine: string) => req<Pack>(`/api/packs/${machine}`),
 };
+
+export interface PackComponent {
+  id: string;
+  name: string;
+  pos: string | null;
+  parent: string | null;
+  role: string;
+  role_source: string;
+  service_ref: string;
+  failure_modes?: string[];
+  failure_source?: string | null;
+}
+
+export interface Pack {
+  meta: { machine: string; name: string; kind: string };
+  components: PackComponent[];
+  playbooks: { id: string; symptom: string; checks: number }[];
+}
 
 /** Anonymized label: operating point only, never the bearing code. */
 export function labelForCase(c: string, i: number): string {

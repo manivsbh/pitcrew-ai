@@ -1,6 +1,6 @@
 import './style.css';
-import { api, labelForCase, type Step, type Trace } from './api';
-import { COMPONENTS, initAssembly, type AssemblyHandle } from './assembly';
+import { api, labelForCase, type PackComponent, type Step, type Trace } from './api';
+import { initAssembly, type AssemblyHandle } from './assembly';
 import { clearPlot, linePlot } from './plots';
 
 function el<T extends HTMLElement>(id: string): T {
@@ -17,7 +17,9 @@ const state: {
   trace: Trace | null;
   poller: number | null;
   assembly: AssemblyHandle | null;
-} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null };
+  machine: string;
+  components: PackComponent[];
+} = { cases: [], recordingId: '', jobId: '', invId: '', trace: null, poller: null, assembly: null, machine: 'rig', components: [] };
 
 function showError(msg: string): void {
   const box = el('error');
@@ -61,23 +63,94 @@ function syncList(id: string): void {
   });
 }
 
+function compById(id: string): PackComponent | undefined {
+  return state.components.find((c) => c.id === id);
+}
+
+function labelFor(id: string): string {
+  const c = compById(id);
+  return c ? c.name : id;
+}
+
 function selectComponent(id: string): void {
   syncList(id);
   state.assembly?.select(id);
+  renderRole(id);
+}
+
+function renderRole(id: string): void {
+  const box = el('role');
+  const c = compById(id);
+  if (!c) {
+    box.innerHTML = '<p class="muted">Select a component to see its role.</p>';
+    return;
+  }
+  const fails = (c.failure_modes ?? []).length
+    ? `<p><strong>Known failure modes.</strong> ${escapeHtml(c.failure_modes?.join('; ') ?? '')} ` +
+      `<span class="muted">(${escapeHtml(c.failure_source ?? '')})</span></p>`
+    : '';
+  box.innerHTML =
+    `<p><strong>${escapeHtml(c.name)}</strong>` +
+    `${c.pos ? ` <span class="muted">Pos. ${escapeHtml(c.pos)}</span>` : ''}</p>` +
+    `<p>${escapeHtml(c.role)}</p>` +
+    `<p class="muted">Ref: ${escapeHtml(c.service_ref)}</p>` +
+    fails;
 }
 
 function buildComponentList(): void {
   const ul = el('components');
   ul.innerHTML = '';
-  for (const c of COMPONENTS) {
+  for (const c of state.components) {
     const li = document.createElement('li');
     const b = document.createElement('button');
-    b.textContent = c;
-    b.dataset.comp = c;
+    b.textContent = c.pos ? `${c.name} (${c.pos})` : c.name;
+    b.dataset.comp = c.id;
+    b.title = c.role;
     b.setAttribute('aria-pressed', 'false');
-    b.addEventListener('click', () => selectComponent(c));
+    b.addEventListener('click', () => selectComponent(c.id));
     li.appendChild(b);
     ul.appendChild(li);
+  }
+}
+
+async function switchMachine(machine: string): Promise<void> {
+  clearError();
+  try {
+    const pack = await api.pack(machine);
+    state.machine = machine;
+    state.components = pack.components;
+    state.assembly?.dispose();
+    state.assembly = initAssembly(el('assembly'), {
+      onSelect: (id) => selectComponent(id),
+      labelFor,
+      machine,
+      components: pack.components,
+    });
+    buildComponentList();
+    renderRole('');
+    document.querySelectorAll<HTMLButtonElement>('#machine-tabs button').forEach((b) => {
+      b.setAttribute('aria-pressed', b.dataset.machine === machine ? 'true' : 'false');
+    });
+  } catch (e) {
+    showError(`Failed to load machine ${machine}: ${(e as Error).message}`);
+  }
+}
+
+async function buildMachineTabs(): Promise<void> {
+  try {
+    const { packs } = await api.packs();
+    const tabs = el('machine-tabs');
+    tabs.innerHTML = '';
+    for (const p of packs) {
+      const b = document.createElement('button');
+      b.textContent = `${p.name} (${p.components})`;
+      b.dataset.machine = p.machine;
+      b.setAttribute('aria-pressed', 'false');
+      b.addEventListener('click', () => void switchMachine(p.machine));
+      tabs.appendChild(b);
+    }
+  } catch (e) {
+    showError(`Failed to load machines: ${(e as Error).message}`);
   }
 }
 
@@ -337,8 +410,7 @@ function onReset(): void {
   setStatus('Select a recording to begin.');
 }
 
-state.assembly = initAssembly(el('assembly'), { onSelect: (id) => syncList(id) });
-buildComponentList();
+void buildMachineTabs().then(() => switchMachine('rig'));
 el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase());
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);
