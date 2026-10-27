@@ -37,6 +37,19 @@ class NewInvestigation(BaseModel):
     question: str = "What is the condition of this bearing?"
 
 
+class UploadRecording(BaseModel):
+    filename: str
+    csv_text: str
+    fs: float
+    unit: str | None = None
+    rpm: float | None = None
+    machine: str
+
+
+class Reveal(BaseModel):
+    investigation_id: str
+
+
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
@@ -53,6 +66,38 @@ def import_recording(body: ImportCase) -> dict:
         return store.import_case(body.case)
     except ValueError as e:
         return {"error": str(e)}
+
+
+@app.post("/api/recordings/upload")
+def upload_recording(body: UploadRecording) -> dict:
+    try:
+        return store.import_upload(body.filename, body.csv_text, body.fs,
+                                   body.unit, body.rpm, body.machine)
+    except ValueError as e:
+        return {"error": str(e)}
+
+
+@app.post("/api/reveal")
+def reveal(body: Reveal) -> dict:
+    """Freeze-and-reveal: compare the frozen finding to the documented fault.
+
+    Refuses unless the investigation is complete. Evaluator-owned labels are
+    read here only, never in agent paths.
+    """
+    try:
+        trace = load_trace(body.investigation_id)
+    except FileNotFoundError:
+        return {"error": f"unknown investigation {body.investigation_id}"}
+    if trace.get("status") != "complete" or "finding" not in trace:
+        return {"error": "investigation not frozen (no complete finding)"}
+    fault = store.documented_fault(trace["recording_id"])
+    if fault is None:
+        return {"error": "documented fault unavailable for this recording"}
+    frozen = trace["finding"]["hypothesis"]
+    if fault == "mixed_fault_unscored":
+        return {"frozen": frozen, "documented": fault, "match": None,
+                "note": "challenge case, unscored"}
+    return {"frozen": frozen, "documented": fault, "match": frozen == fault}
 
 
 @app.get("/api/recordings/{recording_id}/waveform")

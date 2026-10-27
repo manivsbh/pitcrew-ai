@@ -9,48 +9,14 @@ import json
 import numpy as np
 import pytest
 
+from _fakes import FakeDocs, FakeStore, refs, synth_recording
 from backend.app import tools as T
-from backend.app.agent import REPORTS_DIR, load_trace, run, save_trace
-from backend.app.analysis import Channel, Recording
+from backend.app.agent import load_trace, run, save_trace
 from backend.app.config import MAX_TOOL_CALLS
 
 
-def synth_recording():
-    fs = 1000.0
-    t = np.arange(4000) / fs
-    vib = np.sin(2 * np.pi * 100 * t)
-    return Recording(path="synthetic", condition="N15_M07_F10",
-                     bearing="K000", repetition=1,
-                     channels={"vibration_1": Channel("vibration_1", vib, fs, "g"),
-                               "speed": Channel("speed", np.full(4000, 1500.0),
-                                                fs, "rpm")},
-                     speed_rpm=1500.0)
-
-
-class FakeStore:
-    def agent_view(self, rid):
-        if rid != "rec_0001":
-            raise KeyError(rid)
-        return {"recording_id": rid, "condition": "N15_M07_F10",
-                "speed_rpm": 1500.0, "channels": {"vibration_1": {"n": 4000}},
-                "quality": []}
-
-    def load(self, rid):
-        if rid != "rec_0001":
-            raise KeyError(rid)
-        return synth_recording()
-
-
-class FakeDocs:
-    def get(self, topic):
-        return {"id": topic, "title": topic, "source_file": f"{topic}.md",
-                "text": "excerpt text"}
-
-
 def ctx():
-    refs = {"N15_M07_F10": {"rms": [1.0, 1.1, 0.9], "crest": [3.0, 3.1, 2.9],
-                            "kurtosis_excess": [0.1, 0.0, -0.1]}}
-    return T.ToolContext(FakeStore(), FakeDocs(), refs)
+    return T.ToolContext(FakeStore(), FakeDocs(), refs())
 
 
 # ---- tool validation ----
@@ -126,6 +92,17 @@ def test_docs_store_clean():
     docs = DocsStore()
     assert set(docs.topics()) == {"operating-conditions",
                                   "test-rig-6203-geometry", "sampling"}
+
+
+def test_tool_crash_becomes_error_result():
+    class BrokenStore(FakeStore):
+        def load(self, rid):
+            raise RuntimeError("disk gone")
+
+    c = T.ToolContext(BrokenStore(), FakeDocs(), refs())
+    r = T.execute("analyze_vibration", {"recording_id": "rec_0001",
+                                        "analysis": "time_stats"}, c)
+    assert r["status"] == "error" and "RuntimeError" in r["summary"]
 
 
 # ---- loop mechanics (stubbed model) ----

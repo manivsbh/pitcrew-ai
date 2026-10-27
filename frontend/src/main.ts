@@ -105,11 +105,7 @@ async function onSelectCase(): Promise<void> {
   if (sel.value === '') return;
   try {
     const imp = await api.importCase(state.cases[Number(sel.value)]);
-    state.recordingId = imp.recording_id;
-    setStatus(`Imported ${imp.recording_id}: ${imp.display_label}`);
-    const wf = await api.waveform(state.recordingId);
-    linePlot(el('plot'), wf, 'waveform');
-    el<HTMLButtonElement>('go').disabled = false;
+    await showRecording(imp.recording_id, imp.display_label);
   } catch (e) {
     showError(`Import failed: ${(e as Error).message}`);
   }
@@ -250,6 +246,58 @@ function renderReport(): void {
     `${t.usage?.input_tokens ?? 0} in / ${t.usage?.output_tokens ?? 0} out tokens · ` +
     `${(t.latency_s ?? 0).toFixed(0)}s · evidence: ${(f.evidence_ids ?? []).join(', ')}</p>`;
   el<HTMLButtonElement>('export').disabled = false;
+  el<HTMLButtonElement>('reveal').disabled = false;
+}
+
+async function onReveal(): Promise<void> {
+  const out = el('reveal-out');
+  try {
+    const r = await api.reveal(state.invId);
+    const verdict = r.match === null ? 'UNSCORED' : r.match ? 'MATCH' : 'MISMATCH';
+    out.innerHTML =
+      `<p>Frozen: <strong>${escapeHtml(r.frozen)}</strong> — ` +
+      `Documented: <strong>${escapeHtml(r.documented)}</strong> — ` +
+      `<strong>${verdict}</strong>${r.note ? ` (${escapeHtml(r.note)})` : ''}</p>`;
+  } catch (e) {
+    showError(`Reveal failed: ${(e as Error).message}`);
+  }
+}
+
+async function showRecording(rid: string, label: string): Promise<void> {
+  state.recordingId = rid;
+  setStatus(`Imported ${rid}: ${label}`);
+  const wf = await api.waveform(rid);
+  linePlot(el('plot'), wf, 'waveform');
+  el<HTMLButtonElement>('go').disabled = false;
+}
+
+async function onUpload(): Promise<void> {
+  clearError();
+  const fileInput = el<HTMLInputElement>('up-file');
+  const file = fileInput.files?.[0];
+  if (!file) {
+    showError('Choose a CSV file first.');
+    return;
+  }
+  if (file.size > 2000000) {
+    showError('File exceeds the 2 MB upload cap.');
+    return;
+  }
+  try {
+    const text = await file.text();
+    const fs = Number(el<HTMLInputElement>('up-fs').value);
+    const rpm = Number(el<HTMLInputElement>('up-rpm').value);
+    const unit = el<HTMLInputElement>('up-unit').value;
+    const r = await api.upload(file.name, text, fs, unit, rpm);
+    const sel = el<HTMLSelectElement>('case');
+    const o = document.createElement('option');
+    o.textContent = r.display_label;
+    o.selected = true;
+    sel.appendChild(o);
+    await showRecording(r.recording_id, r.display_label);
+  } catch (e) {
+    showError(`Upload failed: ${(e as Error).message}`);
+  }
 }
 
 async function onExport(): Promise<void> {
@@ -275,6 +323,8 @@ function onReset(): void {
   el<HTMLSelectElement>('case').value = '';
   el<HTMLButtonElement>('go').disabled = true;
   el<HTMLButtonElement>('export').disabled = true;
+  el<HTMLButtonElement>('reveal').disabled = true;
+  el('reveal-out').innerHTML = '';
   el('steps').innerHTML = '';
   el('evidence-list').innerHTML = '';
   el('evidence-detail').innerHTML = '';
@@ -293,4 +343,6 @@ el<HTMLSelectElement>('case').addEventListener('change', () => void onSelectCase
 el<HTMLButtonElement>('go').addEventListener('click', () => void onInvestigate());
 el<HTMLButtonElement>('reset').addEventListener('click', onReset);
 el<HTMLButtonElement>('export').addEventListener('click', () => void onExport());
+el<HTMLButtonElement>('reveal').addEventListener('click', () => void onReveal());
+el<HTMLButtonElement>('up-go').addEventListener('click', () => void onUpload());
 void loadCases();

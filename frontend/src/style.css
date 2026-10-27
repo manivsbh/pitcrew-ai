@@ -136,6 +136,16 @@ button.ghost { background: #fff; color: var(--ink); border-color: var(--line); }
 .explode-row { margin-top: 8px; font-size: 13px; }
 .explode-row label { display: flex; gap: 8px; align-items: center; color: var(--muted); }
 .explode-row input { flex: 1; }
+.upload summary { cursor: pointer; font-size: 13px; color: var(--accent); }
+.upload-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px 0;
+}
+.upload-form input { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+#reveal-out { margin-top: 8px; font-size: 14px; }
+
 .part-tag {
   position: absolute;
   transform: translate(-50%, -130%);

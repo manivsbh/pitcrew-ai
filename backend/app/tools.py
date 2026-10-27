@@ -16,6 +16,8 @@ import json
 import os
 import re
 
+import numpy as np
+
 from . import analysis as A
 
 TOOL_NAME_RE = re.compile(r"^[a-zA-Z0-9_.-]+$")
@@ -122,17 +124,23 @@ TOPIC_FILES = {"conditions": "operating-conditions", "geometry": "test-rig-6203-
 
 
 def execute(tool: str, args: dict, ctx: ToolContext) -> dict:
-    if tool == "read_documentation":
-        return _t_docs(args, ctx)
-    if tool == "inspect_recording":
-        return _t_inspect(args, ctx)
-    if tool == "analyze_vibration":
-        return _t_analyze(args, ctx)
-    if tool == "compare_reference":
-        return _t_compare(args, ctx)
-    if tool == "submit_finding":
-        return _t_submit(args, ctx)
-    return _err(f"unknown tool {tool!r}", "call a defined tool", "unknown tool")
+    """Dispatch with a crash boundary: tool bugs become error results."""
+    try:
+        if tool == "read_documentation":
+            return _t_docs(args, ctx)
+        if tool == "inspect_recording":
+            return _t_inspect(args, ctx)
+        if tool == "analyze_vibration":
+            return _t_analyze(args, ctx)
+        if tool == "compare_reference":
+            return _t_compare(args, ctx)
+        if tool == "submit_finding":
+            return _t_submit(args, ctx)
+        return _err(f"unknown tool {tool!r}", "call a defined tool",
+                    "unknown tool")
+    except Exception as exc:  # noqa: BLE001 - boundary: never crash the loop
+        return _err(f"tool {tool} failed: {type(exc).__name__}",
+                    "retry once or work around it", "tool crash")
 
 
 def _t_docs(args: dict, ctx: ToolContext) -> dict:
@@ -179,6 +187,9 @@ def _t_analyze(args: dict, ctx: ToolContext) -> dict:
         return _err("vibration rate unknown", "do not use spectral analyses",
                     "unknown rate")
     x, fs = ch.data, ch.fs
+    if not np.all(np.isfinite(x)):
+        return _err("non-finite samples present; analyses refuse",
+                    "choose insufficient_evidence", "invalid samples")
 
     if kind == "time_stats":
         stats = A.time_stats(x)
@@ -251,7 +262,12 @@ def _t_compare(args: dict, ctx: ToolContext) -> dict:
     if not refs:
         return _err(f"no healthy references for condition {cond}",
                     "proceed without comparison; note the gap", "no references")
-    stats = A.time_stats(rec.channels["vibration_1"].data)
+    stats = {k: v for k, v in
+             A.time_stats(rec.channels["vibration_1"].data).items()
+             if v is not None}
+    if not stats:
+        return _err("no finite time-domain stats",
+                    "choose insufficient_evidence", "degenerate signal")
     metric = args.get("metric")
     if metric is not None and metric not in ("rms", "crest", "kurtosis_excess"):
         return _err(f"unknown metric {metric!r}", "use rms/crest/kurtosis_excess",

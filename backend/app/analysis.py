@@ -140,13 +140,21 @@ def quality_checks(rec: Recording) -> list[str]:
     return out
 
 
-def time_stats(x: np.ndarray) -> dict[str, float]:
-    """RMS, crest factor, excess kurtosis. RMS=0 yields crest=inf, flagged."""
+def time_stats(x: np.ndarray) -> dict[str, float | None]:
+    """RMS, crest factor, excess kurtosis.
+
+    JSON-safe: undefined values (crest of a flat signal, kurtosis of a
+    constant) are None, never inf or nan, so traces stay strict JSON.
+    """
     x = np.asarray(x, dtype=float).ravel()
     rms = float(np.sqrt(np.mean(x**2)))
     peak = float(np.max(np.abs(x))) if x.size else 0.0
-    crest = peak / rms if rms > 0 else float("inf")
-    kurt = float(sp_kurtosis(x, fisher=True, bias=False)) if x.size > 3 else 0.0
+    crest = peak / rms if rms > 0 else None
+    kurt: float | None = None
+    if x.size > 3:
+        with np.errstate(all="ignore"):
+            k = float(sp_kurtosis(x, fisher=True, bias=False))
+        kurt = k if np.isfinite(k) else None
     return {"rms": rms, "crest": crest, "kurtosis_excess": kurt, "peak": peak}
 
 

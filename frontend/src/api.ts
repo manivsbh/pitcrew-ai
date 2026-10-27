@@ -73,6 +73,19 @@ export const api = {
     req(`/api/evidence/${inv}/${ev}`),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   report: (inv: string): Promise<any> => req(`/api/report/${inv}`),
+  upload: (filename: string, csvText: string, fs: number, unit: string, rpm: number) =>
+    req<{ recording_id: string; display_label: string; n_samples: number }>(
+      '/api/recordings/upload',
+      {
+        method: 'POST',
+        body: JSON.stringify({ filename, csv_text: csvText, fs, unit, rpm, machine: 'paderborn-6203-rig' }),
+      },
+    ),
+  reveal: (inv: string) =>
+    req<{ frozen: string; documented: string; match: boolean | null; note?: string }>('/api/reveal', {
+      method: 'POST',
+      body: JSON.stringify({ investigation_id: inv }),
+    }),
 };
 
 /** Anonymized label: operating point only, never the bearing code. */

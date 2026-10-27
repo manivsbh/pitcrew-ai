@@ -18,6 +18,16 @@
         <input id="question" type="text" value="What is the condition of this bearing?" />
         <button id="go" disabled>Investigate</button>
         <button id="reset" class="ghost">Reset</button>
+        <details class="upload">
+          <summary>Upload CSV</summary>
+          <div class="upload-form">
+            <input id="up-file" type="file" accept=".csv" aria-label="CSV file, one vibration sample per line" />
+            <input id="up-fs" type="number" value="64000" aria-label="Sampling rate in Hz" title="Sampling rate (Hz)" />
+            <input id="up-rpm" type="number" value="1500" aria-label="Shaft speed in rpm" title="Speed (rpm)" />
+            <input id="up-unit" type="text" value="g" aria-label="Unit" title="Unit" />
+            <button id="up-go" type="button">Upload</button>
+          </div>
+        </details>
       </div>
     </header>
     <div id="error" class="error" hidden></div>
@@ -44,6 +54,8 @@
       <h2>Report</h2>
       <div id="report"><p class="muted">No investigation yet.</p></div>
       <button id="export" class="ghost" disabled>Export report JSON</button>
+      <button id="reveal" class="ghost" disabled>Freeze &amp; reveal documented fault</button>
+      <div id="reveal-out"></div>
     </section>
     <script type="module" src="/src/main.ts"></script>
   </body>
