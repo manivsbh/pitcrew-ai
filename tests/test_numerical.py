@@ -84,7 +84,11 @@ def test_flat_signal_quality():
                   channels={"vib": Channel("vib", np.zeros(1000), 1000.0, None)})
     findings = quality_checks(r)
     assert any("flat" in f for f in findings)
-    assert time_stats(np.zeros(1000))["crest"] == float("inf")
+    flat_stats = time_stats(np.zeros(1000))
+    assert flat_stats["crest"] is None and flat_stats["kurtosis_excess"] is None
+    import json as _json
+    _json.dumps(flat_stats)  # strict-JSON safe
+    assert "NaN" not in _json.dumps(flat_stats)
 
 
 def test_reference_compare():
