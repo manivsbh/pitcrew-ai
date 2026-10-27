@@ -40,20 +40,22 @@ BASELINE_Z = 5.0
 
 FINDING_SCHEMA = {
     "type": "json_schema",
-    "json_schema": {
-        "name": "Finding",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "hypothesis": {"type": "string"},
-                "component": {"type": "string"},
-                "reasoning": {"type": "string"},
-                "contradictions": {"type": "string"},
-                "next_measurement": {"type": "string"},
-            },
-            "required": ["hypothesis", "component", "reasoning",
-                         "contradictions", "next_measurement"],
+    "name": "Finding",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "hypothesis": {"type": "string", "enum": [
+                "healthy", "outer_ring_damage", "inner_ring_damage",
+                "insufficient_evidence"]},
+            "component": {"type": "string", "enum": [
+                "motor", "shaft", "housing", "ring_inner", "ring_outer",
+                "rollers", "cage", "none"]},
+            "reasoning": {"type": "string"},
+            "contradictions": {"type": "string"},
+            "next_measurement": {"type": "string"},
         },
+        "required": ["hypothesis", "component", "reasoning",
+                     "contradictions", "next_measurement"],
     },
 }
 
@@ -181,16 +183,40 @@ def arm_fixed(client, rec) -> dict:
                                             "next_measurement")}}
 
 
+def _investigate_one(store, docs, refs, rid):
+    trace = run_agent(store, docs, refs, rid,
+                      "What is the condition of this bearing?")
+    inv = trace["investigation_id"]
+    if trace["status"] == "complete":
+        f = trace["finding"]
+        return inv, {"hypothesis": f["hypothesis"],
+                     "component": f["component"],
+                     "latency_s": trace["latency_s"],
+                     "input_tokens": trace["usage"]["input_tokens"],
+                     "output_tokens": trace["usage"]["output_tokens"],
+                     "detail": f["reasoning"][:300]}
+    return inv, {"hypothesis": "insufficient_evidence", "component": "none",
+                 "latency_s": trace["latency_s"],
+                 "input_tokens": trace["usage"]["input_tokens"],
+                 "output_tokens": trace["usage"]["output_tokens"],
+                 "detail": trace.get("incomplete_reason", "")}
+
+
 def run_arm(arm: str, split: str, limit: int | None, store, docs, refs,
-            client) -> None:
+            client, workers: int = 1) -> None:
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
     done = {(r["split"], r["arm"], r["bearing"], r["cond"], r["rep"])
             for r in load_results()}
     all_cases = cases(split)
     if limit:
         all_cases = all_cases[:limit]
-    for b, c, r, path in all_cases:
-        if (split, arm, b, c, r) in done:
-            continue
+    pending = [(b, c, r, p) for b, c, r, p in all_cases
+               if (split, arm, b, c, r) not in done]
+    lock = threading.Lock()
+
+    def one(case):
+        b, c, r, path = case
         print(f"[{arm}/{split}] {b} {c} rep{r}", flush=True)
         if arm == "baseline":
             rec = A.load_recording(path)
@@ -202,28 +228,23 @@ def run_arm(arm: str, split: str, limit: int | None, store, docs, refs,
             inv = None
         else:
             rid = store.import_case(f"{b}/{c}_{b}_{r}.mat")["recording_id"]
-            trace = run_agent(store, docs, refs, rid,
-                              "What is the condition of this bearing?")
-            inv = trace["investigation_id"]
-            if trace["status"] == "complete":
-                f = trace["finding"]
-                pred = {"hypothesis": f["hypothesis"],
-                        "component": f["component"],
-                        "latency_s": trace["latency_s"],
-                        "input_tokens": trace["usage"]["input_tokens"],
-                        "output_tokens": trace["usage"]["output_tokens"],
-                        "detail": f["reasoning"][:300]}
-            else:
-                pred = {"hypothesis": "insufficient_evidence",
-                        "component": "none",
-                        "latency_s": trace["latency_s"],
-                        "input_tokens": trace["usage"]["input_tokens"],
-                        "output_tokens": trace["usage"]["output_tokens"],
-                        "detail": trace.get("incomplete_reason", "")}
-        append_result({"split": split, "arm": arm, "bearing": b, "cond": c,
-                       "rep": r, "investigation_id": inv, **pred})
+            inv, pred = _investigate_one(store, docs, refs, rid)
+        with lock:
+            append_result({"split": split, "arm": arm, "bearing": b, "cond": c,
+                           "rep": r, "investigation_id": inv, **pred})
         print(f"  -> {pred['hypothesis']} ({pred['latency_s']:.1f}s)",
               flush=True)
+
+    if arm == "investigate":
+        # Pre-import sequentially (registry writes are not thread-safe),
+        # then run the independent investigations in parallel.
+        for b, c, r, _ in pending:
+            store.import_case(f"{b}/{c}_{b}_{r}.mat")
+        with ThreadPoolExecutor(max_workers=max(1, workers)) as ex:
+            list(ex.map(one, pending))
+    else:
+        for case in pending:
+            one(case)
 
 
 def report() -> int:
@@ -298,6 +319,7 @@ def main() -> int:
     ap.add_argument("--split", default="final",
                     choices=["all", "dev", "val", "final", "challenge"])
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--report", action="store_true")
     args = ap.parse_args()
     if args.report:
@@ -315,7 +337,8 @@ def main() -> int:
                         timeout=120.0)
     for split in splits:
         for arm in arms:
-            run_arm(arm, split, args.limit, store, docs, refs, client)
+            run_arm(arm, split, args.limit, store, docs, refs, client,
+                    workers=args.workers)
     return 0
 
 
