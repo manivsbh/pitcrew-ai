@@ -50,6 +50,9 @@ recover from a weak first analysis.
   abstained 9/20 — directionally sensible for IR(+OR) damage.
 - Cost for the full 528-row comparison: $5.88. Mean investigate latency
   72s per recording makes the agent ~700x slower than the baseline.
+  Full per-arm mean/p50/p95 and a replayed model-vs-execute split are in
+  `evals/latency.md` (regenerate offline via
+  `.venv/bin/python scripts/profile_latency.py`).
 
 ## Caveats
 
