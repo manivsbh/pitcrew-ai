@@ -930,6 +930,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                             null)
                           : null
                       }
+                      selectedId={matchComp(pack, selected)?.id ?? null}
                     />
                   ) : (
                     <>

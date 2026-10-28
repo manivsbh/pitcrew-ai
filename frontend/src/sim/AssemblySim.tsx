@@ -9,17 +9,20 @@ export default function AssemblySim({
   onSelect,
   labelFor,
   suspect,
+  selectedId,
 }: {
   pack: Pack
   machineId: string
   onSelect: (id: string) => void
   labelFor: (id: string) => string
   suspect: string | null
+  selectedId: string | null
 }) {
   const host = useRef<HTMLDivElement>(null)
   const handle = useRef<AssemblyHandle | null>(null)
   const [layout, setLayoutState] = useState<"assembled" | "sheet">("assembled")
   const [running, setRunning] = useState(false)
+  const [isolated, setIsolatedState] = useState(false)
   const [faultId, setFaultId] = useState("")
   const [caption, setCaption] = useState("")
   const scenarios: PackScenario[] = pack.scenarios ?? []
@@ -100,6 +103,19 @@ export default function AssemblySim({
     handle.current?.setRun(next)
     if (current) applyFault(current.id)
   }
+  const toggleIsolate = () => {
+    if (isolated) {
+      setIsolatedState(false)
+      handle.current?.setIsolated(null)
+      setCaption("Isolation cleared.")
+    } else if (selectedId) {
+      setIsolatedState(true)
+      handle.current?.setIsolated(selectedId)
+      setCaption(`Isolated ${labelFor(selectedId)}.`)
+    } else {
+      setCaption("Select a component first, then isolate it.")
+    }
+  }
 
   return (
     <div className="simwrap">
@@ -128,6 +144,13 @@ export default function AssemblySim({
           onClick={toggleRun}
         >
           {running ? "Stop" : "Run"}
+        </button>
+        <button
+          className="btn"
+          aria-pressed={isolated}
+          onClick={toggleIsolate}
+        >
+          {isolated ? "Show all" : "Isolate"}
         </button>
         <label className="sim-fault">
           Fault

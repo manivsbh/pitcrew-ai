@@ -14,6 +14,7 @@ import type { PackComponent } from '../api';
 export interface AssemblyHandle {
   select(id: string): void;
   setSuspect(id: string | null): void;
+  setIsolated(id: string | null): void;
   setExplode(f: number): void;
   setLayout(layout: 'assembled' | 'sheet', instant?: boolean): void;
   assemble(visualIds: string[][], onStep?: (k: number, n: number) => void): Promise<void>;
@@ -869,6 +870,7 @@ export function initAssembly(
 
   let selected: string | null = null;
   let suspect: string | null = null;
+  let isolatedId: string | null = null;
   function materialsOf(id: string): THREE.MeshStandardMaterial[] {
     const out: THREE.MeshStandardMaterial[] = [];
     P.parts.get(id)?.traverse((o: THREE.Object3D) => {
@@ -945,7 +947,7 @@ export function initAssembly(
   function updateTag(): void {
     const id = suspect ?? selected;
     const g = id ? P.parts.get(id) : undefined;
-    if (!g || !id) { tag.hidden = true; return; }
+    if (!g || !id || (isolatedId && id !== isolatedId)) { tag.hidden = true; return; }
     proj.setFromMatrixPosition(g.matrixWorld);
     proj.project(camera);
     const rect = renderer.domElement.getBoundingClientRect();
@@ -982,6 +984,7 @@ export function initAssembly(
     for (const id of idList) {
       const p = pos.get(id)!;
       const g = P.parts.get(id)!;
+      g.visible = !isolatedId || id === isolatedId;
       const isFault = faultWobble > 0 && faultVisuals.includes(id);
       const wobbleAmp = isFault ? 0.08 : 0; // 8% radial wobble on faulted bearing
       g.position.set(p.x + (isFault && vertical ? Math.sin(now / 55) * wobbleAmp + wob * 0 : isFault && !vertical ? 0 : isFault ? wob : 0), p.y, p.z + (isFault && !vertical ? wob : 0));
@@ -1047,6 +1050,7 @@ export function initAssembly(
   return {
     select(id: string): void { selected = resolve(id); repaint(0); },
     setSuspect(id: string | null): void { suspect = id ? resolve(id) : null; repaint(0); },
+    setIsolated(id: string | null): void { isolatedId = id ? resolve(id) : null; repaint(0); },
     setExplode(f: number): void {
       explodeF = Math.min(1, Math.max(0, f));
       slider.value = String(Math.round(explodeF * 100));
