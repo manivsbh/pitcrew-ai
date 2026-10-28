@@ -359,7 +359,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
       },
     }))
     setView((v) => v + 1)
-    if (PACK_GEOM[id]) {
+    if (id !== "engine") {
       setPackErr("")
       api.pack(id).then(
         (p) => {
@@ -692,7 +692,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
     )
   }
   const onInvSearch = () => {
-    if (!PACK_GEOM[machineId]) {
+    if (machineId === "engine") {
       setInvMsg("Inventory needs a packed machine.")
       return
     }
@@ -780,7 +780,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
           </div>
           <div className="divider" />
           <div className="project">
-            {machine.name} <ChevronDown size={14} />
+            {pack ? pack.meta.name : machine.name} <ChevronDown size={14} />
           </div>
           <span className="demo">
             <i /> Live workspace
@@ -904,7 +904,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     <span>{pack ? pack.meta.machine : machine.code} / REV 01</span>
                     <small>{pack ? pack.meta.name : machine.name}</small>
                   </div>
-                  {pack?.assembly ? (
+                  {pack ? (
                     <AssemblySim
                       pack={pack}
                       machineId={machineId}
@@ -1011,7 +1011,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     </>
                   )}
                 </div>
-                {!pack?.assembly && (
+                {!pack && (
                   <div className="view-tools">
                     <div>
                       <button
@@ -1164,7 +1164,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
               </div>
               <div className="agent-content">
                 <div className="section-label">INVESTIGATION CONTEXT</div>
-                {!PACK_GEOM[machineId] && (
+                {machineId === "engine" && (
                   <div className="machine-notice">
                     {machine.name}: <strong>In dev</strong> — no machine pack
                     yet. Engineering experiments below the assembly still work;
@@ -1174,7 +1174,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                 <label className="selectlabel">
                   Recording
                   <select
-                    disabled={!PACK_GEOM[machineId]}
+                    disabled={machineId === "engine"}
                     value={caseIdx}
                     onChange={(e) => changeCase(e.target.value)}
                   >
@@ -1212,7 +1212,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                 </div>
                 <button
                   className="startbtn"
-                  disabled={!PACK_GEOM[machineId]}
+                  disabled={machineId === "engine"}
                   onClick={running ? () => setRunning(false) : start}
                 >
                   {running ? <Pause size={15} /> : <Play size={15} />}{" "}
@@ -1402,7 +1402,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     updateEngineering(propose(engineeringSession, q))
                     setEngineeringRequest(q)
                     setQuestion("")
-                    if (!PACK_GEOM[machineId]) {
+                    if (machineId === "engine") {
                       setAnswer(
                         "Local command assistant: review the proposed change in the engineering sandbox. Live assistant needs a packed machine.",
                       )
@@ -1929,7 +1929,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     className="case panel"
                     key={c}
                     onClick={() => {
-                      if (!PACK_GEOM[machineId]) switchMachine("rig")
+                      if (machineId === "engine") switchMachine("rig")
                       changeCase(String(i))
                       setPage("Workspace")
                     }}
