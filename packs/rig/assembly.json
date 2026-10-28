@@ -1,1 +1,47 @@
-{"order": [{"caption": "Mount the shaft — it carries the inner ring.", "parts": ["shaft"]}, {"caption": "Fit the inner ring (6203) onto the shaft.", "parts": ["ring_inner"]}, {"caption": "Set the 8 rolling elements around the inner raceway.", "parts": ["rollers"]}, {"caption": "Fit the cage to space the rolling elements.", "parts": ["cage"]}, {"caption": "Seat the outer ring over the assembly.", "parts": ["ring_outer"]}, {"caption": "Set the bearing into the housing.", "parts": ["housing"]}, {"caption": "Couple the drive motor to the shaft.", "parts": ["motor"]}], "source": "Standard rolling-bearing assembly order"}
+{
+ "order": [
+  {
+   "caption": "Mount the shaft \u2014 it carries the inner ring.",
+   "parts": [
+    "shaft"
+   ]
+  },
+  {
+   "caption": "Fit the inner ring (6203) onto the shaft.",
+   "parts": [
+    "ring_inner"
+   ]
+  },
+  {
+   "caption": "Set the 8 rolling elements around the inner raceway.",
+   "parts": [
+    "rollers"
+   ]
+  },
+  {
+   "caption": "Fit the cage to space the rolling elements.",
+   "parts": [
+    "cage"
+   ]
+  },
+  {
+   "caption": "Seat the outer ring over the assembly.",
+   "parts": [
+    "ring_outer"
+   ]
+  },
+  {
+   "caption": "Set the bearing into the housing.",
+   "parts": [
+    "housing"
+   ]
+  },
+  {
+   "caption": "Couple the drive motor to the shaft.",
+   "parts": [
+    "motor"
+   ]
+  }
+ ],
+ "source": "manual"
+}

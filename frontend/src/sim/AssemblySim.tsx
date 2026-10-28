@@ -58,7 +58,7 @@ export default function AssemblySim({
       handle.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [machineId])
+  }, [machineId, pack])
 
   useEffect(() => {
     handle.current?.setSuspect(suspect)
@@ -105,7 +105,7 @@ export default function AssemblySim({
           setCaption(
             k < n
               ? `Step ${k + 1}/${n}: ${steps[k].caption}`
-              : `Assembled in ${n} steps from the manual sequence.`,
+              : `Assembled in ${n} steps${pack.assembly?.source === "manual" ? " from the manual sequence." : " (structural order — not a manual procedure)."}`,
           )
           if (k >= n) done = true
         },

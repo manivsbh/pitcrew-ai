@@ -571,7 +571,8 @@ const TPL_RULES: [RegExp, Tpl][] = [
   [/crank(?!case)/i, 'crank'],
   [/camshaft/i, 'shaft'],
   [/cylinder bank|engine block|cylinder block|crankcase/i, 'bank'],
-  [/manifold/i, 'manifold'],
+  [/manifold|intake/i, 'manifold'],
+  [/cartridge/i, 'shell'],
   [/oil pan|sump/i, 'pan'],
   [/fuel pump|oil pump|water pump/i, 'pumpbox'],
   [/pump\b|volute/i, 'shell'],
@@ -581,14 +582,13 @@ const TPL_RULES: [RegExp, Tpl][] = [
   [/connecting rod|conrod/i, 'rod'],
   [/injector|spark|glow plug|sensor|valve/i, 'small'],
   [/fuel rail|rail/i, 'pipe'],
-  [/manifold|intake/i, 'manifold'],
   [/motor\b|stator housing/i, 'motor'],
   [/rotor|armature/i, 'rotor'],
   [/fan\b|blower/i, 'fan'],
   [/winding|stator/i, 'coil'],
-  [/seal\b|o-ring|gasket|retainer|packing/i, 'seal'],
+  [/wear ring|neck ring|seal ring|slinger|retaining ring/i, 'ring'],
+  [/seal\b|o-ring|gasket|retain|packing/i, 'seal'],
   [/bearing|bushing/i, 'ring'],
-  [/wear ring|neck ring|seal ring|slinger/i, 'ring'],
   [/coupling|clutch/i, 'coupling'],
   [/flange/i, 'flange'],
   [/spring/i, 'spring'],
@@ -597,7 +597,7 @@ const TPL_RULES: [RegExp, Tpl][] = [
   [/nut\b/i, 'nut'],
   [/washer|circlip|snap ring/i, 'washer'],
   [/ball\b|roller\b/i, 'sphere'],
-  [/pipe|tube|hose|lantern|duct/i, 'pipe'],
+  [/pipe|tube|hose|lantern|duct|inlet|connector|adapter|elbow/i, 'pipe'],
   [/plate|cover|disk|disc|guard|shield|head\b|cap\b/i, 'plate'],
   [/housing|casing|chamber|sleeve|stool|bracket|carrier|frame/i, 'shell'],
   [/box|tank|reservoir|filter/i, 'boxy'],
@@ -796,13 +796,14 @@ function buildGeneric(P: Parts, components: PackComponent[], kind: string): void
   levels.sort((x, y) => x[0] - y[0]);
   const palette = [0x2f5d8a, 0x3a6b5f, 0x8a6d2f, 0x6b3a5d, 0x4a4e57, 0x2f8a6d];
   const horiz = kind === 'bearing-rig';
+  const pitch = Math.min(horiz ? 2.0 : 1.35, 6.5 / Math.max(1, maxLv));
   const cov: Cov = { matched: 0, total: components.length, unclassified: [] };
   let i = 0;
   for (const [lv, group] of levels) {
-    const along = (lv - maxLv / 2) * (horiz ? 2.0 : 1.35);
+    const along = (lv - maxLv / 2) * pitch;
     group.forEach((c, j) => {
       const a = group.length > 1 ? (j / group.length) * Math.PI * 2 : 0;
-      const rad = group.length > 1 ? Math.max(1.3, group.length * 0.3) : 0;
+      const rad = group.length > 1 ? Math.min(2.8, 0.9 + group.length * 0.12) : 0;
       const hit = classify(c.name);
       if (hit.matched) cov.matched++;
       else cov.unclassified.push(c.name);
@@ -1055,7 +1056,8 @@ export function initAssembly(
   controls.autoRotate = opts.orbit === true && !reduceMotion;
   controls.autoRotateSpeed = 0.8;
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa39a, 0.4));
+  const hemi = new THREE.HemisphereLight(0xffffff, 0x9aa39a, 0.4);
+  scene.add(hemi);
   const key = new THREE.DirectionalLight(0xffffff, 2.0);
   key.position.set(-5, 12, 6);
   key.castShadow = true;
@@ -1085,6 +1087,7 @@ export function initAssembly(
   else if (opts.machine === 'cr-pump') buildPump(P);
   else if (kind === 'engine') engRefs = buildEngine(P, opts.components);
   else buildGeneric(P, opts.components, kind);
+  if (engRefs) hemi.intensity = 0.62;
 
   for (const c of opts.components) if (!P.visualOf.has(c.id)) P.visualOf.set(c.id, c.id);
   const resolve = (id: string): string | null => {
@@ -1107,7 +1110,12 @@ export function initAssembly(
   const centerOf = new Map<string, THREE.Vector3>();
   const idList = [...P.parts.keys()];
   const cols = Math.max(1, Math.ceil(Math.sqrt(idList.length)));
-  const cell = vertical ? 1.7 : 2.6;
+  let maxDim = 0;
+  for (const id of idList) {
+    const s = new THREE.Box3().setFromObject(P.parts.get(id)!).getSize(new THREE.Vector3());
+    maxDim = Math.max(maxDim, s.x, s.y, s.z);
+  }
+  const cell = Math.max(vertical ? 1.7 : 2.6, maxDim * 1.2);
   idList.forEach((id, i) => {
     const g = P.parts.get(id)!;
     homeOf.set(id, g.position.clone());

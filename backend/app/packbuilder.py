@@ -313,7 +313,7 @@ def derive_assembly(components: list[dict]) -> dict:
         order.append(
             {"caption": f"Install {names}.",
              "parts": [c["id"] for c in grp]})
-    return {"order": order}
+    return {"order": order, "source": "derived"}
 
 
 # kind -> (scenario id, label, name-pattern, slow, wobble, note)
