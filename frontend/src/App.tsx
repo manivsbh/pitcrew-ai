@@ -1,11 +1,4 @@
-import { useState, useEffect, Suspense, Component, type ReactNode } from "react"
-import { Canvas } from "@react-three/fiber"
-import {
-  OrbitControls,
-  ContactShadows,
-  Environment,
-  Grid,
-} from "@react-three/drei"
+import { useState, useEffect } from "react"
 import {
   Activity,
   Box,
@@ -21,9 +14,7 @@ import {
   Search,
   Play,
   Pause,
-  RotateCcw,
   Maximize,
-  ScanLine,
   Download,
   Mic,
   Send,
@@ -48,17 +39,12 @@ import EngineeringPanel, {
   type Session,
 } from "./features/engineering/EngineeringPanel"
 import { calculate, MODEL_VERSION, type Inputs } from "./physics/models"
-import { machines, AdditionalMachine, type MachineId } from "./machines"
+import { machines, geomOfKind, scalesFor, type MachineId } from "./machines"
 import AssemblySim from "./sim/AssemblySim"
-import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Pack, type Trace, type GuideView, type InvPart, type InvOrder, type Draft, type AssistTurn, type SegmentResult } from "./api"
+import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Pack, type Trace, type GuideView, type InvPart, type InvOrder, type Draft, type AssistTurn, type SegmentResult, type Step } from "./api"
 
-// Backend pack id -> geometry/physics family in this UI. 'engine' has no pack yet (In dev).
-const PACK_GEOM: Record<string, MachineId> = {
-  rig: "bearing",
-  "cr-pump": "motor",
-  "v6-engine": "engine",
-}
-const geomOf = (id: string): MachineId => PACK_GEOM[id] ?? "engine"
+// Physics family resolves from the pack's classified kind, so new PDF
+// machines work with no per-machine UI code.
 // Fuzzy match a 3D part label to a backend component name.
 const matchComp = (pack: Pack | null, label: string) => {
   if (!pack) return undefined
@@ -82,149 +68,6 @@ const steps = [
   "Compare healthy reference",
   "Submit evidence-backed finding",
 ]
-class SceneBoundary extends Component<{ children: ReactNode }, {
-  failed: boolean
-}> {
-  state = { failed: false }
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-  render() {
-    return this.state.failed ? (
-      <div className="fallback">
-        3D unavailable. Use the component list to explore the assembly.
-      </div>
-    ) : (
-      this.props.children
-    )
-  }
-}
-function Machine({
-  selected,
-  select,
-  exploded,
-  isolated,
-  design,
-}: {
-  selected: string
-  select: (p: string) => void
-  exploded: boolean
-  isolated: boolean
-  design: Inputs
-}) {
-  const metal = "#9da7ac",
-    dark = "#455159"
-  const offset = exploded ? 1 : 0
-  const mat = (name: string, color: string) => (
-    <meshStandardMaterial
-      color={selected === name ? "#ccf884" : color}
-      metalness={0.75}
-      roughness={0.29}
-    />
-  )
-  const cylinder = (
-    name: string,
-    x: number,
-    r: number,
-    len: number,
-    color: string,
-  ) => (
-    <mesh
-      key={name}
-      position={[x, 1, 0]}
-      rotation={[0, 0, Math.PI / 2]}
-      visible={!isolated || selected === name}
-      onClick={(e) => {
-        e.stopPropagation()
-        select(name)
-      }}
-    >
-      <cylinderGeometry args={[r, r, len, 64]} />
-      {mat(name, color)}
-    </mesh>
-  )
-  return (
-    <group rotation={[0, -0.23, 0]}>
-      <mesh
-        position={[-0.8, 0.13, 0]}
-        onClick={() => select("Drive motor")}
-        visible={!isolated || selected === "Drive motor"}
-      >
-        <boxGeometry args={[4.7, 0.25, 2.2]} />
-        {mat("Drive motor", "#60696c")}
-      </mesh>
-      {[-2.4, 0.4].map((x) => (
-        <mesh key={x} position={[x, 0.35, 0]}>
-          <boxGeometry args={[0.38, 0.4, 1.5]} />
-          <meshStandardMaterial color={dark} metalness={0.65} roughness={0.4} />
-        </mesh>
-      ))}
-      {cylinder("Drive motor", -1.65, 0.87, 2.15, dark)}
-      {Array.from({ length: 13 }, (_, i) =>
-        cylinder("Drive motor", -2.62 + i * 0.16, 0.93, 0.055, "#667178"),
-      )}
-      {cylinder("Drive motor", -2.83, 0.83, 0.16, "#879196")}
-      {cylinder(
-        "Rig shaft",
-        0.8 + offset * 0.4,
-        0.19 * (design.kind === "bearing" ? design.diameter / 20 : 1),
-        4.1 * (design.kind === "bearing" ? design.length / 200 : 1),
-        metal,
-      )}
-      {cylinder("Bearing housing", 0.23 + offset * 0.4, 0.77, 0.36, "#738188")}
-      <group
-        position={[1.2 + offset * 1.2, 1, 0]}
-        rotation={[0, Math.PI / 2, 0]}
-      >
-        {["Outer ring (6203)", "Inner ring (6203)", "Cage"].map((p, i) => (
-          <mesh
-            key={p}
-            position={[0, 0, i === 2 ? 0.12 : 0]}
-            visible={!isolated || selected === p}
-            onClick={(e) => {
-              e.stopPropagation()
-              select(p)
-            }}
-          >
-            <torusGeometry
-              args={
-                i === 0
-                  ? [0.67, 0.14, 20, 80]
-                  : i === 1
-                    ? [0.31, 0.12, 20, 80]
-                    : [0.49, 0.033, 12, 64]
-              }
-            />
-            {mat(p, i === 2 ? "#bba86b" : metal)}
-          </mesh>
-        ))}
-        {Array.from({ length: 10 }, (_, i) => (
-          <mesh
-            key={i}
-            position={[
-              Math.cos((i * Math.PI) / 5) * 0.49,
-              Math.sin((i * Math.PI) / 5) * 0.49,
-              0,
-            ]}
-            visible={!isolated || selected === "Rolling elements (8x)"}
-            onClick={(e) => {
-              e.stopPropagation()
-              select("Rolling elements (8x)")
-            }}
-          >
-            <sphereGeometry args={[0.115, 20, 20]} />
-            {mat("Rolling elements (8x)", "#d6dadc")}
-          </mesh>
-        ))}
-      </group>
-      {cylinder("Bearing housing", 2.2 + offset * 2, 0.74, 0.2, "#69767d")}
-      <mesh position={[-1.6, 1.94, 0]} onClick={() => select("Drive motor")}>
-        <boxGeometry args={[0.68, 0.35, 0.65]} />
-        {mat("Drive motor", dark)}
-      </mesh>
-    </group>
-  )
-}
 function Chart({
   kind = "Waveform",
   data = null,
@@ -309,18 +152,19 @@ function Chart({
 export default function App({ visible = true }: { visible?: boolean }) {
   useEffect(() => {
     if (!visible) {
-      setPlaying(false)
       setRunning(false)
       window.dispatchEvent(new Event("forma-workspace-hidden"))
     }
   }, [visible])
   const [machineId, setMachineId] = useState<string>("rig")
-  const geom: MachineId = geomOf(machineId)
-  const machine = machines[geom]
   const [packList, setPackList] = useState<
     { machine: string; name: string; kind: string; components: number }[]
   >([])
   const [pack, setPack] = useState<Pack | null>(null)
+  const geom: MachineId = geomOfKind(
+    pack?.meta.kind ?? packList.find((p) => p.machine === machineId)?.kind ?? "",
+  )
+  const machine = machines[geom]
   const [packErr, setPackErr] = useState("")
   const parts = pack ? pack.components.map((c) => c.name) : machine.parts
   const [engineering, setEngineering] = useState<Record<MachineId, Session>>(
@@ -338,10 +182,9 @@ export default function App({ visible = true }: { visible?: boolean }) {
   const [engineeringRequest, setEngineeringRequest] = useState("")
   const switchMachine = (id: string) => {
     setMachineId(id)
-    const g = geomOf(id)
-    setExploded(false)
-    setIsolated(false)
-    setPlaying(false)
+    const g = geomOfKind(
+      packList.find((p) => p.machine === id)?.kind ?? "",
+    )
     setRunning(false)
     setTrace(null)
     setLiveSteps([])
@@ -362,27 +205,18 @@ export default function App({ visible = true }: { visible?: boolean }) {
         message: "",
       },
     }))
-    setView((v) => v + 1)
-    if (id !== "engine") {
-      setPackErr("")
-      api.pack(id).then(
-        (p) => {
-          setPack(p)
-          setSelected(p.components[0]?.name ?? machines[g].parts[0])
-        },
-        (e) => setPackErr(`Pack load failed: ${(e as Error).message}`),
-      )
-    } else {
-      setPack(null)
-      setSelected(machines[g].parts[0])
-    }
+    setPackErr("")
+    api.pack(id).then(
+      (p) => {
+        setPack(p)
+        setSelected(p.components[0]?.name ?? machines[g].parts[0])
+      },
+      (e) => setPackErr(`Pack load failed: ${(e as Error).message}`),
+    )
   }
   const [page, setPage] = useState("Workspace"),
     [selected, setSelected] = useState("Outer ring (6203)"),
-    [exploded, setExploded] = useState(false),
-    [isolated, setIsolated] = useState(false),
     [load, setLoad] = useState(45),
-    [playing, setPlaying] = useState(false),
     [tab, setTab] = useState("Waveform"),
     [step, setStep] = useState(-1),
     [running, setRunning] = useState(false),
@@ -393,8 +227,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
     [search, setSearch] = useState(""),
     [question, setQuestion] = useState(""),
     [answer, setAnswer] = useState(""),
-    [file, setFile] = useState(""),
-    [view, setView] = useState(0)
+    [file, setFile] = useState("")
   // ---- investigation backend state ----
   const [cases, setCases] = useState<string[]>([])
   const [caseIdx, setCaseIdx] = useState("")
@@ -424,7 +257,6 @@ export default function App({ visible = true }: { visible?: boolean }) {
     targets?: Record<string, number>
   } | null>(null)
   const [modalJson, setModalJson] = useState("")
-  const [engineRun, setEngineRun] = useState(true)
   const [assistSession, setAssistSession] = useState<string | null>(null)
   const [assistBusy, setAssistBusy] = useState(false)
   const [assistTurn, setAssistTurn] = useState<AssistTurn | null>(null)
@@ -697,7 +529,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
     )
   }
   const onInvSearch = () => {
-    if (machineId === "engine") {
+    if (!pack) {
       setInvMsg("Inventory needs a packed machine.")
       return
     }
@@ -908,7 +740,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     <span>{pack ? pack.meta.machine : machine.code} / REV 01</span>
                     <small>{pack ? pack.meta.name : machine.name}</small>
                   </div>
-                  {pack && machineId !== "v6-engine" ? (
+                  {pack ? (
                     <AssemblySim
                       pack={pack}
                       machineId={machineId}
@@ -931,140 +763,14 @@ export default function App({ visible = true }: { visible?: boolean }) {
                           : null
                       }
                       selectedId={matchComp(pack, selected)?.id ?? null}
+                      scales={scalesFor(engineeringSession.applied)}
                     />
                   ) : (
-                    <>
-                      <SceneBoundary>
-                        <Canvas
-                          frameloop={visible ? "always" : "never"}
-                          key={view}
-                          camera={{ position: [6, 4.1, 6], fov: 38 }}
-                        >
-                          <ambientLight intensity={1.2} />
-                          <directionalLight
-                            position={[2, 7, 4]}
-                            intensity={3}
-                          />
-                          <directionalLight
-                            position={[-5, 3, -2]}
-                            intensity={2}
-                          />
-                          <Suspense fallback={null}>
-                            {geom === "bearing" ? (
-                              <Machine
-                                selected={selected}
-                                select={setSelected}
-                                exploded={exploded}
-                                isolated={isolated}
-                                design={engineeringSession.applied}
-                              />
-                            ) : (
-                              <AdditionalMachine
-                                machine={geom}
-                                selected={selected}
-                                select={setSelected}
-                                exploded={exploded}
-                                isolated={isolated}
-                                design={engineeringSession.applied}
-                                running={engineRun}
-                              />
-                            )}
-                            <ContactShadows
-                              position={[0, -0.015, 0]}
-                              opacity={0.45}
-                              scale={14}
-                              blur={2}
-                              far={5}
-                            />
-                          </Suspense>
-                          <Grid
-                            position={[0, -0.02, 0]}
-                            args={[18, 18]}
-                            cellSize={0.5}
-                            cellThickness={0.5}
-                            cellColor="#303638"
-                            sectionSize={2.5}
-                            sectionColor="#41494b"
-                            fadeDistance={18}
-                          />
-                          <OrbitControls
-                            makeDefault
-                            autoRotate={playing}
-                            autoRotateSpeed={speed / 1500}
-                            minDistance={4}
-                            maxDistance={15}
-                            target={[0, 0.8, 0]}
-                          />
-                        </Canvas>
-                      </SceneBoundary>
-                      <div className="component-float">
-                        <span className="statusdot" />
-                        <div>
-                          <strong>{selected}</strong>
-                          <small>{machine.name}</small>
-                        </div>
-                        <ChevronRight size={14} />
-                      </div>
-                      <div className="axis">
-                        <span>Y</span>
-                        <i /> <b>X</b>
-                        <em>Z</em>
-                      </div>
-                      <div className="scene-hint">
-                        Drag to orbit <span>·</span> Scroll to zoom <span>·</span>{" "}
-                        Click to inspect
-                      </div>
-                    </>
+                    <div className="fallback">
+                      {packErr || "Loading machine\u2026"}
+                    </div>
                   )}
                 </div>
-                {(!pack || machineId === "v6-engine") && (
-                  <div className="view-tools">
-                    <div>
-                      <button
-                        className={exploded ? "tool on" : "tool"}
-                        onClick={() => setExploded(!exploded)}
-                      >
-                        <Layers size={15} /> Explode
-                      </button>
-                      <button
-                        className={isolated ? "tool on" : "tool"}
-                        onClick={() => setIsolated(!isolated)}
-                      >
-                        <ScanLine size={15} /> Isolate
-                      </button>
-                      <button
-                        className="tool"
-                        onClick={() => {
-                          setExploded(false)
-                          setIsolated(false)
-                          setView((v) => v + 1)
-                        }}
-                      >
-                        <RotateCcw size={14} /> Reset view
-                      </button>
-                      {machineId === "v6-engine" && (
-                        <button
-                          className={engineRun ? "tool on" : "tool"}
-                          onClick={() => setEngineRun(!engineRun)}
-                        >
-                          {engineRun ? (
-                            <Pause size={14} />
-                          ) : (
-                            <Play size={14} />
-                          )}{" "}
-                          {engineRun ? "Stop engine" : "Run engine"}
-                        </button>
-                      )}
-                    </div>
-                    <button
-                      className="tool"
-                      onClick={() => setPlaying(!playing)}
-                    >
-                      {playing ? <Pause size={14} /> : <Play size={14} />}{" "}
-                      {playing ? "Stop auto-orbit" : "Auto-orbit"}
-                    </button>
-                  </div>
-                )}
               </section>
               <EngineeringPanel
                 key={geom}
@@ -1074,7 +780,6 @@ export default function App({ visible = true }: { visible?: boolean }) {
                 inspect={(part) => {
                   if (parts.includes(part)) {
                     setSelected(part)
-                    setIsolated(false)
                   }
                 }}
                 request={engineeringRequest}
@@ -1183,7 +888,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
               </div>
               <div className="agent-content">
                 <div className="section-label">INVESTIGATION CONTEXT</div>
-                {machineId === "engine" && (
+                {!pack && (
                   <div className="machine-notice">
                     {machine.name}: <strong>In dev</strong> — no machine pack
                     yet. Engineering experiments below the assembly still work;
@@ -1193,7 +898,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                 <label className="selectlabel">
                   Recording
                   <select
-                    disabled={machineId === "engine"}
+                    disabled={!pack}
                     value={caseIdx}
                     onChange={(e) => changeCase(e.target.value)}
                   >
@@ -1231,7 +936,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                 </div>
                 <button
                   className="startbtn"
-                  disabled={machineId === "engine"}
+                  disabled={!pack}
                   onClick={running ? () => setRunning(false) : start}
                 >
                   {running ? <Pause size={15} /> : <Play size={15} />}{" "}
@@ -1421,7 +1126,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     updateEngineering(propose(engineeringSession, q))
                     setEngineeringRequest(q)
                     setQuestion("")
-                    if (machineId === "engine") {
+                    if (!pack) {
                       setAnswer(
                         "Local command assistant: review the proposed change in the engineering sandbox. Live assistant needs a packed machine.",
                       )
@@ -1948,7 +1653,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     className="case panel"
                     key={c}
                     onClick={() => {
-                      if (machineId === "engine") switchMachine("rig")
+                      if (!pack) switchMachine("rig")
                       changeCase(String(i))
                       setPage("Workspace")
                     }}

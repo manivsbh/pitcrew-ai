@@ -23,6 +23,8 @@ export interface AssemblyHandle {
   setFault(regIds: string[], wobble: number): void;
   setCameraHome(): void;
   setPaused(p: boolean): void;
+  getCoverage(): { matched: number; total: number; unclassified: string[] } | null;
+  setDesign(s: { bore: number; stroke: number; shaft: number }): void;
   dispose(): void;
 }
 
@@ -52,7 +54,7 @@ function xRing(rIn: number, rOut: number, x: number): THREE.Mesh {
   return m;
 }
 
-interface Parts { parts: Map<string, THREE.Group>; visualOf: Map<string, string>; scene: THREE.Scene }
+interface Parts { parts: Map<string, THREE.Group>; visualOf: Map<string, string>; scene: THREE.Scene; coverage?: { matched: number; total: number; unclassified: string[] } }
 function makePart(P: Parts, id: string, ex: number, ey: number): THREE.Group {
   const g = new THREE.Group();
   g.userData.componentId = id;
@@ -553,16 +555,210 @@ function makePerfTexture(): THREE.Texture {
   return t;
 }
 
-/* ---------------- generic builder (any registry) ---------------- */
-function shapeFor(name: string): 'ring' | 'rod' | 'ball' | 'plate' | 'box' {
-  const n = name.toLowerCase();
-  if (/(ring|seal|bearing|washer|gasket|o-ring|retainer|coupling|flange|nut)/.test(n)) return 'ring';
-  if (/(shaft|bolt|screw|pin|rod|spring|spacer|strap|plug|rail|staybolt)/.test(n)) return 'rod';
-  if (/(ball|roller|impeller|bushing)/.test(n)) return 'ball';
-  if (/(plate|cover|disk|disc|guard|base|stool|head|sleeve|chamber|housing|motor|stator|rotor)/.test(n)) return 'plate';
-  return 'box';
+/* ---------------- generic builder (any registry) ----------------
+   Asset-class templates: every PDF-onboarded component renders from a named
+   parametric template matched on its manual name. Anything unmatched renders
+   as a translucent placeholder and is reported via getCoverage() so the UI
+   can say which parts need drawings. Schematic throughout: no dimensions. */
+type Tpl = 'fastener' | 'nut' | 'washer' | 'flange' | 'seal' | 'spring' | 'shaft'
+  | 'impeller' | 'piston' | 'ring' | 'coupling' | 'motor' | 'rotor' | 'fan'
+  | 'coil' | 'shell' | 'plate' | 'boxy' | 'pipe' | 'small' | 'rod' | 'sphere'
+  | 'pumpbox' | 'bearing' | 'bank' | 'manifold' | 'pan' | 'crank' | 'unknown';
+interface TplHit { tpl: Tpl; matched: boolean }
+const TPL_RULES: [RegExp, Tpl][] = [
+  [/ball bearing|roller bearing|needle bearing|bearing 62|620\d|front bearing|rear bearing/i, 'bearing'],
+  [/flywheel/i, 'plate'],
+  [/crank(?!case)/i, 'crank'],
+  [/camshaft/i, 'shaft'],
+  [/cylinder bank|engine block|cylinder block|crankcase/i, 'bank'],
+  [/manifold/i, 'manifold'],
+  [/oil pan|sump/i, 'pan'],
+  [/fuel pump|oil pump|water pump/i, 'pumpbox'],
+  [/pump\b|volute/i, 'shell'],
+  [/impeller/i, 'impeller'],
+  [/diffuser|bowl/i, 'shell'],
+  [/piston/i, 'piston'],
+  [/connecting rod|conrod/i, 'rod'],
+  [/injector|spark|glow plug|sensor|valve/i, 'small'],
+  [/fuel rail|rail/i, 'pipe'],
+  [/manifold|intake/i, 'manifold'],
+  [/motor\b|stator housing/i, 'motor'],
+  [/rotor|armature/i, 'rotor'],
+  [/fan\b|blower/i, 'fan'],
+  [/winding|stator/i, 'coil'],
+  [/seal\b|o-ring|gasket|retainer|packing/i, 'seal'],
+  [/bearing|bushing/i, 'ring'],
+  [/wear ring|neck ring|seal ring|slinger/i, 'ring'],
+  [/coupling|clutch/i, 'coupling'],
+  [/flange/i, 'flange'],
+  [/spring/i, 'spring'],
+  [/shaft|spindle|axle/i, 'shaft'],
+  [/bolt|screw|stud|plug screw/i, 'fastener'],
+  [/nut\b/i, 'nut'],
+  [/washer|circlip|snap ring/i, 'washer'],
+  [/ball\b|roller\b/i, 'sphere'],
+  [/pipe|tube|hose|lantern|duct/i, 'pipe'],
+  [/plate|cover|disk|disc|guard|shield|head\b|cap\b/i, 'plate'],
+  [/housing|casing|chamber|sleeve|stool|bracket|carrier|frame/i, 'shell'],
+  [/box|tank|reservoir|filter/i, 'boxy'],
+  [/base\b|foot\b|pedestal/i, 'plate'],
+  [/pin\b|key\b|dowel|spacer|strap|shim/i, 'rod'],
+];
+function classify(name: string): TplHit {
+  for (const [rx, tpl] of TPL_RULES) if (rx.test(name)) return { tpl, matched: true };
+  return { tpl: 'unknown', matched: false };
 }
-function buildGeneric(P: Parts, components: PackComponent[]): void {
+function numSuffix(name: string): number | null {
+  const m = name.match(/(\d+)\s*$/);
+  return m ? parseInt(m[1], 10) : null;
+}
+interface SpinDef { ax: 'x' | 'y'; rate: number }
+function spinFor(name: string, kind: string): SpinDef | null {
+  const n = name.toLowerCase();
+  if (/(cage|rolling element|needle|[^a-z]balls?)/.test(n)) return { ax: kind === 'bearing-rig' ? 'x' : 'y', rate: 0.42 };
+  if (/(crank(?!case)|flywheel)/.test(n)) return { ax: 'x', rate: 1 };
+  if (/(camshaft|cam\b)/.test(n)) return { ax: 'x', rate: 0.5 };
+  if (/(shaft|rotor|impeller|coupling|fan|pulley|gear|spider|armature|sprocket)/.test(n)) return { ax: kind === 'bearing-rig' ? 'x' : 'y', rate: 1 };
+  return null;
+}
+function recipFor(name: string): boolean {
+  return /(piston|plunger)/.test(name.toLowerCase());
+}
+
+/* Unit-ish template geometries (~1.2 box). Role tags drive design rescale. */
+function tplGeo(g: THREE.Group, tpl: Tpl, mat: THREE.Material): void {
+  switch (tpl) {
+    case 'fastener': bolt(g, 0.1, 0.34, 0, -0.17, 0, mat); nut(g, 0.1, 0.3, 0, 0, mat); washer(g, 0.1, 0.3, -0.15, 0); break;
+    case 'nut': nut(g, 0.16, 0, 0, 0, mat); washer(g, 0.16, 0, -0.16, 0); break;
+    case 'washer': washer(g, 0.2, 0, -0.05, 0); washer(g, 0.2, 0, 0.08, 0); washer(g, 0.2, 0, 0.21, 0); break;
+    case 'flange': {
+      mesh(g, new THREE.CylinderGeometry(0.42, 0.42, 0.1, 28), mat);
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        bolt(g, 0.06, 0.08, Math.cos(a) * 0.33, 0.05, Math.sin(a) * 0.33, mat);
+      }
+      break;
+    }
+    case 'seal': mesh(g, new THREE.CylinderGeometry(0.3, 0.3, 0.12, 28), mat); oring(g, 0.3, 0.035, 0, -0.08, 0); oring(g, 0.24, 0.03, 0, 0.09, 0); break;
+    case 'spring': spring(g, 0.13, 0.4, 0, -0.2, 0, 8); break;
+    case 'shaft': {
+      mesh(g, new THREE.CylinderGeometry(0.09, 0.09, 1.0, 20), mat);
+      mesh(g, new THREE.CylinderGeometry(0.13, 0.13, 0.2, 20), mat, 0, -0.3);
+      mesh(g, new THREE.BoxGeometry(0.05, 0.4, 0.045), MAT_DARK, 0, 0.15, 0.09);
+      g.userData.role = 'shaft';
+      break;
+    }
+    case 'impeller': {
+      mesh(g, new THREE.CylinderGeometry(0.38, 0.38, 0.05, 32), mat);
+      mesh(g, new THREE.CylinderGeometry(0.1, 0.15, 0.16, 18), mat, 0, 0.1);
+      for (let v = 0; v < 6; v++) {
+        const a = (v / 6) * Math.PI * 2;
+        const vane = mesh(g, new THREE.BoxGeometry(0.22, 0.12, 0.03), mat, Math.cos(a) * 0.22, 0.06, Math.sin(a) * 0.22);
+        vane.rotation.y = -a - 0.55;
+      }
+      break;
+    }
+    case 'piston': {
+      mesh(g, new THREE.CylinderGeometry(0.2, 0.2, 0.3, 26), mat);
+      for (const y of [0.06, 0.12]) {
+        const r = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.014, 6, 30), MAT_DARK);
+        r.rotation.x = Math.PI / 2; r.position.y = y; g.add(r);
+      }
+      g.userData.role = 'piston';
+      break;
+    }
+    case 'ring': {
+      const t = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.09, 12, 36), mat);
+      t.rotation.x = Math.PI / 2; t.castShadow = true; g.add(t);
+      break;
+    }
+    case 'coupling': {
+      mesh(g, new THREE.CylinderGeometry(0.24, 0.24, 0.16, 26), mat, 0, -0.14);
+      mesh(g, new THREE.CylinderGeometry(0.24, 0.24, 0.16, 26), mat, 0, 0.14);
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2;
+        mesh(g, new THREE.BoxGeometry(0.09, 0.1, 0.09), MAT_BLACK, Math.cos(a) * 0.16, 0, Math.sin(a) * 0.16);
+      }
+      break;
+    }
+    case 'motor': {
+      mesh(g, new THREE.CylinderGeometry(0.5, 0.5, 0.8, 30), mat);
+      for (let i = 0; i < 12; i++) {
+        const a = (i / 12) * Math.PI * 2;
+        const fin = mesh(g, new THREE.BoxGeometry(0.08, 0.74, 0.06), mat, Math.cos(a) * 0.53, 0, Math.sin(a) * 0.53);
+        fin.rotation.y = -a;
+      }
+      mesh(g, new THREE.CylinderGeometry(0.52, 0.52, 0.1, 30), MAT_DARK, 0, 0.45);
+      break;
+    }
+    case 'rotor': mesh(g, new THREE.CylinderGeometry(0.3, 0.3, 0.55, 26), mat); mesh(g, new THREE.CylinderGeometry(0.08, 0.08, 0.9, 16), MAT_DARK); g.userData.role = 'shaft'; break;
+    case 'fan': {
+      mesh(g, new THREE.CylinderGeometry(0.12, 0.12, 0.1, 18), MAT_DARK);
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2;
+        const b = mesh(g, new THREE.BoxGeometry(0.26, 0.04, 0.12), mat, Math.cos(a) * 0.24, 0, Math.sin(a) * 0.24);
+        b.rotation.y = -a + 0.5;
+      }
+      break;
+    }
+    case 'coil': for (let i = 0; i < 3; i++) { const a = (i / 3) * Math.PI * 2; mesh(g, new THREE.CylinderGeometry(0.09, 0.09, 0.5, 12), MAT_BRASS, Math.cos(a) * 0.3, 0, Math.sin(a) * 0.3); } break;
+    case 'shell': {
+      const s = mesh(g, new THREE.CylinderGeometry(0.45, 0.48, 0.6, 30, 1, true), mat);
+      (s.material as THREE.MeshStandardMaterial).side = THREE.DoubleSide;
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.03, 8, 36), MAT_DARK);
+      rim.rotation.x = Math.PI / 2; rim.position.y = 0.3; g.add(rim);
+      break;
+    }
+    case 'plate': {
+      mesh(g, new THREE.CylinderGeometry(0.44, 0.44, 0.1, 28), mat);
+      for (const [bx, bz] of [[-0.3, -0.3], [0.3, -0.3], [-0.3, 0.3], [0.3, 0.3]]) bolt(g, 0.05, 0.06, bx, 0.05, bz, MAT_DARK);
+      break;
+    }
+    case 'boxy': mesh(g, new THREE.BoxGeometry(0.7, 0.5, 0.55), mat); mesh(g, new THREE.BoxGeometry(0.74, 0.06, 0.59), MAT_DARK, 0, 0.28); break;
+    case 'pipe': {
+      mesh(g, new THREE.CylinderGeometry(0.11, 0.11, 0.9, 16), mat);
+      for (const y of [-0.45, 0.45]) mesh(g, new THREE.CylinderGeometry(0.17, 0.17, 0.05, 16), MAT_DARK, 0, y);
+      break;
+    }
+    case 'small': {
+      const c = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.2, 12), mat);
+      c.position.y = -0.1; c.castShadow = true; g.add(c);
+      mesh(g, new THREE.CylinderGeometry(0.05, 0.05, 0.3, 10), MAT_DARK, 0, 0.12);
+      break;
+    }
+    case 'rod': mesh(g, new THREE.CylinderGeometry(0.07, 0.07, 0.7, 12), mat); mesh(g, new THREE.SphereGeometry(0.09, 12, 10), MAT_DARK, 0, 0.35); break;
+    case 'sphere': for (const x of [-0.28, 0, 0.28]) mesh(g, new THREE.SphereGeometry(0.13, 16, 12), mat, x, 0, 0); break;
+    case 'pumpbox': mesh(g, new THREE.BoxGeometry(0.5, 0.55, 0.45), mat); mesh(g, new THREE.CylinderGeometry(0.09, 0.09, 0.2, 12), MAT_BRASS, 0.3, 0.1); mesh(g, new THREE.CylinderGeometry(0.09, 0.09, 0.2, 12), MAT_BRASS, -0.3, 0.1); break;
+    case 'bearing': {
+      const b = makeBearing(0.8);
+      g.add(b.group);
+      break;
+    }
+    case 'bank': {
+      mesh(g, new THREE.BoxGeometry(1.1, 0.7, 0.35), mat, 0, 0, 0.18);
+      mesh(g, new THREE.BoxGeometry(1.1, 0.7, 0.35), mat, 0, 0, -0.18);
+      mesh(g, new THREE.BoxGeometry(1.1, 0.09, 0.72), MAT_DARK, 0, 0.4);
+      g.userData.role = 'cylinder';
+      break;
+    }
+    case 'manifold': mesh(g, new THREE.BoxGeometry(0.9, 0.2, 0.4), mat); for (const x of [-0.3, 0, 0.3]) mesh(g, new THREE.CylinderGeometry(0.07, 0.07, 0.25, 10), MAT_DARK, x, -0.2); break;
+    case 'pan': mesh(g, new THREE.CylinderGeometry(0.5, 0.38, 0.3, 4), mat); break;
+    case 'crank': {
+      mesh(g, xCyl(0.08, 1.1, 18), mat);
+      for (const x of [-0.35, 0, 0.35]) mesh(g, new THREE.BoxGeometry(0.09, 0.3, 0.2), MAT_DARK, x, 0, 0);
+      g.userData.role = 'shaft';
+      break;
+    }
+    case 'unknown': {
+      const u = mesh(g, new THREE.BoxGeometry(0.55, 0.55, 0.55),
+        new THREE.MeshStandardMaterial({ color: 0x8a8f94, metalness: 0.2, roughness: 0.7, transparent: true, opacity: 0.45 }));
+      u.castShadow = false;
+      break;
+    }
+  }
+}
+interface Cov { matched: number; total: number; unclassified: string[] }
+function levelsOf(components: PackComponent[]): Map<string, number> {
   const ids = new Set(components.map((c) => c.id));
   const kids = new Map<string, PackComponent[]>();
   const roots: PackComponent[] = [];
@@ -575,13 +771,18 @@ function buildGeneric(P: Parts, components: PackComponent[]): void {
   }
   const level = new Map<string, number>();
   const queue: [PackComponent, number][] = roots.map((r) => [r, 0]);
-  for (const c of components) if (!level.has(c.id) && !queue.some(([q]) => q.id === c.id)) queue.push([c, 0]);
   while (queue.length) {
     const [c, lv] = queue.shift()!;
     if (level.has(c.id)) continue;
     level.set(c.id, lv);
     for (const k of kids.get(c.id) ?? []) queue.push([k, lv + 1]);
   }
+  const top = Math.max(-1, ...level.values());
+  for (const c of components) if (!level.has(c.id)) level.set(c.id, top + 1);
+  return level;
+}
+function buildGeneric(P: Parts, components: PackComponent[], kind: string): void {
+  const level = levelsOf(components);
   const byLevel = new Map<number, PackComponent[]>();
   for (const c of components) {
     const lv = level.get(c.id) ?? 0;
@@ -594,41 +795,217 @@ function buildGeneric(P: Parts, components: PackComponent[]): void {
   const levels = [...byLevel.entries()];
   levels.sort((x, y) => x[0] - y[0]);
   const palette = [0x2f5d8a, 0x3a6b5f, 0x8a6d2f, 0x6b3a5d, 0x4a4e57, 0x2f8a6d];
+  const horiz = kind === 'bearing-rig';
+  const cov: Cov = { matched: 0, total: components.length, unclassified: [] };
   let i = 0;
-  for (const entry of levels) {
-    const lv = entry[0];
-    const group = entry[1];
-    const y = (maxLv - lv) * 1.1 - maxLv * 0.55;
+  for (const [lv, group] of levels) {
+    const along = (lv - maxLv / 2) * (horiz ? 2.0 : 1.35);
     group.forEach((c, j) => {
       const a = group.length > 1 ? (j / group.length) * Math.PI * 2 : 0;
-      const rad = group.length > 1 ? 1.6 : 0;
-      const x = Math.cos(a) * rad;
-      const z = Math.sin(a) * rad;
-      const g = makePart(P, c.id, x * 0.6, (lv - maxLv / 2) * -0.9);
-      const mat = std(palette[i++ % palette.length], 0.7, 0.4);
-      const s = Math.max(0.55, 1.05 - lv * 0.12);
-      switch (shapeFor(c.name)) {
-        case 'ring': {
-          const t = new THREE.Mesh(new THREE.TorusGeometry(0.42 * s, 0.13 * s, 12, 32), mat);
-          t.rotation.x = Math.PI / 2;
-          t.castShadow = true;
-          g.add(t);
-          break;
-        }
-        case 'rod': mesh(g, new THREE.CylinderGeometry(0.11 * s, 0.11 * s, 0.9 * s, 14), mat); break;
-        case 'ball': mesh(g, new THREE.SphereGeometry(0.3 * s, 20, 14), mat); break;
-        case 'plate': mesh(g, new THREE.CylinderGeometry(0.5 * s, 0.55 * s, 0.22 * s, 24), mat); break;
-        default: mesh(g, new THREE.BoxGeometry(0.5 * s, 0.5 * s, 0.5 * s), mat);
+      const rad = group.length > 1 ? Math.max(1.3, group.length * 0.3) : 0;
+      const hit = classify(c.name);
+      if (hit.matched) cov.matched++;
+      else cov.unclassified.push(c.name);
+      const s = Math.max(0.6, 1.0 - lv * 0.06);
+      const g = makePart(P, c.id, horiz ? along * 0.55 : Math.cos(a) * rad * 0.6, horiz ? 0.4 : (lv - maxLv / 2) * -0.9);
+      tplGeo(g, hit.tpl, std(palette[i++ % palette.length], 0.7, 0.4));
+      g.scale.setScalar(s);
+      g.userData.baseScale = s;
+      if (horiz) {
+        g.position.set(along, Math.cos(a) * rad * 0.7, Math.sin(a) * rad * 0.7);
+        if (hit.tpl === 'shaft' || hit.tpl === 'crank' || hit.tpl === 'rotor') g.rotation.z = Math.PI / 2;
+      } else {
+        g.position.set(Math.cos(a) * rad, -along, Math.sin(a) * rad);
       }
-      g.position.x = x;
-      g.position.z = z;
-      g.position.y = y;
-      g.userData.baseX = x;
-      g.userData.baseY = y;
-      g.userData.baseZ = z;
       P.visualOf.set(c.id, c.id);
     });
   }
+  P.coverage = cov;
+}
+
+/* ---------------- parametric engine builder (kind == 'engine') --------
+   V layout derived from the pack's own components: N pistons split across
+   the banks the manual names (inline fallback), crank/cam/flywheel spin
+   about X, pistons reciprocate along their bank axis with firing phases,
+   fuel pulses travel injector -> crown on the intake stroke. Unmatched
+   parts land on an overflow shelf; nothing is invented. */
+const TILT = 0.5236;
+const ES = 1.3;
+const EOY = 0.9;
+const CCY = 0.55 * ES + EOY;
+interface EngPulse { mesh: THREE.Mesh; from: THREE.Vector3; to: THREE.Vector3; phase: number; injId: string }
+const FIRE6 = [0, 240, 480, 120, 360, 600];
+function bankPt(s: number, x: number, y: number, z: number): THREE.Vector3 {
+  const a = s * TILT;
+  const c = Math.cos(a);
+  const sn = Math.sin(a);
+  return new THREE.Vector3(x * ES, (y * c - z * sn) * ES + EOY, (y * sn + z * c) * ES);
+}
+function findComps(components: PackComponent[], rx: RegExp): PackComponent[] {
+  return components.filter((c) => rx.test(c.name)).sort((p, q) => (numSuffix(p.name) ?? 0) - (numSuffix(q.name) ?? 0));
+}
+interface EngRefs { pulses: EngPulse[]; pumpPulse: THREE.Mesh | null; recip: { id: string; dx: number; dy: number; dz: number; amp: number; phase: number }[] }
+function buildEngine(P: Parts, components: PackComponent[]): EngRefs {
+  const refs: EngRefs = { pulses: [], pumpPulse: null, recip: [] };
+  const used = new Set<string>();
+  const claim = (c: PackComponent | undefined): PackComponent | undefined => {
+    if (c) used.add(c.id);
+    return c;
+  };
+  const pistons = findComps(components, /piston/i);
+  const banks = findComps(components, /bank|engine block|cylinder block/i);
+  const sides = banks.length >= 2 ? [1, -1] : [0];
+  const perBank = sides.length > 1 ? Math.ceil(pistons.length / 2) : pistons.length;
+  const bankXs = (n: number): number[] => (n <= 1 ? [0] : Array.from({ length: n }, (_, k) => -0.85 + (1.7 * k) / (n - 1)));
+  const steel = std(0xb9bdc2, 1.0, 0.3);
+  const caseMat = new THREE.MeshStandardMaterial({ color: 0x536269, metalness: 0.6, roughness: 0.4, transparent: true, opacity: 0.32, depthWrite: false });
+  const place = (c: PackComponent | undefined, x: number, y: number, z: number, ex: number, ey: number): THREE.Group | null => {
+    if (!c) return null;
+    const g = makePart(P, c.id, ex, ey);
+    g.position.set(x, y, z);
+    g.userData.baseScale = 1;
+    P.visualOf.set(c.id, c.id);
+    return g;
+  };
+  const at = (g: THREE.Group, p: THREE.Vector3): [number, number, number] => [p.x - g.position.x, p.y - g.position.y, p.z - g.position.z];
+
+  const crankC = claim(findComps(components, /crankcase/i)[0]);
+  if (crankC) {
+    const g = place(crankC, 0, CCY, 0, 0, 0)!;
+    mesh(g, new THREE.BoxGeometry(2.3 * ES, 0.7 * ES, 1.1 * ES), caseMat);
+  }
+  const panC = claim(findComps(components, /oil pan|sump/i)[0]);
+  if (panC) {
+    const g = place(panC, 0, 0.05 * ES + EOY, 0, 0, -0.8)!;
+    mesh(g, new THREE.BoxGeometry(1.9 * ES, 0.32 * ES, 0.9 * ES), std(0x3d4a4e, 0.6, 0.5));
+  }
+  const crank = claim(findComps(components, /crankshaft/i)[0]);
+  if (crank) {
+    const g = place(crank, 0, CCY, 0, 0, 0)!;
+    mesh(g, xCyl(0.09 * ES, 2.5 * ES, 24), steel);
+    const n = Math.max(pistons.length, 1);
+    for (let k = 0; k < n; k++) {
+      const f = ((FIRE6[k % 6] * Math.PI) / 180);
+      const xs = bankXs(perBank);
+      mesh(g, new THREE.BoxGeometry(0.1 * ES, 0.16 * ES, 0.2 * ES), MAT_DARK, (xs[k % xs.length] ?? 0) * ES, Math.cos(f) * 0.14 * ES, Math.sin(f) * 0.14 * ES);
+    }
+    g.userData.role = 'shaft';
+  }
+  const fly = claim(findComps(components, /flywheel/i)[0]);
+  if (fly) {
+    const g = place(fly, -1.45 * ES, CCY, 0, -1.2, 0)!;
+    mesh(g, xCyl(0.42 * ES, 0.16 * ES, 36), std(0x68767c, 0.8, 0.4));
+  }
+  const cams = findComps(components, /camshaft/i);
+  const rails = findComps(components, /fuel rail/i);
+  const injectors = findComps(components, /injector/i);
+  const rods = claim(findComps(components, /connecting rod/i)[0]);
+  const rodMeshes: [number, THREE.Vector3][] = [];
+  const plugs = claim(findComps(components, /spark|glow plug/i)[0]);
+  const plugMeshes: THREE.Vector3[] = [];
+  const nFire = pistons.length || 1;
+  pistons.forEach((pc, k) => {
+    const sideIdx = sides.length > 1 ? (k < perBank ? 0 : 1) : 0;
+    const s = sides[sideIdx];
+    const xs = bankXs(sides.length > 1 ? perBank : pistons.length);
+    const x = xs[sides.length > 1 ? k % perBank : k] ?? 0;
+    const bp = bankPt(s, x, 1.12, 0);
+    const g = place(claim(pc), bp.x, bp.y, bp.z, s * 0.4, 1.2)!;
+    const body = mesh(g, new THREE.CylinderGeometry(0.21 * ES, 0.21 * ES, 0.3 * ES, 26), steel);
+    body.rotation.x = s * TILT;
+    g.userData.role = 'piston';
+    const a = s * TILT;
+    const fireDeg = pistons.length === 6 ? FIRE6[k] : (k * 720) / nFire;
+    refs.recip.push({ id: pc.id, dx: 0, dy: Math.cos(a), dz: Math.sin(a), amp: 0.16 * ES, phase: (fireDeg * Math.PI) / 180 });
+    rodMeshes.push([s, bankPt(s, x, 0.82, 0)]);
+    plugMeshes.push(bankPt(s, x - 0.24, 1.7, 0));
+    const inj = injectors[k];
+    if (inj && !used.has(inj.id)) {
+      used.add(inj.id);
+      const ip = bankPt(s, x + 0.22, 1.62, 0);
+      const ig = place(inj, ip.x, ip.y, ip.z, s * 0.6, 1.0)!;
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.05 * ES, 0.22 * ES, 12), std(0xc8b06a, 0.6, 0.4));
+      cone.rotation.z = -0.5;
+      cone.castShadow = true;
+      ig.add(cone);
+      const pulse = new THREE.Mesh(new THREE.SphereGeometry(0.055 * ES, 12, 10), new THREE.MeshBasicMaterial({ color: 0xff9a2e }));
+      const from = bankPt(s, x + 0.2, 1.56, 0);
+      const to = bankPt(s, x + 0.05, 1.05, 0);
+      pulse.position.copy(from);
+      P.scene.add(pulse);
+      refs.pulses.push({ mesh: pulse, from, to, phase: (fireDeg * Math.PI) / 180, injId: inj.id });
+    }
+  });
+  if (rods) {
+    const g = place(rods, 0, CCY, 0, 0, 0.5)!;
+    for (const [s, p] of rodMeshes) {
+      const [rx, ry, rz] = at(g, p);
+      const r = mesh(g, new THREE.BoxGeometry(0.09 * ES, 0.85 * ES, 0.09 * ES), std(0xa9b2b3, 0.8, 0.35), rx, ry, rz);
+      r.rotation.x = s * TILT;
+    }
+  }
+  if (plugs) {
+    const g = place(plugs, 0, bankPt(0, 0, 1.7, 0).y, 0, 0, 1.0)!;
+    for (const p of plugMeshes) {
+      const [rx, ry, rz] = at(g, p);
+      const m = mesh(g, new THREE.CylinderGeometry(0.045 * ES, 0.045 * ES, 0.3 * ES, 10), std(0xeee9d9, 0.2, 0.5), rx, ry, rz);
+      m.rotation.z = 0.4;
+    }
+  }
+  banks.forEach((bc, bi) => {
+    const s = sides.length > 1 ? (bi === 0 ? 1 : -1) : 0;
+    const ctr = bankPt(s, 0, 1.6, 0);
+    const g = place(claim(bc), ctr.x, ctr.y, ctr.z, s * 0.5, 0.8)!;
+    const plates: [number, number, number, number, number, number][] = [
+      [0, 1.45, 0.28, 2.2, 1.15, 0.07],
+      [0, 1.45, -0.28, 2.2, 1.15, 0.07],
+      [0, 2.02, 0, 2.2, 0.09, 0.62],
+    ];
+    for (const [lx, ly, lz, w, h, d] of plates) {
+      const [rx, ry, rz] = at(g, bankPt(s, lx, ly, lz));
+      const m = mesh(g, new THREE.BoxGeometry(w * ES, h * ES, d * ES), std(0x5d6f75, 0.6, 0.45), rx, ry, rz);
+      m.rotation.x = s * TILT;
+    }
+    g.userData.role = 'cylinder';
+  });
+  cams.forEach((cc, bi) => {
+    const s = sides.length > 1 ? (bi % 2 === 0 ? 1 : -1) : 0;
+    const cp = bankPt(s, 0, 2.08, 0);
+    const g = place(claim(cc), cp.x, cp.y, cp.z, s * 0.3, 1.0)!;
+    mesh(g, xCyl(0.06 * ES, 2.1 * ES, 16), std(0x8b9597, 0.8, 0.4));
+    g.userData.role = 'shaft';
+  });
+  rails.forEach((rc, bi) => {
+    const s = sides.length > 1 ? (bi % 2 === 0 ? 1 : -1) : 0;
+    const rp = bankPt(s, 0, 1.66, 0.42);
+    const g = place(claim(rc), rp.x, rp.y, rp.z, s * 0.4, 0.8)!;
+    mesh(g, xCyl(0.05 * ES, 2.0 * ES, 12), std(0x7a6f4d, 0.7, 0.4));
+  });
+  const mani = claim(findComps(components, /manifold|intake/i)[0]);
+  if (mani) {
+    const g = place(mani, 0, 2.0 * ES + EOY, 0, 0, 1.4)!;
+    mesh(g, new THREE.BoxGeometry(1.9 * ES, 0.28 * ES, 0.6 * ES), std(0x46555b, 0.6, 0.45));
+  }
+  const fpump = claim(findComps(components, /fuel pump/i)[0]);
+  if (fpump) {
+    const g = place(fpump, 1.55 * ES + 0.4, 0.9 * ES + EOY, 0.85 * ES, 0.8, 0.4)!;
+    mesh(g, new THREE.BoxGeometry(0.34 * ES, 0.42 * ES, 0.34 * ES), std(0x6b5a3e, 0.6, 0.45));
+    const pp = new THREE.Mesh(new THREE.SphereGeometry(0.07 * ES, 12, 10), new THREE.MeshBasicMaterial({ color: 0xff9a2e }));
+    pp.position.set(g.position.x, g.position.y + 0.3 * ES, g.position.z);
+    P.scene.add(pp);
+    refs.pumpPulse = pp;
+  }
+  const rest = components.filter((c) => !used.has(c.id));
+  rest.forEach((c, j) => {
+    const col = j % 3;
+    const row = Math.floor(j / 3);
+    const g = place(c, 3.6 * ES + col * 1.1, 0.4 + row * 1.1, -1.5, 1.0, 0.5)!;
+    const hit = classify(c.name);
+    tplGeo(g, hit.tpl, std(0x4a4e57, 0.7, 0.4));
+  });
+  const cov: Cov = { matched: components.length - rest.filter((c) => !classify(c.name).matched).length, total: components.length, unclassified: rest.filter((c) => !classify(c.name).matched).map((c) => c.name) };
+  P.coverage = cov;
+  return refs;
 }
 
 /* ---------------- viewer ---------------- */
@@ -639,6 +1016,8 @@ export function initAssembly(
     labelFor: (id: string) => string;
     machine: string;
     components: PackComponent[];
+    kind?: string;
+    scales?: { bore: number; stroke: number; shaft: number };
     orbit?: boolean;
     chrome?: boolean;
     height?: number;
@@ -700,9 +1079,12 @@ export function initAssembly(
   scene.add(ground);
 
   const P: Parts = { parts: new Map(), visualOf: new Map(), scene };
+  const kind = opts.kind ?? 'generic';
+  let engRefs: EngRefs | null = null;
   if (opts.machine === 'rig') buildRig(P);
   else if (opts.machine === 'cr-pump') buildPump(P);
-  else buildGeneric(P, opts.components);
+  else if (kind === 'engine') engRefs = buildEngine(P, opts.components);
+  else buildGeneric(P, opts.components, kind);
 
   for (const c of opts.components) if (!P.visualOf.has(c.id)) P.visualOf.set(c.id, c.id);
   const resolve = (id: string): string | null => {
@@ -740,10 +1122,25 @@ export function initAssembly(
   });
 
   /* Speed groups (PRD §5): shaft/impellers/coupling/rotor/fan 1.0x,
-     bearing cage+balls 0.42x, outer rings stationary. */
+     bearing cage+balls 0.42x, outer rings stationary. Generic builds derive
+     spin + reciprocation from component names (data-driven motion). */
   const SPIN: Record<string, { ax: 'x' | 'y'; rate: number }> = opts.machine === 'rig'
     ? { shaft: { ax: 'x', rate: 1 }, ring_inner: { ax: 'x', rate: 1 }, rollers: { ax: 'x', rate: 0.42 }, cage: { ax: 'x', rate: 0.42 } }
-    : { shaft: { ax: 'y', rate: 1 }, impeller: { ax: 'y', rate: 1 }, 'coupling-half': { ax: 'y', rate: 1 }, 'bearing-cage': { ax: 'y', rate: 0.42 }, 'bearing-balls': { ax: 'y', rate: 0.42 } };
+    : opts.machine === 'cr-pump'
+      ? { shaft: { ax: 'y', rate: 1 }, impeller: { ax: 'y', rate: 1 }, 'coupling-half': { ax: 'y', rate: 1 }, 'bearing-cage': { ax: 'y', rate: 0.42 }, 'bearing-balls': { ax: 'y', rate: 0.42 } }
+      : {};
+  const recipList: { id: string; dx: number; dy: number; dz: number; amp: number; phase: number }[] = [...(engRefs?.recip ?? [])];
+  if (opts.machine !== 'rig' && opts.machine !== 'cr-pump') {
+    let ri = 0;
+    for (const c of opts.components) {
+      const sp = spinFor(c.name, kind);
+      const v = resolve(c.id);
+      if (sp && v && !(v in SPIN)) SPIN[v] = sp;
+      if (!engRefs && recipFor(c.name) && v && !recipList.some((r) => r.id === v)) {
+        recipList.push({ id: v, dx: 0, dy: 1, dz: 0, amp: 0.12, phase: (ri++) * Math.PI / 3 });
+      }
+    }
+  }
 
   /* ---- fluid particles: volute -> impellers -> 5 diffusers -> discharge ---- */
   const isPump = opts.machine === 'cr-pump';
@@ -770,6 +1167,17 @@ export function initAssembly(
   const airflow = new THREE.Points(aGeo, new THREE.PointsMaterial({ color: 0x9db8c8, size: 0.04, transparent: true, opacity: 0.6 }));
   airflow.visible = false;
   if (isPump) scene.add(airflow);
+  /* generic pump flow: straight vertical rise for PDF-onboarded pumps */
+  const isFlowPump = kind === 'pump' && opts.machine !== 'cr-pump';
+  const NF = 120;
+  const fGeo = new THREE.BufferGeometry();
+  const fPos = new Float32Array(NF * 3);
+  const fState: { p: number; a: number; r: number; s: number }[] = [];
+  for (let i = 0; i < NF; i++) fState.push({ p: Math.random(), a: Math.random() * Math.PI * 2, r: 0.05 + Math.random() * 0.1, s: 0.7 + Math.random() * 0.6 });
+  fGeo.setAttribute('position', new THREE.BufferAttribute(fPos, 3));
+  const flow = new THREE.Points(fGeo, new THREE.PointsMaterial({ color: 0x1f7a8c, size: 0.055, transparent: true, opacity: 0.85 }));
+  flow.visible = false;
+  if (isFlowPump) scene.add(flow);
 
   let layout: 'assembled' | 'sheet' = 'assembled';
   const anims = new Map<string, { from: THREE.Vector3; to: THREE.Vector3; t0: number; dur: number }>();
@@ -908,7 +1316,9 @@ export function initAssembly(
   if (showChrome) {
     const caption = document.createElement('p');
     caption.className = 'muted';
-    caption.textContent = 'Blueprint model — every nut, bolt, washer and bearing ball modelled. Drag to orbit, scroll to zoom.';
+    caption.textContent = P.coverage
+      ? 'Schematic asset-class model — shapes guessed from part names, not dimensioned. Drag to orbit, scroll to zoom.'
+      : 'Blueprint model — every nut, bolt, washer and bearing ball modelled. Drag to orbit, scroll to zoom.';
     el.appendChild(caption);
   }
   const tag = document.createElement('div');
@@ -980,7 +1390,7 @@ export function initAssembly(
     }
     if (running) angle += spinSpeed * dt * 4.19; // 240 deg/s readable speed
     const wob = Math.sin(now / 55) * 0.05 * faultWobble;
-    const cageRate = faultVisuals.some((v) => v.includes('bearing')) && faultWobble > 0 ? 0.35 : 0.42;
+    const cageRate = faultVisuals.some((v) => /bearing|cage|roll|ball/i.test(v)) && faultWobble > 0 ? 0.35 : 0.42;
     for (const id of idList) {
       const p = pos.get(id)!;
       const g = P.parts.get(id)!;
@@ -990,10 +1400,18 @@ export function initAssembly(
       g.position.set(p.x + (isFault && vertical ? Math.sin(now / 55) * wobbleAmp + wob * 0 : isFault && !vertical ? 0 : isFault ? wob : 0), p.y, p.z + (isFault && !vertical ? wob : 0));
       const sp = SPIN[id];
       if (sp && running) {
-        const rate = (id === 'bearing-cage' || id === 'bearing-balls' || id === 'rollers' || id === 'cage') ? cageRate : sp.rate;
+        const rate = sp.rate < 1 ? cageRate * (sp.rate / 0.42) : sp.rate;
         if (sp.ax === 'x') g.rotation.x = angle * rate;
         else g.rotation.y = angle * rate;
       }
+    }
+    for (const r of recipList) {
+      const g = P.parts.get(r.id);
+      if (!g) continue;
+      const off = running ? Math.cos(angle + r.phase) * r.amp : 0;
+      g.position.x += r.dx * off;
+      g.position.y += r.dy * off;
+      g.position.z += r.dz * off;
     }
     /* particles + faults */
     if (isPump) {
@@ -1034,6 +1452,36 @@ export function initAssembly(
         aGeo.attributes.position.needsUpdate = true;
       }
     }
+    if (isFlowPump) {
+      flow.visible = running;
+      if (running) {
+        for (let i = 0; i < NF; i++) {
+          const st = fState[i];
+          st.p += dt * 0.2 * st.s * spinSpeed;
+          if (st.p > 1) { st.p = 0; st.a = Math.random() * Math.PI * 2; }
+          const y = -1.2 + st.p * 3.8;
+          const swirl = st.a + st.p * 7;
+          let x = Math.cos(swirl) * st.r;
+          const z = Math.sin(swirl) * st.r;
+          if (st.p > 0.95) x += (st.p - 0.95) * 20;
+          fPos[i * 3] = x; fPos[i * 3 + 1] = y; fPos[i * 3 + 2] = z;
+        }
+        fGeo.attributes.position.needsUpdate = true;
+      }
+    }
+    if (engRefs) {
+      for (const pu of engRefs.pulses) {
+        const a = (angle + pu.phase) % (Math.PI * 4);
+        const dead = faultVisuals.includes(pu.injId);
+        if (!running || dead || a >= Math.PI) { pu.mesh.visible = false; continue; }
+        pu.mesh.visible = true;
+        pu.mesh.position.lerpVectors(pu.from, pu.to, a / Math.PI);
+      }
+      if (engRefs.pumpPulse) {
+        engRefs.pumpPulse.visible = running;
+        if (running) engRefs.pumpPulse.scale.setScalar(1 + 0.35 * Math.sin(angle * 3));
+      }
+    }
     for (const d of dots) {
       const baseP = pos.get(d.id)!.clone().add(centerOf.get(d.id)!);
       const a = now / 700 + d.ph;
@@ -1047,7 +1495,19 @@ export function initAssembly(
     renderer.render(scene, camera);
   });
 
+  function applyDesign(sc: { bore: number; stroke: number; shaft: number }): void {
+    for (const g of P.parts.values()) {
+      const role = g.userData.role as string | undefined;
+      const b = (g.userData.baseScale as number | undefined) ?? 1;
+      if (role === 'piston' || role === 'cylinder') g.scale.set(b * sc.bore, b * sc.stroke, b * sc.bore);
+      else if (role === 'shaft') g.scale.setScalar(b * sc.shaft);
+    }
+  }
+  if (opts.scales) applyDesign(opts.scales);
+
   return {
+    getCoverage(): { matched: number; total: number; unclassified: string[] } | null { return P.coverage ?? null; },
+    setDesign(sc: { bore: number; stroke: number; shaft: number }): void { applyDesign(sc); },
     select(id: string): void { selected = resolve(id); repaint(0); },
     setSuspect(id: string | null): void { suspect = id ? resolve(id) : null; repaint(0); },
     setIsolated(id: string | null): void { isolatedId = id ? resolve(id) : null; repaint(0); },

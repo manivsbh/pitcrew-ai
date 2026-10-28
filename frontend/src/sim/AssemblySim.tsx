@@ -10,6 +10,7 @@ export default function AssemblySim({
   labelFor,
   suspect,
   selectedId,
+  scales,
 }: {
   pack: Pack
   machineId: string
@@ -17,6 +18,7 @@ export default function AssemblySim({
   labelFor: (id: string) => string
   suspect: string | null
   selectedId: string | null
+  scales: { bore: number; stroke: number; shaft: number }
 }) {
   const host = useRef<HTMLDivElement>(null)
   const handle = useRef<AssemblyHandle | null>(null)
@@ -35,12 +37,22 @@ export default function AssemblySim({
       labelFor,
       machine: machineId,
       components: pack.components,
+      kind: pack.meta.kind,
+      scales,
     })
     handle.current = h
     setLayoutState("assembled")
     setRunning(false)
     setFaultId(scenarios[0]?.id ?? "")
-    setCaption("")
+    const cov = h.getCoverage()
+    setCaption(
+      cov
+        ? `Schematic model — ${cov.matched}/${cov.total} parts matched to asset templates.` +
+          (cov.unclassified.length
+            ? ` Needs drawings: ${cov.unclassified.slice(0, 4).join(", ")}${cov.unclassified.length > 4 ? ` +${cov.unclassified.length - 4} more` : ""}.`
+            : " All parts classified.")
+        : "",
+    )
     return () => {
       h.dispose()
       handle.current = null
@@ -52,6 +64,11 @@ export default function AssemblySim({
     handle.current?.setSuspect(suspect)
     if (suspect) handle.current?.setExplode(0.85)
   }, [suspect])
+
+  useEffect(() => {
+    handle.current?.setDesign(scales)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scales.bore, scales.stroke, scales.shaft])
 
   const current =
     scenarios.find((s) => s.id === faultId) ?? scenarios[0] ?? null
