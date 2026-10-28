@@ -1,0 +1,19 @@
+- [major] camera azimuth 0 deg front elevation with 0 deg side offset -> ~30 deg three-quarter view matching hero.png
+- [major] assembly width ~18% of frame width with ~41% empty margin each side -> ~35% of frame width filling hero.png framing
+- [major] motor axis vertical front-facing with circular top-cap silhouette -> motor axis diagonal with end bell and left shaft stub visible as in hero.png top
+- [major] motor body height ~1.4x its diameter tall narrow silhouette -> motor length ~1.1x diameter compact silhouette as in hero.png top
+- [major] 0 callout circles and 0 leader lines visible -> 31 callout circles with leader lines (17 left + 14 right) as in hero.png
+- [major] 4x full-height tie rods ~45% of assembly height flanking stack -> 0 tie rods, central shaft only as in hero.png
+- [major] extra dark grey base plate ~110% of casing width under volute -> no base plate, volute feet only as in hero.png bottom
+- [major] volute casing front-symmetric barrel with coaxial left/right nozzles at 180 deg -> three-quarter volute with front-right flanged outlet facing camera-right as in hero.png bottom
+- [major] central shaft exposed length ~5% of assembly height mostly hidden -> exposed shaft ~22% of assembly height between sleeve and seal as in hero.png centre
+- [moderate] blue diffuser stage count 4 visible bowls -> 5 stacked stages as in hero.png lower-centre
+- [moderate] gold impellers 2 flattened discs at ~2% of height gap -> 2 impellers at ~4% of height separation with visible vane relief as in hero.png centre
+- [moderate] perforated coupling drum height ~4% of assembly height compressed under motor -> perforated coupling drum ~6% of assembly height offset right of mating ring as in hero.png upper-centre
+- [moderate] springs 4 visible coils in single row at mid-stack -> 7 springs/coils in two groups as in hero.png upper-middle
+- [moderate] motor cooling fins ~12 vertical ribs -> ~18 horizontal axial fins along motor length as in side.jpg centre and hero.png top
+- [moderate] terminal box ~8% of motor width on right side only -> top terminal box ~25% of motor top area in hero.png plus side junction profile as in side.jpg
+- [moderate] fasteners ~20 floating scattered at random heights around casing -> fasteners grouped adjacent to mating flanges (6-8 per flange zone) as in hero.png
+- [minor] body blue ~#7AA6C8 light flat shading -> slate blue ~#5B7FA6 with darker fin shadows as in hero.png
+- [minor] ground shadow hard blob extending ~15% of frame width to right -> soft contact shadow ~5% under base only as in hero.png
+- [minor] background flat #F2F2F2 with no gradient -> light grey #EEEEEE as in refs
