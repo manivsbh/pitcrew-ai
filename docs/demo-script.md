@@ -1,7 +1,9 @@
-# Demo script (7 beats, ~6 minutes)
+# Demo script (9 beats, ~8 minutes)
 
-Setup: `source .venv/bin/activate`, `uvicorn backend.app.main:app
---host 127.0.0.1 --port 8000`, open http://127.0.0.1:8000/ in a browser.
+Setup: `source .venv/bin/activate`, `export MODEL_API_KEY="..."`,
+`cd frontend && npm run build && cd ..` (required: serves the UI),
+`uvicorn backend.app.main:app --host 127.0.0.1 --port 8000`,
+open http://127.0.0.1:8000/ in a browser.
 
 > UI map (React app): landing page → "Enter the workspace" →
 > Workspace tab. Recording dropdown, agent steps, finding,
@@ -36,7 +38,15 @@ Setup: `source .venv/bin/activate`, `uvicorn backend.app.main:app
    Investigate: flat signal, no references, agent submits
    insufficient_evidence with a concrete next measurement. No forced
    diagnosis.
+9. **New machines from PDFs (90s).** Switch the machine picker across
+   all four machines: rig, CR pump (authored), demo pump and V6 engine
+   (both built from manual PDFs via Blueprints → pack-builder, no
+   per-machine code). On the V6: Parts sheet, Assemble (4 derived
+   steps), Run with Injector misfire — fuel pulses stop on the dead
+   cylinder. Inventory fills itself from pack components.
 
 Fallbacks: if the live run stalls, open a saved trace from `data/reports/`
 via Export; if the API key is missing, the smoke command
-`python scripts/smoke_meta.py` shows the exact failure.
+`python scripts/smoke_meta.py` shows the exact failure. Never run a cold
+investigate on stage: the agent averages ~72s per recording
+(see `evals/latency.md`); pre-run and replay saved traces instead.

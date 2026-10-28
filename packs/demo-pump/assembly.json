@@ -1,0 +1,100 @@
+{
+ "order": [
+  {
+   "caption": "Install Pipe Plug (Pos. 23b), Sleeve O-ring (Pos. 37b), Base (Pos. 90).",
+   "parts": [
+    "pipe-plug",
+    "sleeve-o-ring",
+    "base"
+   ]
+  },
+  {
+   "caption": "Install Motor Bolts (Pos. 28), Allen Screw for Foot/Base (Pos. 28g), Suction/Discharge Base (Pos. 6), Support Plate (Pos. 90c).",
+   "parts": [
+    "motor-bolts",
+    "allen-screw-for-foot-base",
+    "suction-discharge-base",
+    "support-plate"
+   ]
+  },
+  {
+   "caption": "Install Flange (Pos. 12a), Cartridge Assembly (Pos. 80a).",
+   "parts": [
+    "flange",
+    "cartridge-assembly"
+   ]
+  },
+  {
+   "caption": "Install Motor Stool (Pos. 2), Flange Ring (Pos. 201), Grip Staybolts (Pos. 26), Allen Screw for Discharge Flange (Pos. 35), O-ring (Pos. 39b), Suction Inlet Connector (Pos. 44a), Sleeve (Pos. 55), Sleeve Flange Housing (Pos. 55b), Impeller Stack (Pos. 80).",
+   "parts": [
+    "motor-stool",
+    "flange-ring",
+    "grip-staybolts",
+    "allen-screw-for-discharge-flange",
+    "o-ring",
+    "suction-inlet-connector",
+    "sleeve",
+    "sleeve-flange-housing",
+    "impeller-stack"
+   ]
+  },
+  {
+   "caption": "Install Shaft Seal (Pos. 105), Retaining Ring (Pos. 203), Straps (Pos. 26a), Chamber Stack Strap Bolt (Pos. 26b), Staybolt Nuts (Pos. 36), Sleeve O-rings (Pos. 37), Chambers (Pos. 4), Seal Ring (Pos. 45), Bearing Rings (Pos. 47a), Impellers (Pos. 49a), Shaft (Pos. 51), Allen Screws (Pos. 56c), Washers (Pos. 56d), Sleeve Flange Nuts (Pos. 56e), Spacers (Pos. 64), Splined Spacer (Pos. 64c), Washers (Pos. 66a), Pump Head (Pos. 77).",
+   "parts": [
+    "shaft-seal",
+    "retaining-ring",
+    "straps",
+    "chamber-stack-strap-bolt",
+    "staybolt-nuts",
+    "sleeve-o-rings",
+    "chambers",
+    "seal-ring",
+    "bearing-rings",
+    "impellers",
+    "shaft",
+    "allen-screws",
+    "washers",
+    "sleeve-flange-nuts",
+    "spacers",
+    "splined-spacer",
+    "washers-2",
+    "pump-head"
+   ]
+  },
+  {
+   "caption": "Install With Shaft Pin (Pos. 10), Inboard Seal (Pos. 105b), Coupling Halves (Pos. 10a), Shaft Seal Securing Allen Screws (Pos. 113), Washers (Pos. 26c), Wear Rings (Pos. 49c), Snap Seal Ring Retainer (Pos. 65), The Lock Washers (Pos. 66), Shaft Lock Nut (Pos. 67), Pump Head Assembly (Pos. 77a).",
+   "parts": [
+    "with-shaft-pin",
+    "inboard-seal",
+    "coupling-halves",
+    "shaft-seal-securing-allen-screws",
+    "washers-3",
+    "wear-rings",
+    "snap-seal-ring-retainer",
+    "the-lock-washers",
+    "shaft-lock-nut",
+    "pump-head-assembly"
+   ]
+  },
+  {
+   "caption": "Install PTFE Stack Compression Springs (Pos. 60), PTFE Stack Compression Springs (Pos. 60a), Coupling Guards (Pos. 7), Disk Plate (Pos. 79a), Hex Head Coupling Bolts (Pos. 9).",
+   "parts": [
+    "ptfe-stack-compression-springs",
+    "ptfe-stack-compression-springs-2",
+    "coupling-guards",
+    "disk-plate",
+    "hex-head-coupling-bolts"
+   ]
+  },
+  {
+   "caption": "Install O-rings (Pos. 109a), O-ring (Pos. 37c), Bushings (Pos. 79b), Coupling Guard Screws (Pos. 7a).",
+   "parts": [
+    "o-rings",
+    "o-ring-2",
+    "bushings",
+    "coupling-guard-screws"
+   ]
+  }
+ ],
+ "source": "derived"
+}

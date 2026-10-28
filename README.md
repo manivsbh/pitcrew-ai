@@ -30,8 +30,10 @@ pip install -r requirements.txt
 export MODEL_API_KEY="..."   # never commit; server-side only
 ```
 
-Frontend (from `frontend/`): `npm install`, `npm run dev`. The backend serves
-the built frontend locally in demo mode.
+Frontend (from `frontend/`): `npm install`, then `npm run build`.
+The backend serves the built frontend (`frontend/dist/`, not committed)
+locally in demo mode — without the build step the UI is blank.
+Use `npm run dev` only for frontend development.
 
 ## Data
 
