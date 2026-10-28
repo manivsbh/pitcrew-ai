@@ -660,7 +660,7 @@ export function initAssembly(
   el.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xf0efef);
+  scene.background = new THREE.Color(0x232a2b);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
   scene.environmentIntensity = 0.5;
@@ -712,7 +712,7 @@ export function initAssembly(
   const regOf = new Map<string, string>();
   for (const [reg, vis] of P.visualOf) if (!regOf.has(vis)) regOf.set(vis, reg);
 
-  const grid = new THREE.GridHelper(24, 24, 0x9aa39a, 0xd8dcd8);
+  const grid = new THREE.GridHelper(24, 24, 0x41494b, 0x303638);
   grid.position.y = FLOOR + 0.01;
   (grid.material as THREE.Material).transparent = true;
   (grid.material as THREE.Material).opacity = 0.55;
