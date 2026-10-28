@@ -6,9 +6,11 @@ import shutil
 
 from fastapi.testclient import TestClient
 
+import backend.app.inventory as inv
 from backend.app.main import app
-from backend.app.packbuilder import (apply_edits, assess, extract_candidates,
-                                     finalize, reason_with_model)
+from backend.app.packbuilder import (apply_edits, assess, classify_kind,
+                                     extract_candidates, finalize,
+                                     reason_with_model)
 
 client = TestClient(app)
 
@@ -109,7 +111,8 @@ PDF_LINES = [
 ]
 
 
-def test_draft_upload_answer_finalize_roundtrip():
+def test_draft_upload_answer_finalize_roundtrip(tmp_path, monkeypatch):
+    monkeypatch.setattr(inv, "DB_PATH", str(tmp_path / "inv.db"))
     pdf = make_pdf(PDF_LINES)
     r = client.post("/api/packs/draft",
                     data={"machine": "test-m", "title": "Test Manual"},
@@ -129,6 +132,10 @@ def test_draft_upload_answer_finalize_roundtrip():
         assert drop_id not in ids and "extra-gasket" in ids
         r3 = client.post(f"/api/packs/draft/{draft_id}/finalize")
         assert r3.json()["machine"] == "test-m", r3.json()
+        assert r3.json()["inventory_added"] == r3.json()["components"]
+        part = client.get(
+            f"/api/inventory/by-component/test-m/{keep_id}").json()
+        assert part["stock_qty"] == 0 and "unstocked" in part["vendor"].lower()
         pack = client.get("/api/packs/test-m").json()
         assert len(pack["components"]) == r3.json()["components"]
         r4 = client.post(f"/api/packs/draft/{draft_id}/finalize")
@@ -183,3 +190,44 @@ def test_apply_edits_drops_and_reparents(tmp_path):
         assert out["candidates"][0]["name"] == "B2"
     finally:
         pb.DRAFTS_DIR = old
+
+
+def test_classify_kind():
+    pump = [{"id": "a", "name": "Stage Impeller"}, {"id": "b", "name": "Pump Shaft"}]
+    assert classify_kind(pump) == "pump"
+    eng = [{"id": "a", "name": "Piston"}, {"id": "b", "name": "Crankshaft"}]
+    assert classify_kind(eng) == "engine"
+    rig = [{"id": "a", "name": "Test Bearing Inner Ring"},
+           {"id": "b", "name": "Load Motor"}]
+    assert classify_kind(rig) == "bearing-rig"
+    assert classify_kind([{"id": "a", "name": "Widget Bracket"}]) == "generic"
+    assert classify_kind([]) == "generic"
+
+
+def test_finalize_writes_kind_and_override(tmp_path):
+    base = {"id": "k1", "machine": "m", "title": "T", "status": "draft",
+            "candidates": [{"id": "impeller", "name": "Impeller", "pos": "1"},
+                           {"id": "shaft", "name": "Shaft", "pos": "2"},
+                           {"id": "seal", "name": "Seal", "pos": "3"}],
+            "edits": []}
+    d1 = dict(base, review=None)
+    out = finalize(d1, packs_dir=str(tmp_path))
+    assert out["kind"] == "pump"
+    pack = json.load(open(tmp_path / "m" / "pack.json"))
+    assert pack["kind"] == "pump"
+    d2 = dict(base, id="k2", machine="m2", review={"kind": "engine"})
+    out2 = finalize(d2, packs_dir=str(tmp_path))
+    assert out2["kind"] == "engine"
+    d3 = dict(base, id="k3", machine="m3", review={"kind": "bogus"})
+    assert finalize(d3, packs_dir=str(tmp_path))["kind"] == "pump"
+
+
+def test_inventory_backfill(tmp_path, monkeypatch):
+    monkeypatch.setattr(inv, "DB_PATH", str(tmp_path / "inv.db"))
+    r = client.post("/api/inventory/backfill").json()
+    assert r["added"] > 100, r
+    assert set(r["per_machine"]) >= {"rig", "cr-pump", "v6-engine"}
+    r2 = client.post("/api/inventory/backfill").json()
+    assert r2["added"] == 0
+    part = client.get("/api/inventory/by-component/rig/shaft").json()
+    assert part["machine"] == "rig"

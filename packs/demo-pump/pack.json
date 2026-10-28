@@ -1,0 +1,12 @@
+{
+ "machine": "demo-pump",
+ "name": "grundfos-cr-service-h.pdf",
+ "kind": "pump",
+ "created": "2026-10-27",
+ "notes": "Agent-drafted pack: user-confirmed from manual via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "grundfos-cr-service-h.pdf"
+  }
+ ]
+}

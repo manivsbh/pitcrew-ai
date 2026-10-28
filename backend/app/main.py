@@ -17,7 +17,7 @@ from .guide import answer as guide_answer
 from .guide import get_playbook, start as guide_start
 from .inventory import audit_trail, cancel, confirm, connect, create_draft
 from .inventory import get_order as inv_get_order
-from .inventory import part_for_component, search, submit
+from .inventory import part_for_component, search, submit, sync_from_pack
 from .segment import segment_photo
 from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
                           reason_with_model)
@@ -450,9 +450,30 @@ def draft_finalize(draft_id: str) -> dict:
     if draft["status"] == "finalized":
         return {"error": "draft already finalized"}
     try:
-        return finalize(draft)
+        out = finalize(draft)
     except ValueError as e:
         return {"error": str(e)}
+    try:
+        with connect() as conn:
+            out["inventory_added"] = sync_from_pack(
+                conn, out["machine"],
+                load_pack(out["machine"])["components"])
+    except Exception as e:
+        out["inventory_error"] = str(e)
+    return out
+
+
+@app.post("/api/inventory/backfill")
+def inv_backfill() -> dict:
+    total, per = 0, {}
+    with connect() as conn:
+        for m in list_packs():
+            n = sync_from_pack(
+                conn, m["machine"],
+                load_pack(m["machine"])["components"])
+            per[m["machine"]] = n
+            total += n
+    return {"added": total, "per_machine": per}
 
 
 def _hashes() -> dict:

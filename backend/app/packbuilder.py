@@ -254,6 +254,34 @@ def apply_edits(draft: dict, edits: list[dict],
     return draft
 
 
+KIND_KEYWORDS = {
+    "engine": ["piston", "crank", "injector", "camshaft", "spark",
+               "flywheel", "fuel rail", "connecting rod", "cylinder",
+               "fuel", "exhaust", "timing", "turbo", "crankcase",
+               "engine block", "head gasket", "piston ring"],
+    "pump": ["impeller", "diffuser", "volute", "neck ring", "wear ring",
+             "staybolt", "sleeve", "discharge flange", "pump", "seal",
+             "chamber", "stage", "multistage", "grundfos", "discharge",
+             "suction", "casing", "motor", "coupling", "flange",
+             "gasket", "o-ring", "shaft"],
+    "bearing-rig": ["6203", "raceway", "rolling element", "test rig",
+                    "test bearing", "inner ring", "outer ring",
+                    "paderborn", "load motor", "vibration",
+                    "accelerometer", "rig"],
+}
+
+VALID_KINDS = {"engine", "pump", "bearing-rig", "generic"}
+
+
+def classify_kind(components: list[dict]) -> str:
+    """Best-effort machine kind from component names (review.kind wins)."""
+    text = " ".join(c.get("name", "") for c in components).lower()
+    scores = {k: sum(kw in text for kw in kws)
+              for k, kws in KIND_KEYWORDS.items()}
+    best = max(scores, key=lambda k: scores[k])
+    return best if scores[best] else "generic"
+
+
 def finalize(draft: dict, packs_dir: str = "packs") -> dict:
     """Write a validated pack from user-confirmed candidates."""
     machine = draft["machine"]
@@ -283,9 +311,11 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
         raise ValueError("need at least 3 confirmed components")
     base = os.path.join(packs_dir, machine)
     os.makedirs(base, exist_ok=True)
+    kind = review.get("kind") if review.get("kind") in VALID_KINDS else None
+    kind = kind or classify_kind(components)
     with open(os.path.join(base, "pack.json"), "w") as f:
         json.dump({"machine": machine, "name": draft["title"],
-                   "kind": "drafted", "created": "2026-10-27",
+                   "kind": kind, "created": "2026-10-27",
                    "notes": "Agent-drafted pack: user-confirmed from manual "
                             "via pack-builder Q&A.",
                    "sources": [{"title": draft["title"]}]}, f, indent=1)
@@ -294,4 +324,4 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
     draft["status"] = "finalized"
     save_draft(draft)
     return {"machine": machine, "components": len(components),
-            "dropped_by_review": dropped}
+            "kind": kind, "dropped_by_review": dropped}

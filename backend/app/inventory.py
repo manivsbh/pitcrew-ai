@@ -110,6 +110,30 @@ def search(conn: sqlite3.Connection, machine: str, q: str) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def sync_from_pack(conn: sqlite3.Connection, machine: str,
+                   components: list[dict]) -> int:
+    """Ensure one catalog row per pack component (unstocked by default).
+
+    INSERT OR IGNORE: never overwrites curated rows (price/stock/vendor).
+    New machines are introducible by PDF alone; stocking stays explicit.
+    """
+    n = 0
+    for c in components:
+        cid = c.get("id", "")
+        if not cid:
+            continue
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO parts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (f"{machine}:{cid}", machine, cid, c.get("name", cid),
+             c.get("pos"), f"SIM-{cid.upper()[:12]}",
+             "Pack-derived (unstocked)", 0.0, "USD", 0, 7, 1))
+        n += cur.rowcount or 0
+    if n:
+        _audit(conn, "system", "pack_sync", {"machine": machine, "added": n})
+        conn.commit()
+    return n
+
+
 def part_for_component(conn: sqlite3.Connection, machine: str,
                        component_id: str) -> dict | None:
     row = conn.execute(
