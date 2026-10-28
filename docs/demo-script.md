@@ -3,6 +3,15 @@
 Setup: `source .venv/bin/activate`, `uvicorn backend.app.main:app
 --host 127.0.0.1 --port 8000`, open http://127.0.0.1:8000/ in a browser.
 
+> UI map (React app): landing page → "Enter the workspace" →
+> Workspace tab. Recording dropdown, agent steps, finding,
+> freeze/reveal, and evidence chips live in the right-hand
+> Investigation copilot; waveform/Spectrum tabs sit under the
+> assembly; sim controls (Parts sheet / Assemble / Run / Fault)
+> are under the 3D viewport; Blueprints = pack-builder +
+> segmentation; Inventory = catalog + sandbox orders; Agent lab =
+> specialists + guided checks.
+
 1. **Select (30s).** Pick "Recording N — N15_M07_F10" from the dropdown.
    Note the anonymized label: operating point only, no bearing identity.
    Waveform appears.
