@@ -1,1 +1,12 @@
-{"created": "2026-10-28", "kind": "engine", "machine": "v6-engine", "name": "V6 combustion engine (authored demo)", "notes": "Authored demo pack for visualization: component names and roles written for this demo, not extracted from a vendor manual. Geometry is illustrative.", "sources": [{"file": null, "note": "authored for demo; no vendor document", "publisher": "Machine Fault Investigator demo", "title": "V6 demo component list"}]}
+{
+ "machine": "v6-engine",
+ "name": "V6 Service Parts",
+ "kind": "engine",
+ "created": "2026-10-27",
+ "notes": "Agent-drafted pack: user-confirmed from manual via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "V6 Service Parts"
+  }
+ ]
+}

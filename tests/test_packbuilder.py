@@ -247,3 +247,27 @@ def test_derive_assembly_orders_roots_first():
     assert leak["parts"] == ["seal"] and leak["illustrative"] is True
     assert all("Illustrative" in s["note"] for s in scn)
     assert derive_scenarios(comps, "bogus-kind", "T")[1]["id"] == "wear"
+
+
+def test_extract_strips_detach_verbs():
+    cands = extract_candidates("Unclip Fuel Rail L (Pos. 12) then seat it.")
+    assert [(c["id"], c["name"]) for c in cands] == [
+        ("fuel-rail-l", "Fuel Rail L")]
+
+
+def test_answer_kind_override():
+    pdf = make_pdf(PDF_LINES)
+    r = client.post("/api/packs/draft",
+                    data={"machine": "kind-m", "title": "K"},
+                    files={"file": ("m.pdf", pdf, "application/pdf")})
+    draft_id = r.json()["id"]
+    try:
+        bad = client.post(f"/api/packs/draft/{draft_id}/answer",
+                          json={"edits": [], "kind": "bogus"})
+        assert "error" in bad.json()
+        good = client.post(f"/api/packs/draft/{draft_id}/answer",
+                           json={"edits": [], "kind": "engine"})
+        assert good.json()["review"]["kind"] == "engine"
+    finally:
+        if os.path.exists(f"data/pack_drafts/{draft_id}.json"):
+            os.remove(f"data/pack_drafts/{draft_id}.json")

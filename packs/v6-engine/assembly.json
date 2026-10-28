@@ -1,0 +1,51 @@
+{
+ "order": [
+  {
+   "caption": "Install Crankcase (Pos. 1).",
+   "parts": [
+    "crankcase"
+   ]
+  },
+  {
+   "caption": "Install Intake Manifold (Pos. 10), Fuel Pump (Pos. 11), Spark Plugs (Pos. 14), Oil Pan (Pos. 2), Crankshaft (Pos. 3), Cylinder Bank L (Pos. 6), Cylinder Bank R (Pos. 7).",
+   "parts": [
+    "intake-manifold",
+    "fuel-pump",
+    "spark-plugs",
+    "oil-pan",
+    "crankshaft",
+    "cylinder-bank-l",
+    "cylinder-bank-r"
+   ]
+  },
+  {
+   "caption": "Install Fuel Rail L (Pos. 12), Fuel Rail R (Pos. 13), Piston 1 (Pos. 15), Piston 2 (Pos. 16), Piston 3 (Pos. 17), Piston 4 (Pos. 18), Piston 5 (Pos. 19), Piston 6 (Pos. 20), Flywheel (Pos. 4), Connecting Rods (Pos. 5), Camshaft L (Pos. 8), Camshaft R (Pos. 9).",
+   "parts": [
+    "fuel-rail-l",
+    "fuel-rail-r",
+    "piston-1",
+    "piston-2",
+    "piston-3",
+    "piston-4",
+    "piston-5",
+    "piston-6",
+    "flywheel",
+    "connecting-rods",
+    "camshaft-l",
+    "camshaft-r"
+   ]
+  },
+  {
+   "caption": "Install Fuel Injector 1 (Pos. 21), Fuel Injector 2 (Pos. 22), Fuel Injector 3 (Pos. 23), Fuel Injector 4 (Pos. 24), Fuel Injector 5 (Pos. 25), Fuel Injector 6 (Pos. 26).",
+   "parts": [
+    "fuel-injector-1",
+    "fuel-injector-2",
+    "fuel-injector-3",
+    "fuel-injector-4",
+    "fuel-injector-5",
+    "fuel-injector-6"
+   ]
+  }
+ ],
+ "source": "derived"
+}

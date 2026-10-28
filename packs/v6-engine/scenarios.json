@@ -1,0 +1,57 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "V6 Service Parts",
+  "wobble": 0.0
+ },
+ {
+  "id": "misfire",
+  "illustrative": true,
+  "label": "Injector misfire",
+  "note": "One cylinder stops contributing: uneven crank pulses. Illustrative.",
+  "parts": [
+   "spark-plugs",
+   "fuel-injector-1",
+   "fuel-injector-2",
+   "fuel-injector-3",
+   "fuel-injector-4",
+   "fuel-injector-5",
+   "fuel-injector-6"
+  ],
+  "slow": 0.7,
+  "source": "V6 Service Parts",
+  "wobble": 0.6
+ },
+ {
+  "id": "fuel-starve",
+  "illustrative": true,
+  "label": "Fuel starvation",
+  "note": "Weak fuel delivery: rail pressure sags, output drops. Illustrative.",
+  "parts": [
+   "fuel-pump",
+   "fuel-rail-l",
+   "fuel-rail-r"
+  ],
+  "slow": 0.5,
+  "source": "V6 Service Parts",
+  "wobble": 0.3
+ },
+ {
+  "id": "crank-knock",
+  "illustrative": true,
+  "label": "Crank knock",
+  "note": "Excess crank/rod clearance: audible knock each revolution. Illustrative.",
+  "parts": [
+   "crankshaft",
+   "connecting-rods"
+  ],
+  "slow": 0.9,
+  "source": "V6 Service Parts",
+  "wobble": 1.0
+ }
+]

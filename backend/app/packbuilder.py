@@ -30,7 +30,8 @@ _DIM_RE = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mm|cm|Nm|ft\.?-lbs?|in\.?|°)\b")
 _VERB_LEAD = re.compile(
     r"^(remove|insert|install|check|place|loosen|tighten|slide|lift|rotate|"
     r"inspect|clean|apply|mount|fit|seat|press|pull|push|turn|hold|replace|"
-    r"discard|thread|lubricate|torque|pry|tap|drive|verify)\b", re.IGNORECASE)
+    r"discard|thread|lubricate|torque|pry|tap|drive|verify|unclip|release|" 
+    r"disconnect|unbolt|detach|separate)\b", re.IGNORECASE)
 _MAX_TEXT = 200_000
 
 
@@ -323,7 +324,8 @@ _SCENARIO_TPL: dict[str, list[tuple]] = {
          "One cylinder stops contributing: uneven crank pulses."),
         ("fuel-starve", "Fuel starvation", r"fuel pump|fuel rail", 0.5, 0.3,
          "Weak fuel delivery: rail pressure sags, output drops."),
-        ("crank-knock", "Crank knock", r"crank|connecting rod", 0.9, 1.0,
+        ("crank-knock", "Crank knock", r"crank(?!case)|connecting rod",
+         0.9, 1.0,
          "Excess crank/rod clearance: audible knock each revolution."),
     ],
     "pump": [

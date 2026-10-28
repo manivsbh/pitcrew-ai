@@ -19,8 +19,9 @@ from .inventory import audit_trail, cancel, confirm, connect, create_draft
 from .inventory import get_order as inv_get_order
 from .inventory import part_for_component, search, submit, sync_from_pack
 from .segment import segment_photo
-from .packbuilder import (apply_edits, derive_assembly, derive_scenarios,
-                          finalize, load_draft, new_draft, reason_with_model)
+from .packbuilder import (VALID_KINDS, apply_edits, derive_assembly,
+                          derive_scenarios, finalize, load_draft, new_draft,
+                          reason_with_model)
 from .packs import list_packs, load_pack
 from .store import Store
 
@@ -63,6 +64,7 @@ class Reveal(BaseModel):
 class DraftAnswer(BaseModel):
     edits: list[dict] = []
     new_components: list[dict] = []
+    kind: str | None = None
 
 
 class GuideStart(BaseModel):
@@ -308,6 +310,10 @@ def draft_answer(draft_id: str, body: DraftAnswer) -> dict:
         return {"error": f"unknown draft {draft_id}"}
     if draft["status"] == "finalized":
         return {"error": "draft already finalized"}
+    if body.kind is not None:
+        if body.kind not in VALID_KINDS:
+            return {"error": f"unknown kind {body.kind}"}
+        draft["review"] = {**(draft.get("review") or {}), "kind": body.kind}
     return _draft_view(apply_edits(draft, body.edits, body.new_components))
 
 
