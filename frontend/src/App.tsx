@@ -49,6 +49,7 @@ import EngineeringPanel, {
 } from "./features/engineering/EngineeringPanel"
 import { calculate, MODEL_VERSION, type Inputs } from "./physics/models"
 import { machines, AdditionalMachine, type MachineId } from "./machines"
+import AssemblySim from "./sim/AssemblySim"
 import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Pack, type Trace, type GuideView, type InvPart, type InvOrder, type Draft, type AssistTurn, type SegmentResult } from "./api"
 
 // Backend pack id -> geometry/physics family in this UI. 'engine' has no pack yet (In dev).
@@ -903,110 +904,148 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     <span>{pack ? pack.meta.machine : machine.code} / REV 01</span>
                     <small>{pack ? pack.meta.name : machine.name}</small>
                   </div>
-                  <SceneBoundary>
-                    <Canvas
-                      frameloop={visible ? "always" : "never"}
-                      key={view}
-                      camera={{ position: [6, 4.1, 6], fov: 38 }}
-                    >
-                      <ambientLight intensity={1.2} />
-                      <directionalLight position={[2, 7, 4]} intensity={3} />
-                      <directionalLight position={[-5, 3, -2]} intensity={2} />
-                      <Suspense fallback={null}>
-                        {geom === "bearing" ? (
-                          <Machine
-                            selected={selected}
-                            select={setSelected}
-                            exploded={exploded}
-                            isolated={isolated}
-                            design={engineeringSession.applied}
+                  {pack?.assembly ? (
+                    <AssemblySim
+                      pack={pack}
+                      machineId={machineId}
+                      onSelect={(id) => {
+                        const c =
+                          pack.components.find((k) => k.id === id) ??
+                          matchComp(pack, id)
+                        if (c) {
+                          setSelected(c.name)
+                          setModal(`Component: ${c.name}`)
+                        }
+                      }}
+                      labelFor={(id) =>
+                        pack.components.find((k) => k.id === id)?.name ?? id
+                      }
+                      suspect={
+                        trace?.finding
+                          ? (matchComp(pack, trace.finding.component)?.id ??
+                            null)
+                          : null
+                      }
+                    />
+                  ) : (
+                    <>
+                      <SceneBoundary>
+                        <Canvas
+                          frameloop={visible ? "always" : "never"}
+                          key={view}
+                          camera={{ position: [6, 4.1, 6], fov: 38 }}
+                        >
+                          <ambientLight intensity={1.2} />
+                          <directionalLight
+                            position={[2, 7, 4]}
+                            intensity={3}
                           />
-                        ) : (
-                          <AdditionalMachine
-                            machine={geom}
-                            selected={selected}
-                            select={setSelected}
-                            exploded={exploded}
-                            isolated={isolated}
-                            design={engineeringSession.applied}
+                          <directionalLight
+                            position={[-5, 3, -2]}
+                            intensity={2}
                           />
-                        )}
-                        <ContactShadows
-                          position={[0, -0.015, 0]}
-                          opacity={0.45}
-                          scale={14}
-                          blur={2}
-                          far={5}
-                        />
-                      </Suspense>
-                      <Grid
-                        position={[0, -0.02, 0]}
-                        args={[18, 18]}
-                        cellSize={0.5}
-                        cellThickness={0.5}
-                        cellColor="#303638"
-                        sectionSize={2.5}
-                        sectionColor="#41494b"
-                        fadeDistance={18}
-                      />
-                      <OrbitControls
-                        makeDefault
-                        autoRotate={playing}
-                        autoRotateSpeed={speed / 1500}
-                        minDistance={4}
-                        maxDistance={15}
-                        target={[0, 0.8, 0]}
-                      />
-                    </Canvas>
-                  </SceneBoundary>
-                  <div className="component-float">
-                    <span className="statusdot" />
-                    <div>
-                      <strong>{selected}</strong>
-                      <small>{machine.name}</small>
-                    </div>
-                    <ChevronRight size={14} />
-                  </div>
-                  <div className="axis">
-                    <span>Y</span>
-                    <i /> <b>X</b>
-                    <em>Z</em>
-                  </div>
-                  <div className="scene-hint">
-                    Drag to orbit <span>·</span> Scroll to zoom <span>·</span>{" "}
-                    Click to inspect
-                  </div>
+                          <Suspense fallback={null}>
+                            {geom === "bearing" ? (
+                              <Machine
+                                selected={selected}
+                                select={setSelected}
+                                exploded={exploded}
+                                isolated={isolated}
+                                design={engineeringSession.applied}
+                              />
+                            ) : (
+                              <AdditionalMachine
+                                machine={geom}
+                                selected={selected}
+                                select={setSelected}
+                                exploded={exploded}
+                                isolated={isolated}
+                                design={engineeringSession.applied}
+                              />
+                            )}
+                            <ContactShadows
+                              position={[0, -0.015, 0]}
+                              opacity={0.45}
+                              scale={14}
+                              blur={2}
+                              far={5}
+                            />
+                          </Suspense>
+                          <Grid
+                            position={[0, -0.02, 0]}
+                            args={[18, 18]}
+                            cellSize={0.5}
+                            cellThickness={0.5}
+                            cellColor="#303638"
+                            sectionSize={2.5}
+                            sectionColor="#41494b"
+                            fadeDistance={18}
+                          />
+                          <OrbitControls
+                            makeDefault
+                            autoRotate={playing}
+                            autoRotateSpeed={speed / 1500}
+                            minDistance={4}
+                            maxDistance={15}
+                            target={[0, 0.8, 0]}
+                          />
+                        </Canvas>
+                      </SceneBoundary>
+                      <div className="component-float">
+                        <span className="statusdot" />
+                        <div>
+                          <strong>{selected}</strong>
+                          <small>{machine.name}</small>
+                        </div>
+                        <ChevronRight size={14} />
+                      </div>
+                      <div className="axis">
+                        <span>Y</span>
+                        <i /> <b>X</b>
+                        <em>Z</em>
+                      </div>
+                      <div className="scene-hint">
+                        Drag to orbit <span>·</span> Scroll to zoom <span>·</span>{" "}
+                        Click to inspect
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div className="view-tools">
-                  <div>
-                    <button
-                      className={exploded ? "tool on" : "tool"}
-                      onClick={() => setExploded(!exploded)}
-                    >
-                      <Layers size={15} /> Explode
-                    </button>
-                    <button
-                      className={isolated ? "tool on" : "tool"}
-                      onClick={() => setIsolated(!isolated)}
-                    >
-                      <ScanLine size={15} /> Isolate
-                    </button>
+                {!pack?.assembly && (
+                  <div className="view-tools">
+                    <div>
+                      <button
+                        className={exploded ? "tool on" : "tool"}
+                        onClick={() => setExploded(!exploded)}
+                      >
+                        <Layers size={15} /> Explode
+                      </button>
+                      <button
+                        className={isolated ? "tool on" : "tool"}
+                        onClick={() => setIsolated(!isolated)}
+                      >
+                        <ScanLine size={15} /> Isolate
+                      </button>
+                      <button
+                        className="tool"
+                        onClick={() => {
+                          setExploded(false)
+                          setIsolated(false)
+                          setView((v) => v + 1)
+                        }}
+                      >
+                        <RotateCcw size={14} /> Reset view
+                      </button>
+                    </div>
                     <button
                       className="tool"
-                      onClick={() => {
-                        setExploded(false)
-                        setIsolated(false)
-                        setView((v) => v + 1)
-                      }}
+                      onClick={() => setPlaying(!playing)}
                     >
-                      <RotateCcw size={14} /> Reset view
+                      {playing ? <Pause size={14} /> : <Play size={14} />}{" "}
+                      {playing ? "Stop auto-orbit" : "Auto-orbit"}
                     </button>
                   </div>
-                  <button className="tool" onClick={() => setPlaying(!playing)}>
-                    {playing ? <Pause size={14} /> : <Play size={14} />}{" "}
-                    {playing ? "Stop auto-orbit" : "Auto-orbit"}
-                  </button>
-                </div>
+                )}
               </section>
               <EngineeringPanel
                 key={geom}
