@@ -1,4 +1,5 @@
 {
+  "title": "Machine Fault Investigator",
   "description": "Helps technicians investigate motor and bearing faults by analyzing vibration recordings, reviewing evidence, and highlighting suspected components in an interactive 3D assembly.",
   "robots": {
     "index": false

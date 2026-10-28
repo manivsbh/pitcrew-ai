@@ -1,27 +1,76 @@
-import { lazy, Suspense, useEffect, useState, Component, type ReactNode } from 'react'
-import LandingPage from './features/landing/LandingPage'
-const Workspace = lazy(() => import('./App'))
-class WorkspaceBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+  Component,
+  type ReactNode,
+} from "react"
+import LandingPage from "./features/landing/LandingPage"
+const Workspace = lazy(() => import("./App"))
+class WorkspaceBoundary extends Component<{ children: ReactNode }, {
+  failed: boolean
+}> {
   state = { failed: false }
-  static getDerivedStateFromError() { return { failed: true } }
-  render() { return this.state.failed ? <div className="landing-load"><p>The workspace could not load.</p><button onClick={() => window.location.reload()}>Retry</button><a href="#introduction">Back to introduction</a></div> : this.props.children }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  render() {
+    return this.state.failed ? (
+      <div className="landing-load">
+        <p>The workspace could not load.</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+        <a href="#introduction">Back to introduction</a>
+      </div>
+    ) : (
+      this.props.children
+    )
+  }
 }
 export default function LandingExperience() {
-  const [workspace, setWorkspace] = useState(() => location.hash === '#workspace')
+  const [workspace, setWorkspace] = useState(
+    () => location.hash === "#workspace",
+  )
   const [visited, setVisited] = useState(workspace)
   useEffect(() => {
     const sync = () => {
-      const next = location.hash === '#workspace'
+      const next = location.hash === "#workspace"
       setWorkspace(next)
-      if (next) { setVisited(true); window.scrollTo(0, 0) }
-      else requestAnimationFrame(() => { const element = document.getElementById(location.hash.slice(1) || 'introduction'); element?.scrollIntoView({ block: 'start' }) })
+      if (next) {
+        setVisited(true)
+        window.scrollTo(0, 0)
+      } else
+        requestAnimationFrame(() => {
+          const element = document.getElementById(
+            location.hash.slice(1) || "introduction",
+          )
+          element?.scrollIntoView({ block: "start" })
+        })
     }
-    window.addEventListener('hashchange', sync)
+    window.addEventListener("hashchange", sync)
     if (!workspace && location.hash) sync()
-    return () => window.removeEventListener('hashchange', sync)
+    return () => window.removeEventListener("hashchange", sync)
   }, [])
-  return <>
-    {!workspace && <LandingPage/>}
-    {visited && <div hidden={!workspace}><WorkspaceBoundary><Suspense fallback={<div className="landing-load"><span>FORMA</span><p>Opening your engineering workspace…</p><a href="#introduction">Back to introduction</a></div>}><Workspace visible={workspace}/></Suspense></WorkspaceBoundary></div>}
-  </>
+  return (
+    <>
+      {!workspace && <LandingPage />}
+      {visited && (
+        <div hidden={!workspace}>
+          <WorkspaceBoundary>
+            <Suspense
+              fallback={
+                <div className="landing-load">
+                  <span>FORMA</span>
+                  <p>Opening your engineering workspace…</p>
+                  <a href="#introduction">Back to introduction</a>
+                </div>
+              }
+            >
+              <Workspace visible={workspace} />
+            </Suspense>
+          </WorkspaceBoundary>
+        </div>
+      )}
+    </>
+  )
 }

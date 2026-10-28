@@ -1,47 +1,105 @@
-import assert from 'node:assert/strict'
-import { calculate, defaults, interpret, patchInput, validate, type Inputs } from './models.ts'
+import assert from "node:assert/strict"
+import {
+  calculate,
+  defaults,
+  interpret,
+  patchInput,
+  validate,
+  type Inputs,
+} from "./models.ts"
 
-const output = (input: Inputs, name: string) => calculate(input).outputs.find(value => value.label === name)!.value!
-const near = (a: number, b: number, tolerance = 1e-9) => assert.ok(Math.abs(a - b) < tolerance, `${a} != ${b}`)
-const bearing = { ...defaults.bearing, kind: 'bearing' as const } as Extract<Inputs, { kind: 'bearing' }>
-const motor = { ...defaults.motor, kind: 'motor' as const } as Extract<Inputs, { kind: 'motor' }>
-const engine = { ...defaults.engine, kind: 'engine' as const } as Extract<Inputs, { kind: 'engine' }>
-near(output({ ...bearing, speed: 60 }, 'Angular velocity'), 2 * Math.PI)
-near(output({ ...bearing, speed: 60 }, 'Mechanical power'), 5 * 2 * Math.PI)
-near(output({ ...bearing, diameter: 40 }, 'Maximum shear'), output(bearing, 'Maximum shear') / 8)
-near(output({ ...bearing, diameter: 40 }, 'Shaft twist'), output(bearing, 'Shaft twist') / 16)
-near(output({ ...bearing, speed: 0 }, 'Mechanical power'), 0)
-near(output(motor, 'Copper losses'), 48)
-assert.ok(output(motor, 'Efficiency') >= 0 && output(motor, 'Efficiency') <= 100)
-assert.equal(calculate({ ...motor, speed: 0, current: 0, fixedLoss: 0 }).outputs.find(o => o.label === 'Efficiency')!.value, null)
-const volume = Math.PI / 4 * .052 ** 2 * .058
-near(output(engine, 'Total displacement'), volume * 1e6)
-near(output(engine, 'Brake power'), 600000 * volume * 3000 / 120)
-near(output({ ...engine, speed: 0 }, 'BMEP torque estimate'), 600000 * volume / (4 * Math.PI))
-assert.equal(calculate({ ...engine, fuelFlow: 0 }).status, 'Inconsistent operating point')
-assert.equal(calculate({ ...engine, fuelFlow: .001 }).outputs.find(o => o.label === 'Brake thermal efficiency')!.value, null)
+const output = (input: Inputs, name: string) =>
+  calculate(input).outputs.find((value) => value.label === name)!.value!
+const near = (a: number, b: number, tolerance = 1e-9) =>
+  assert.ok(Math.abs(a - b) < tolerance, `${a} != ${b}`)
+const bearing = {
+  ...defaults.bearing,
+  kind: "bearing" as const,
+} as Extract<Inputs, { kind: "bearing" }>
+const motor = { ...defaults.motor, kind: "motor" as const } as Extract<Inputs, {
+  kind: "motor"
+}>
+const engine = {
+  ...defaults.engine,
+  kind: "engine" as const,
+} as Extract<Inputs, { kind: "engine" }>
+near(output({ ...bearing, speed: 60 }, "Angular velocity"), 2 * Math.PI)
+near(output({ ...bearing, speed: 60 }, "Mechanical power"), 5 * 2 * Math.PI)
+near(
+  output({ ...bearing, diameter: 40 }, "Maximum shear"),
+  output(bearing, "Maximum shear") / 8,
+)
+near(
+  output({ ...bearing, diameter: 40 }, "Shaft twist"),
+  output(bearing, "Shaft twist") / 16,
+)
+near(output({ ...bearing, speed: 0 }, "Mechanical power"), 0)
+near(output(motor, "Copper losses"), 48)
+assert.ok(
+  output(motor, "Efficiency") >= 0 && output(motor, "Efficiency") <= 100,
+)
+assert.equal(
+  calculate({ ...motor, speed: 0, current: 0, fixedLoss: 0 }).outputs.find(
+    (o) => o.label === "Efficiency",
+  )!.value,
+  null,
+)
+const volume = (Math.PI / 4) * 0.052 ** 2 * 0.058
+near(output(engine, "Total displacement"), volume * 1e6)
+near(output(engine, "Brake power"), (600000 * volume * 3000) / 120)
+near(
+  output({ ...engine, speed: 0 }, "BMEP torque estimate"),
+  (600000 * volume) / (4 * Math.PI),
+)
+assert.equal(
+  calculate({ ...engine, fuelFlow: 0 }).status,
+  "Inconsistent operating point",
+)
+assert.equal(
+  calculate({ ...engine, fuelFlow: 0.001 }).outputs.find(
+    (o) => o.label === "Brake thermal efficiency",
+  )!.value,
+  null,
+)
 assert.ok(validate({ ...bearing, diameter: NaN }).length)
 assert.ok(validate({ ...bearing, diameter: Infinity }).length)
 assert.ok(validate({ ...bearing, torque: -1 }).length)
 assert.ok(validate({ ...bearing, speed: 13000 }).length)
 assert.ok(validate({ ...engine, cylinders: 1.5 }).length)
-assert.ok(validate({ ...bearing, speed: '' } as unknown as Inputs).length)
+assert.ok(validate({ ...bearing, speed: "" } as unknown as Inputs).length)
 assert.throws(() => patchInput(motor, { bore: 60 }))
 assert.throws(() => patchInput(motor, { resistance: 0 }))
-assert.equal(calculate({ ...motor, current: 9 }).status, 'Limit exceeded')
-assert.equal(calculate({ ...bearing, diameter: 5, torque: 500 }).status, 'Limit exceeded')
-for (const id of ['bearing', 'motor', 'engine'] as const) assert.deepEqual(calculate(defaults[id]), calculate(defaults[id]))
-assert.deepEqual(interpret('increase speed by 20%', bearing).patch, { speed: 1800 })
-assert.deepEqual(interpret('set speed to 2000 rpm', motor).patch, { speed: 2000 })
-assert.deepEqual(interpret('set shaft diameter to 25 mm', bearing).patch, { diameter: 25 })
-assert.deepEqual(interpret('set bore to 60 mm', engine).patch, { bore: 60 })
-assert.equal(interpret('set bore to 60 mm', motor).patch, undefined)
-assert.equal(interpret('increase speed by 200%', engine).patch, undefined)
-assert.equal(interpret('set speed to 13000 rpm', bearing).patch, undefined)
-assert.equal(interpret('set speed to 20', bearing).patch, undefined)
-assert.equal(interpret('set speed to 2000 rpm and current to 5 A', motor).patch, undefined)
-assert.equal(interpret('set current to NaN A', motor).patch, undefined)
-assert.equal(interpret('simulate broken piston', engine).patch, undefined)
-assert.deepEqual(interpret('increase efficiency', motor).patch, { resistance: .9 })
-assert.equal(interpret('increase efficiency', engine).patch, undefined)
-console.log('Physics checks passed: all three models, units, torsion scaling, energy contradictions, validation, repeatability and commands.')
+assert.equal(calculate({ ...motor, current: 9 }).status, "Limit exceeded")
+assert.equal(
+  calculate({ ...bearing, diameter: 5, torque: 500 }).status,
+  "Limit exceeded",
+)
+for (const id of ["bearing", "motor", "engine"] as const)
+  assert.deepEqual(calculate(defaults[id]), calculate(defaults[id]))
+assert.deepEqual(interpret("increase speed by 20%", bearing).patch, {
+  speed: 1800,
+})
+assert.deepEqual(interpret("set speed to 2000 rpm", motor).patch, {
+  speed: 2000,
+})
+assert.deepEqual(interpret("set shaft diameter to 25 mm", bearing).patch, {
+  diameter: 25,
+})
+assert.deepEqual(interpret("set bore to 60 mm", engine).patch, { bore: 60 })
+assert.equal(interpret("set bore to 60 mm", motor).patch, undefined)
+assert.equal(interpret("increase speed by 200%", engine).patch, undefined)
+assert.equal(interpret("set speed to 13000 rpm", bearing).patch, undefined)
+assert.equal(interpret("set speed to 20", bearing).patch, undefined)
+assert.equal(
+  interpret("set speed to 2000 rpm and current to 5 A", motor).patch,
+  undefined,
+)
+assert.equal(interpret("set current to NaN A", motor).patch, undefined)
+assert.equal(interpret("simulate broken piston", engine).patch, undefined)
+assert.deepEqual(interpret("increase efficiency", motor).patch, {
+  resistance: 0.9,
+})
+assert.equal(interpret("increase efficiency", engine).patch, undefined)
+console.log(
+  "Physics checks passed: all three models, units, torsion scaling, energy contradictions, validation, repeatability and commands.",
+)

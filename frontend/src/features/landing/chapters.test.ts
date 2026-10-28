@@ -1,5 +1,5 @@
-import assert from 'node:assert/strict'
-import { chapters, mapProgress } from './chapters.ts'
+import assert from "node:assert/strict"
+import { chapters, mapProgress } from "./chapters.ts"
 assert.equal(mapProgress(-1).time, 0)
 assert.equal(mapProgress(2).time, 7.95)
 for (const [index, chapter] of chapters.entries()) {
@@ -13,4 +13,6 @@ for (let i = 0; i <= 1000; i++) {
   assert.ok(index >= 0 && index < chapters.length)
   previous = time
 }
-console.log('Landing chapter mapping passed: clamps, boundaries and monotonic film timing.')
+console.log(
+  "Landing chapter mapping passed: clamps, boundaries and monotonic film timing.",
+)
