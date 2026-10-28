@@ -53,7 +53,11 @@ import AssemblySim from "./sim/AssemblySim"
 import { api, assistApi, draftApi, guideApi, invApi, visionApi, labelForCase, type Pack, type Trace, type GuideView, type InvPart, type InvOrder, type Draft, type AssistTurn, type SegmentResult } from "./api"
 
 // Backend pack id -> geometry/physics family in this UI. 'engine' has no pack yet (In dev).
-const PACK_GEOM: Record<string, MachineId> = { rig: "bearing", "cr-pump": "motor" }
+const PACK_GEOM: Record<string, MachineId> = {
+  rig: "bearing",
+  "cr-pump": "motor",
+  "v6-engine": "engine",
+}
 const geomOf = (id: string): MachineId => PACK_GEOM[id] ?? "engine"
 // Fuzzy match a 3D part label to a backend component name.
 const matchComp = (pack: Pack | null, label: string) => {
@@ -420,6 +424,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
     targets?: Record<string, number>
   } | null>(null)
   const [modalJson, setModalJson] = useState("")
+  const [engineRun, setEngineRun] = useState(true)
   const [assistSession, setAssistSession] = useState<string | null>(null)
   const [assistBusy, setAssistBusy] = useState(false)
   const [assistTurn, setAssistTurn] = useState<AssistTurn | null>(null)
@@ -834,7 +839,6 @@ export default function App({ visible = true }: { visible?: boolean }) {
                   {p.name} · {p.components} parts
                 </option>
               ))}
-              <option value="engine">Small combustion engine · In dev</option>
             </select>
           </label>
         </div>
@@ -904,7 +908,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     <span>{pack ? pack.meta.machine : machine.code} / REV 01</span>
                     <small>{pack ? pack.meta.name : machine.name}</small>
                   </div>
-                  {pack ? (
+                  {pack && machineId !== "v6-engine" ? (
                     <AssemblySim
                       pack={pack}
                       machineId={machineId}
@@ -961,6 +965,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                                 exploded={exploded}
                                 isolated={isolated}
                                 design={engineeringSession.applied}
+                                running={engineRun}
                               />
                             )}
                             <ContactShadows
@@ -1011,7 +1016,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                     </>
                   )}
                 </div>
-                {!pack && (
+                {(!pack || machineId === "v6-engine") && (
                   <div className="view-tools">
                     <div>
                       <button
@@ -1036,6 +1041,19 @@ export default function App({ visible = true }: { visible?: boolean }) {
                       >
                         <RotateCcw size={14} /> Reset view
                       </button>
+                      {machineId === "v6-engine" && (
+                        <button
+                          className={engineRun ? "tool on" : "tool"}
+                          onClick={() => setEngineRun(!engineRun)}
+                        >
+                          {engineRun ? (
+                            <Pause size={14} />
+                          ) : (
+                            <Play size={14} />
+                          )}{" "}
+                          {engineRun ? "Stop engine" : "Run engine"}
+                        </button>
+                      )}
                     </div>
                     <button
                       className="tool"
