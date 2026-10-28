@@ -273,6 +273,106 @@ KIND_KEYWORDS = {
 VALID_KINDS = {"engine", "pump", "bearing-rig", "generic"}
 
 
+def derive_assembly(components: list[dict]) -> dict:
+    """Assembly order from the confirmed parent tree: roots first, BFS.
+
+    Captions are structural (level + part names/positions), never manual
+    steps — the PDF parts list does not evidence an assembly sequence.
+    """
+    ids = {c["id"] for c in components}
+    kids: dict[str, list[dict]] = {}
+    roots: list[dict] = []
+    for c in components:
+        p = c.get("parent")
+        if p and p in ids:
+            kids.setdefault(p, []).append(c)
+        else:
+            roots.append(c)
+    levels: dict[str, int] = {}
+    queue = [(r, 0) for r in roots]
+    while queue:
+        c, lv = queue.pop(0)
+        if c["id"] in levels:
+            continue
+        levels[c["id"]] = lv
+        for k in kids.get(c["id"], []):
+            queue.append((k, lv + 1))
+    top = max(levels.values(), default=-1)
+    for c in components:
+        levels.setdefault(c["id"], top + 1)
+    by_level: dict[int, list[dict]] = {}
+    for c in components:
+        by_level.setdefault(levels.get(c["id"], 0), []).append(c)
+    order = []
+    for lv in sorted(by_level):
+        grp = sorted(by_level[lv],
+                     key=lambda c: (c.get("pos") or "~", c["name"]))
+        names = ", ".join(
+            c["name"] + (f" (Pos. {c['pos']})" if c.get("pos") else "")
+            for c in grp)
+        order.append(
+            {"caption": f"Install {names}.",
+             "parts": [c["id"] for c in grp]})
+    return {"order": order}
+
+
+# kind -> (scenario id, label, name-pattern, slow, wobble, note)
+_SCENARIO_TPL: dict[str, list[tuple]] = {
+    "engine": [
+        ("misfire", "Injector misfire", r"injector|spark|plug", 0.7, 0.6,
+         "One cylinder stops contributing: uneven crank pulses."),
+        ("fuel-starve", "Fuel starvation", r"fuel pump|fuel rail", 0.5, 0.3,
+         "Weak fuel delivery: rail pressure sags, output drops."),
+        ("crank-knock", "Crank knock", r"crank|connecting rod", 0.9, 1.0,
+         "Excess crank/rod clearance: audible knock each revolution."),
+    ],
+    "pump": [
+        ("seal-leak", "Shaft seal leak", r"seal", 1.0, 0.0,
+         "Leakage at the shaft seal: motion unchanged, fluid lost."),
+        ("worn-impeller", "Worn impeller", r"impeller|wear ring|neck ring",
+         0.7, 0.5, "Worn impeller or ring clearances: head and flow fall."),
+        ("clogged-passage", "Clogged passage", r"chamber|diffuser|stage",
+         0.5, 0.3, "Clogged impeller or diffuser passage: flow starved."),
+        ("coupling-misset", "Coupling misset", r"coupling", 0.9, 1.0,
+         "Improper coupling setting: tight rotation and rub."),
+    ],
+    "bearing-rig": [
+        ("inner-race", "Inner-ring damage", r"inner", 0.9, 1.0,
+         "Inner-race defect: pulses at the inner-ring rate."),
+        ("outer-race", "Outer-ring damage", r"outer", 0.9, 1.0,
+         "Outer-race defect: pulses at the outer-ring rate."),
+        ("rolling-wear", "Rolling-element wear", r"roll|ball|cage", 0.95,
+         0.6, "Worn rolling elements: elevated broadband vibration."),
+    ],
+    "generic": [
+        ("wear", "Component wear", r"bearing|seal|gasket|bushing", 0.8, 0.6,
+         "Wear in the matched running parts: output sags."),
+    ],
+}
+
+
+def derive_scenarios(components: list[dict], kind: str,
+                     source: str) -> list[dict]:
+    """Fault scenarios from kind templates matched against part names.
+
+    All derived scenarios are illustrative: a parts list evidences which
+    parts exist, not how each fault behaves.
+    """
+    out = [{"id": "healthy", "illustrative": True, "label": "Healthy",
+            "note": "Baseline motion: running parts rotate together. "
+                    "Illustrative simulation.",
+            "parts": [], "slow": 1.0, "source": source, "wobble": 0.0}]
+    tpl = _SCENARIO_TPL.get(kind, _SCENARIO_TPL["generic"])
+    for sid, label, pat, slow, wobble, note in tpl:
+        rx = re.compile(pat, re.IGNORECASE)
+        parts = [c["id"] for c in components if rx.search(c["name"])]
+        out.append({"id": sid, "illustrative": True, "label": label,
+                    "note": note + " Illustrative.",
+                    "parts": parts, "slow": slow, "source": source,
+                    "wobble": wobble})
+    return out
+
+
 def classify_kind(components: list[dict]) -> str:
     """Best-effort machine kind from component names (review.kind wins)."""
     text = " ".join(c.get("name", "") for c in components).lower()
@@ -321,6 +421,11 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
                    "sources": [{"title": draft["title"]}]}, f, indent=1)
     with open(os.path.join(base, "components.json"), "w") as f:
         json.dump(components, f, indent=1)
+    with open(os.path.join(base, "assembly.json"), "w") as f:
+        json.dump(derive_assembly(components), f, indent=1)
+    with open(os.path.join(base, "scenarios.json"), "w") as f:
+        json.dump(derive_scenarios(components, kind, draft["title"]), f,
+                  indent=1)
     draft["status"] = "finalized"
     save_draft(draft)
     return {"machine": machine, "components": len(components),

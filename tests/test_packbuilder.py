@@ -231,3 +231,19 @@ def test_inventory_backfill(tmp_path, monkeypatch):
     assert r2["added"] == 0
     part = client.get("/api/inventory/by-component/rig/shaft").json()
     assert part["machine"] == "rig"
+
+
+def test_derive_assembly_orders_roots_first():
+    from backend.app.packbuilder import derive_assembly, derive_scenarios
+    comps = [{"id": "base", "name": "Base", "pos": "90", "parent": None},
+             {"id": "seal", "name": "Shaft Seal", "pos": "5", "parent": "base"},
+             {"id": "bolt", "name": "Bolt", "pos": "1", "parent": "seal"}]
+    asm = derive_assembly(comps)
+    assert [s["parts"] for s in asm["order"]] == [["base"], ["seal"], ["bolt"]]
+    assert "Pos. 90" in asm["order"][0]["caption"]
+    scn = derive_scenarios(comps, "pump", "T")
+    assert scn[0]["id"] == "healthy"
+    leak = [s for s in scn if s["id"] == "seal-leak"][0]
+    assert leak["parts"] == ["seal"] and leak["illustrative"] is True
+    assert all("Illustrative" in s["note"] for s in scn)
+    assert derive_scenarios(comps, "bogus-kind", "T")[1]["id"] == "wear"

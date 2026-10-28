@@ -19,8 +19,8 @@ from .inventory import audit_trail, cancel, confirm, connect, create_draft
 from .inventory import get_order as inv_get_order
 from .inventory import part_for_component, search, submit, sync_from_pack
 from .segment import segment_photo
-from .packbuilder import (apply_edits, finalize, load_draft, new_draft,
-                          reason_with_model)
+from .packbuilder import (apply_edits, derive_assembly, derive_scenarios,
+                          finalize, load_draft, new_draft, reason_with_model)
 from .packs import list_packs, load_pack
 from .store import Store
 
@@ -461,6 +461,24 @@ def draft_finalize(draft_id: str) -> dict:
     except Exception as e:
         out["inventory_error"] = str(e)
     return out
+
+
+@app.post("/api/packs/{machine}/derive")
+def pack_derive(machine: str) -> dict:
+    loaded = load_pack(machine)
+    if loaded is None:
+        return {"error": f"unknown pack {machine}"}
+    base = os.path.join("packs", machine)
+    asm = derive_assembly(loaded["components"])
+    scn = derive_scenarios(
+        loaded["components"], loaded["meta"].get("kind", "generic"),
+        loaded["meta"].get("name", machine))
+    with open(os.path.join(base, "assembly.json"), "w") as f:
+        json.dump(asm, f, indent=1)
+    with open(os.path.join(base, "scenarios.json"), "w") as f:
+        json.dump(scn, f, indent=1)
+    return {"machine": machine, "steps": len(asm["order"]),
+            "scenarios": len(scn)}
 
 
 @app.post("/api/inventory/backfill")
