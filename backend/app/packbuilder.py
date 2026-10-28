@@ -157,13 +157,20 @@ Reply with JSON only, exactly this shape:
 """
 
 
+REVIEW_PROMPT_VERSION = "review-v1"
+
+
 def reason_with_model(text: str, candidates: list[dict],
                       client_factory) -> dict:
     """One bounded model call reviewing the draft. Never raises."""
+    from .config import MODEL_ID
     fallback = {"verdict": "needs_info", "confidence": 0.0,
                 "summary": "Model review unavailable; using rule-based "
                            "assessment only.",
-                "questions": [], "drop": [], "parents": {}, "roles": {}}
+                "questions": [], "drop": [], "parents": {}, "roles": {},
+                "model_id": MODEL_ID,
+                "prompt_version": REVIEW_PROMPT_VERSION,
+                "usage": {"input_tokens": 0, "output_tokens": 0}}
     try:
         from .config import MODEL_ID, REASONING_EFFORT
         client = client_factory()
@@ -186,6 +193,12 @@ def reason_with_model(text: str, candidates: list[dict],
             data[key] = dict(data.get(key) or {})
         data["confidence"] = float(data.get("confidence", 0.0) or 0.0)
         data["summary"] = str(data.get("summary", ""))[:500]
+        u = getattr(resp, "usage", None)
+        data["usage"] = {
+            "input_tokens": getattr(u, "input_tokens", 0) or 0,
+            "output_tokens": getattr(u, "output_tokens", 0) or 0}
+        data["model_id"] = MODEL_ID
+        data["prompt_version"] = REVIEW_PROMPT_VERSION
         return data
     except Exception:
         return fallback

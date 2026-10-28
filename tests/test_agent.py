@@ -246,3 +246,18 @@ def test_agent_view_has_no_bearing_code(tmp_path):
     rid = store.import_case("K001/N09_M07_F10_K001_1.mat")["recording_id"]
     blob = json.dumps(store.agent_view(rid))
     assert "K001" not in blob and "k001" not in blob
+
+
+def test_submit_drops_unknown_fields():
+    c = ctx()
+    T.execute("analyze_vibration", {"recording_id": "rec_0001",
+                                    "analysis": "time_stats"}, c)
+    r = T.execute("submit_finding",
+                  {"hypothesis": "healthy", "component": "none",
+                   "evidence_ids": ["ev_0001"], "reasoning": "r",
+                   "contradictions": "c", "next_measurement": "n",
+                   "confidence": 0.99, "extra": "smuggled"}, c)
+    assert r["status"] == "success"
+    assert set(r["data"]["finding"]) == {
+        "hypothesis", "component", "evidence_ids", "reasoning",
+        "contradictions", "next_measurement"}

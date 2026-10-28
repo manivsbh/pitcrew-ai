@@ -22,6 +22,7 @@ from . import analysis
 from .packs import PACKS_DIR
 
 SESSIONS_DIR = "data/assist"
+ASSIST_PROMPT_VERSION = "assist-v1"
 _WS = re.compile(r"\s+")
 
 
@@ -30,8 +31,13 @@ def norm(s: str) -> str:
 
 
 def one_shot(client_factory, system: str, text: str,
-             image: bytes | None = None) -> str:
-    """One bounded model call, optional JPEG/PNG image. May raise."""
+             image: bytes | None = None,
+             usage: dict | None = None) -> str:
+    """One bounded model call, optional JPEG/PNG image. May raise.
+
+    When `usage` is given, the call's token counts accumulate into it
+    (missing usage attributes count as zero, for stub clients).
+    """
     import base64
 
     from .config import MODEL_ID, REASONING_EFFORT
@@ -44,6 +50,10 @@ def one_shot(client_factory, system: str, text: str,
         model=MODEL_ID, instructions=system,
         input=[{"role": "user", "content": content}],
         reasoning={"effort": REASONING_EFFORT})
+    if usage is not None:
+        u = getattr(resp, "usage", None)
+        usage["input_tokens"] += getattr(u, "input_tokens", 0) or 0
+        usage["output_tokens"] += getattr(u, "output_tokens", 0) or 0
     return getattr(resp, "output_text", "") or ""
 
 
@@ -90,14 +100,15 @@ VISION_SYSTEM = (
     "id not in the registry.")
 
 
-def vision_identify(pack: dict, image: bytes, client_factory) -> dict:
+def vision_identify(pack: dict, image: bytes, client_factory,
+                    usage: dict | None = None) -> dict:
     reg = [{"id": c["id"], "name": c["name"], "pos": c.get("pos")}
            for c in pack["components"]]
     prompt = ("Registry:\n" + json.dumps(reg) +
               "\n\nWhich registry part is shown in this photo?")
     try:
         data = parse_json_blob(one_shot(client_factory, VISION_SYSTEM,
-                                        prompt, image))
+                                        prompt, image, usage))
     except Exception:
         data = None
     ids = {c["id"] for c in pack["components"]}
@@ -177,7 +188,7 @@ CHAT_SYSTEM = (
 
 
 def chat_answer(pack: dict, message: str, history: list[dict],
-                client_factory) -> dict:
+                client_factory, usage: dict | None = None) -> dict:
     bundle = "\n\n".join(f"=== {fn} ===\n{text[:6000]}"
                          for fn, text in pack["excerpts"].items())
     turns = "\n".join(f"{t['role']}: {t['text'][:500]}"
@@ -185,7 +196,8 @@ def chat_answer(pack: dict, message: str, history: list[dict],
     prompt = (f"Excerpts:\n{bundle}\n\nConversation:\n{turns}\n"
               f"Technician: {message}")
     try:
-        data = parse_json_blob(one_shot(client_factory, CHAT_SYSTEM, prompt))
+        data = parse_json_blob(one_shot(client_factory, CHAT_SYSTEM, prompt,
+                                        None, usage))
     except Exception:
         data = None
     answer = str((data or {}).get("answer", ""))[:4000]
@@ -259,20 +271,25 @@ def assist_turn(machine: str, message: str, client_factory,
         return {"error": f"unknown machine pack {machine}"}
     sess = load_session(session) if session else None
     if sess is None:
+        from .config import MODEL_ID
         sess = {"session": session or uuid.uuid4().hex[:12],
-                "machine": machine, "turns": []}
+                "machine": machine, "turns": [],
+                "model_id": MODEL_ID,
+                "prompt_version": ASSIST_PROMPT_VERSION,
+                "usage": {"input_tokens": 0, "output_tokens": 0}}
     history = [{"role": t["role"], "text": t["text"]}
                for t in sess["turns"][-6:]]
     fired: list[str] = []
+    turn_usage = {"input_tokens": 0, "output_tokens": 0}
     vision = sound = None
     if photo is not None:
-        vision = vision_identify(pack, photo, client_factory)
+        vision = vision_identify(pack, photo, client_factory, turn_usage)
         fired.append("vision")
     if signal is not None:
         x, fs = signal
         sound = sound_analyze(x, fs, rpm, machine)
         fired.append("sound")
-    chat = chat_answer(pack, message, history, client_factory)
+    chat = chat_answer(pack, message, history, client_factory, turn_usage)
     fired.append("chat")
     checks = match_playbook(pack, message)
     if len(fired) > 1:
@@ -281,7 +298,8 @@ def assist_turn(machine: str, message: str, client_factory,
                             "playbook": (checks or {}).get("symptom")})
         try:
             fused = parse_json_blob(one_shot(client_factory,
-                                             SUPERVISOR_SYSTEM, brief))
+                                             SUPERVISOR_SYSTEM, brief,
+                                             None, turn_usage))
         except Exception:
             fused = None
         reply = (fused or {}).get("reply") or chat["answer"]
@@ -293,8 +311,12 @@ def assist_turn(machine: str, message: str, client_factory,
     sess["turns"].append({"role": "user", "text": message})
     sess["turns"].append({"role": "assistant", "text": reply,
                           "specialists": fired})
+    total = sess.setdefault("usage", {"input_tokens": 0, "output_tokens": 0})
+    total["input_tokens"] += turn_usage["input_tokens"]
+    total["output_tokens"] += turn_usage["output_tokens"]
     save_session(sess)
     return {"session": sess["session"], "reply": reply,
             "specialists": fired, "vision": vision, "sound": sound,
             "chat": chat, "playbook": checks, "next_checks": next_checks,
-            "needs": needs}
+            "needs": needs, "usage": turn_usage,
+            "session_usage": dict(total)}

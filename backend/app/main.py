@@ -445,7 +445,11 @@ def assist_history(session_id: str) -> dict:
     if sess is None:
         return {"error": f"unknown assist session {session_id}"}
     return {"session": sess["session"], "machine": sess["machine"],
-            "turns": sess["turns"]}
+            "turns": sess["turns"],
+            "usage": sess.get("usage", {"input_tokens": 0,
+                                       "output_tokens": 0}),
+            "model_id": sess.get("model_id"),
+            "prompt_version": sess.get("prompt_version")}
 
 
 @app.post("/api/packs/draft/{draft_id}/finalize")

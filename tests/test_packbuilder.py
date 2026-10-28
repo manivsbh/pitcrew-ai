@@ -271,3 +271,19 @@ def test_answer_kind_override():
     finally:
         if os.path.exists(f"data/pack_drafts/{draft_id}.json"):
             os.remove(f"data/pack_drafts/{draft_id}.json")
+
+
+def test_review_records_model_version_and_usage():
+    from backend.app.packbuilder import REVIEW_PROMPT_VERSION, reason_with_model
+    from backend.app.config import MODEL_ID
+    good = reason_with_model("t", [{"id": "a", "name": "A", "pos": "1"}],
+                             lambda: _StubClient())
+    assert good["model_id"] == MODEL_ID
+    assert good["prompt_version"] == REVIEW_PROMPT_VERSION
+    assert good["usage"] == {"input_tokens": 0, "output_tokens": 0}
+
+    def boom():
+        raise RuntimeError("nope")
+    bad = reason_with_model("t", [], boom)
+    assert bad["verdict"] == "needs_info"
+    assert bad["prompt_version"] == REVIEW_PROMPT_VERSION

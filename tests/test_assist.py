@@ -186,3 +186,46 @@ def test_assist_needs_key(monkeypatch):
     monkeypatch.delenv("MODEL_API_KEY", raising=False)
     r = client.post("/api/assist", data={"machine": "rig", "message": "hi"})
     assert "error" in r.json()
+
+
+class _UOut:
+    def __init__(self, payload, it=11, ot=7):
+        from types import SimpleNamespace
+        self.output_text = json.dumps(payload)
+        self.usage = SimpleNamespace(input_tokens=it, output_tokens=ot)
+
+
+class _UClient:
+    def __init__(self, payload):
+        self.payload = payload
+        self.calls = 0
+
+    @property
+    def responses(self):
+        outer = self
+
+        class R:
+            @staticmethod
+            def create(**kwargs):
+                outer.calls += 1
+                return _UOut(outer.payload)
+        return R()
+
+
+def test_usage_accumulates_and_history_exposes(tmp_path, monkeypatch):
+    import backend.app.assist as A
+    from backend.app.assist import ASSIST_PROMPT_VERSION, assist_turn, load_session
+    from backend.app.config import MODEL_ID
+    monkeypatch.setattr(A, "SESSIONS_DIR", str(tmp_path))
+    payload = {"answer": "Prime it.", "citations": []}
+    out1 = assist_turn("cr-pump", "How do I prime?",
+                       lambda: _UClient(payload))
+    assert out1["usage"] == {"input_tokens": 11, "output_tokens": 7}
+    assert out1["session_usage"] == {"input_tokens": 11, "output_tokens": 7}
+    out2 = assist_turn("cr-pump", "And then?", lambda: _UClient(payload),
+                       session=out1["session"])
+    assert out2["session_usage"] == {"input_tokens": 22, "output_tokens": 14}
+    sess = load_session(out1["session"])
+    assert sess["model_id"] == MODEL_ID
+    assert sess["prompt_version"] == ASSIST_PROMPT_VERSION
+    assert sess["usage"] == {"input_tokens": 22, "output_tokens": 14}
