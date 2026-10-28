@@ -14,6 +14,7 @@ import json
 import os
 import sys
 import time
+from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -272,6 +273,18 @@ def report() -> int:
     return 0
 
 
+def majority(votes: list[str]) -> str:
+    """Per-bearing majority with a deterministic tie-break.
+
+    Ties resolve to the first-seen hypothesis in results order, so the
+    secondary per-bearing view reproduces exactly. (max over a set broke
+    ties by hash randomization: val/investigate KA15 flipped 4v4.)
+    """
+    if not votes:
+        return "insufficient_evidence"
+    return Counter(votes).most_common(1)[0][0]
+
+
 def _score_block(title: str, sub: list, labels: dict) -> list[str]:
     n = len(sub)
     correct = sum(1 for r in sub
@@ -293,8 +306,7 @@ def _score_block(title: str, sub: list, labels: dict) -> list[str]:
     for b in sorted({r["bearing"] for r in sub}):
         votes = [r["hypothesis"] for r in sub if r["bearing"] == b
                  and r["hypothesis"] != "insufficient_evidence"]
-        by_bearing[b] = max(set(votes), key=votes.count) if votes else (
-            "insufficient_evidence")
+        by_bearing[b] = majority(votes)
     bcorrect = sum(1 for b, v in by_bearing.items() if v == labels[b])
     return [
         f"## {title} (n={n} recordings, {len(by_bearing)} bearings)",

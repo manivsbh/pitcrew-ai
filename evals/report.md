@@ -52,7 +52,7 @@
 - accuracy among answered: 4/18 = 0.222
 - damaged called healthy: 5
 - mean latency: 72.9s; mean tokens in/out: 15330/2081
-- per-bearing majority: 1/3 {'K002': 'outer_ring_damage', 'KA15': 'outer_ring_damage', 'KI14': 'outer_ring_damage'}
+- per-bearing majority: 0/3 {'K002': 'outer_ring_damage', 'KA15': 'healthy', 'KI14': 'outer_ring_damage'}
 
 ## baseline / final (n=60 recordings, 3 bearings)
 - balanced accuracy (abstain=miss): 0.333

@@ -58,6 +58,13 @@ recover from a weak first analysis.
 - Three bearings per split is a small benchmark, not industrial evidence.
 - Frozen protocol was followed: no tuning after val contact; the only
   post-freeze code change was eval-runner parallelism (wall-clock only).
+- Scorer determinism fix (2026-10-28): per-bearing majority broke ties by
+  set order (hash randomization), so val/investigate KA15 (4v4) and
+  final/baseline K003 (1v1) flipped between runs. Ties now resolve to the
+  first-seen hypothesis in results order (`majority()` in
+  `scripts/run_eval.py`). The only report change is val/investigate
+  per-bearing 1/3 → 0/3; all primary metrics and all final numbers are
+  unchanged. Verified identical across PYTHONHASHSEED 0/1/42.
 
 ## What would have to change
 
