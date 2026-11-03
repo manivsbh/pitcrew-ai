@@ -1,19 +1,18 @@
-"""Pack-builder agent flow: manual PDF -> candidate components -> user Q&A -> pack.
-
-The agent reasons with the user about whether the manual is enough to build
-a 3D model: heuristics extract candidates, one bounded model call reviews
-them, the user confirms/edits, and finalize writes a validated pack that the
-generic 3D builder renders on demand.
+"""Pack-builder agent flow: manual PDF or 2D blueprint image -> candidate
+components + dimensions -> Meta muse-spark-1.3 multimodal review -> user Q&A ->
+validated 3D simulation pack + FTS5 RAG index.
 """
 
 from __future__ import annotations
 
+import base64
 import io
 import json
 import os
 import re
 import uuid
 
+from PIL import Image
 from pypdf import PdfReader
 
 DRAFTS_DIR = "data/pack_drafts"
@@ -38,6 +37,78 @@ _MAX_TEXT = 200_000
 def pdf_text(data: bytes) -> str:
     rdr = PdfReader(io.BytesIO(data))
     return chr(12).join((p.extract_text() or "") for p in rdr.pages)
+
+
+def pdf_first_image_jpeg(data: bytes, max_dim: int = 1280) -> bytes | None:
+    """Extract the largest embedded diagram/blueprint image from a PDF, if any."""
+    try:
+        rdr = PdfReader(io.BytesIO(data))
+        best: bytes | None = None
+        best_area = 0
+        for page in rdr.pages[:8]:
+            for img_file in getattr(page, "images", []) or []:
+                raw = getattr(img_file, "data", None)
+                if not raw:
+                    continue
+                try:
+                    im = Image.open(io.BytesIO(raw)).convert("RGB")
+                except Exception:
+                    continue
+                area = im.width * im.height
+                if area > best_area and min(im.width, im.height) >= 120:
+                    best_area = area
+                    scale = min(1.0, max_dim / max(im.width, im.height))
+                    if scale < 1.0:
+                        im = im.resize((int(im.width * scale),
+                                        int(im.height * scale)))
+                    buf = io.BytesIO()
+                    im.save(buf, format="JPEG", quality=85)
+                    best = buf.getvalue()
+        return best
+    except Exception:
+        return None
+
+
+def normalize_blueprint_image(data: bytes, max_dim: int = 1400) -> bytes:
+    """Validate and normalize PNG/JPEG/WebP blueprint image to RGB JPEG bytes."""
+    im = Image.open(io.BytesIO(data)).convert("RGB")
+    scale = min(1.0, max_dim / max(im.width, im.height))
+    if scale < 1.0:
+        im = im.resize((int(im.width * scale), int(im.height * scale)))
+    buf = io.BytesIO()
+    im.save(buf, format="JPEG", quality=88)
+    return buf.getvalue()
+
+
+_NAMED_DIMS = [
+    ("bore_mm", re.compile(r"\bbore\s*[:=]?\s*(\d+(?:\.\d+)?)\s*mm\b", re.I)),
+    ("stroke_mm", re.compile(r"\bstroke\s*[:=]?\s*(\d+(?:\.\d+)?)\s*mm\b", re.I)),
+    ("shaft_diameter_mm", re.compile(
+        r"\b(?:shaft(?:\s+dia(?:meter)?)?|dia(?:meter)?|ø)\s*[:=]?\s*(\d+(?:\.\d+)?)\s*mm\b", re.I)),
+    ("rated_rpm", re.compile(r"\b(\d{3,5}(?:\.\d+)?)\s*rpm\b", re.I)),
+    ("max_torque_nm", re.compile(r"\b(\d+(?:\.\d+)?)\s*N[·\-\s]?m\b", re.I)),
+    ("cylinders", re.compile(r"\b(?:v|inline[\-\s]?)(\d)\b|\b(\d)\s*cylinders?\b", re.I)),
+]
+
+
+def extract_blueprint_dimensions(text: str) -> dict:
+    """Extract numeric physical dimensions & ratings for 3D scaling & physics."""
+    out: dict[str, float | int] = {}
+    for key, rx in _NAMED_DIMS:
+        vals = []
+        for m in rx.finditer(text):
+            raw = next((g for g in m.groups() if g is not None), None)
+            if raw is not None:
+                vals.append(float(raw))
+        if not vals:
+            continue
+        if key == "max_torque_nm":
+            out[key] = round(max(vals), 2)
+        elif key == "cylinders":
+            out[key] = int(vals[0])
+        else:
+            out[key] = round(vals[0], 2)
+    return out
 
 
 def slug(name: str) -> str:
@@ -134,40 +205,51 @@ def assess(candidates: list[dict], text: str) -> dict:
             "questions": questions}
 
 
-REVIEW_PROMPT = """You review a draft component list extracted from a machine manual.
-The goal: decide whether the manual gives ENOUGH to build an illustrative
-parametric 3D model (part names + rough assembly structure; exact dimensions
-not required).
+REVIEW_PROMPT = """You review a machine manual or 2D engineering blueprint (text and/or image).
+Decide whether it gives ENOUGH to build an illustrative parametric 3D simulation
+(part names + rough assembly structure; extract dimensions when visible).
 
-Manual text (truncated):
+Manual / blueprint text (may be empty if image-only blueprint):
 ---
 {text}
 ---
 
-Candidate components (JSON):
+Heuristic candidate components (JSON):
 {cands}
+
+If a 2D blueprint or exploded diagram image is attached, ALSO read any numbered
+callout balloons, BOM/parts table rows, title-block specs, and geometric
+dimensions directly from the image and return them in `extracted_components`
+and `dimensions`.
 
 Reply with JSON only, exactly this shape:
 {{"verdict": "enough" | "needs_info", "confidence": 0.0-1.0,
+  "kind": "engine" | "pump" | "bearing-rig" | "generic",
   "summary": "one or two sentences",
   "questions": ["at most 5 short questions for the user"],
   "drop": ["candidate ids that are clearly not parts"],
   "parents": {{"child-id": "parent-id or null"}},
-  "roles": {{"candidate-id": "one-sentence role"}}}}
+  "roles": {{"candidate-id": "one-sentence role"}},
+  "extracted_components": [{{"name": "Part Name", "pos": "1", "parent": null, "role": "one-sentence role"}}],
+  "dimensions": {{"bore_mm": null, "stroke_mm": null, "shaft_diameter_mm": null, "rated_rpm": null, "max_torque_nm": null}},
+  "assembly_steps": [{{"caption": "Step instruction with torque if shown", "parts": ["part-slug"]}}]}}
 """
 
 
-REVIEW_PROMPT_VERSION = "review-v1"
+REVIEW_PROMPT_VERSION = "review-v2-multimodal"
 
 
 def reason_with_model(text: str, candidates: list[dict],
-                      client_factory) -> dict:
-    """One bounded model call reviewing the draft. Never raises."""
+                      client_factory,
+                      image_b64: str | None = None) -> dict:
+    """One bounded model call reviewing text and/or 2D blueprint image. Never raises."""
     from .config import MODEL_ID
     fallback = {"verdict": "needs_info", "confidence": 0.0,
                 "summary": "Model review unavailable; using rule-based "
                            "assessment only.",
                 "questions": [], "drop": [], "parents": {}, "roles": {},
+                "extracted_components": [], "dimensions": {},
+                "assembly_steps": [],
                 "model_id": MODEL_ID,
                 "prompt_version": REVIEW_PROMPT_VERSION,
                 "usage": {"input_tokens": 0, "output_tokens": 0}}
@@ -176,10 +258,19 @@ def reason_with_model(text: str, candidates: list[dict],
         client = client_factory()
         slim = [{"id": c["id"], "name": c["name"], "pos": c["pos"]}
                 for c in candidates[:80]]
+        prompt_text = REVIEW_PROMPT.format(
+            text=text[:12_000], cands=json.dumps(slim))
+        if image_b64:
+            inp: object = [{"role": "user", "content": [
+                {"type": "input_text", "text": prompt_text},
+                {"type": "input_image",
+                 "image_url": f"data:image/jpeg;base64,{image_b64}"},
+            ]}]
+        else:
+            inp = prompt_text
         resp = client.responses.create(
             model=MODEL_ID, reasoning={"effort": REASONING_EFFORT},
-            input=REVIEW_PROMPT.format(text=text[:12_000],
-                                       cands=json.dumps(slim)))
+            input=inp)
         out = getattr(resp, "output_text", "") or ""
         m = re.search(r"\{.*\}", out, re.DOTALL)
         if not m:
@@ -191,6 +282,14 @@ def reason_with_model(text: str, candidates: list[dict],
             data[key] = list(data.get(key) or [])[:5]
         for key in ("parents", "roles"):
             data[key] = dict(data.get(key) or {})
+        data["extracted_components"] = list(
+            data.get("extracted_components") or [])[:40]
+        raw_dims = data.get("dimensions") or {}
+        data["dimensions"] = {
+            k: float(v) for k, v in raw_dims.items()
+            if isinstance(v, (int, float)) and v > 0
+        } if isinstance(raw_dims, dict) else {}
+        data["assembly_steps"] = list(data.get("assembly_steps") or [])[:25]
         data["confidence"] = float(data.get("confidence", 0.0) or 0.0)
         data["summary"] = str(data.get("summary", ""))[:500]
         u = getattr(resp, "usage", None)
@@ -226,14 +325,71 @@ def load_draft(draft_id: str) -> dict | None:
         return json.load(f)
 
 
-def new_draft(machine: str, title: str, pdf_data: bytes) -> dict:
-    text = pdf_text(pdf_data)[:_MAX_TEXT]
+def new_draft(machine: str, title: str, data: bytes,
+              media_type: str = "application/pdf") -> dict:
+    is_image = media_type.startswith("image/")
+    if is_image:
+        jpeg = normalize_blueprint_image(data)
+        text = ""
+        image_b64: str | None = base64.b64encode(jpeg).decode()
+        source_kind = "blueprint_image"
+    else:
+        text = pdf_text(data)[:_MAX_TEXT]
+        embedded = pdf_first_image_jpeg(data)
+        image_b64 = base64.b64encode(embedded).decode() if embedded else None
+        source_kind = "pdf+image" if image_b64 else "pdf"
     candidates = extract_candidates(text)
+    dimensions = extract_blueprint_dimensions(text)
+    assessment = assess(candidates, text)
+    if is_image:
+        assessment["questions"] = [
+            "2D blueprint image loaded. Click 'Ask agent' so Meta muse-spark-1.3 "
+            "Vision extracts balloon callouts, dimensions, and parent hierarchy."
+        ]
     draft = {"id": uuid.uuid4().hex[:12], "machine": machine, "title": title,
-             "status": "draft", "text": text, "candidates": candidates,
-             "assessment": assess(candidates, text), "review": None,
-             "edits": []}
+             "status": "draft", "source_kind": source_kind,
+             "text": text, "image_b64": image_b64,
+             "candidates": candidates, "dimensions": dimensions,
+             "assessment": assessment, "review": None, "edits": []}
     save_draft(draft)
+    return draft
+
+
+def merge_vision_candidates(draft: dict, review: dict) -> dict:
+    """Merge vision-extracted components & dimensions into a draft."""
+    by_id = {c["id"]: c for c in draft.get("candidates", [])}
+    for raw in review.get("extracted_components") or []:
+        if not isinstance(raw, dict):
+            continue
+        name = str(raw.get("name", "")).strip()[:80]
+        cid = slug(name)
+        if len(name) < 2 or not cid:
+            continue
+        if cid not in by_id:
+            by_id[cid] = {
+                "id": cid,
+                "name": name,
+                "pos": str(raw["pos"]) if raw.get("pos") is not None else None,
+                "mentions": 1,
+                "parent": slug(str(raw["parent"])) if raw.get("parent") else None,
+                "role": str(raw.get("role", ""))[:240] or None,
+            }
+        else:
+            if raw.get("pos") and not by_id[cid].get("pos"):
+                by_id[cid]["pos"] = str(raw["pos"])
+            if raw.get("role") and not by_id[cid].get("role"):
+                by_id[cid]["role"] = str(raw["role"])[:240]
+    draft["candidates"] = list(by_id.values())
+    dims = dict(draft.get("dimensions") or {})
+    for k, v in (review.get("dimensions") or {}).items():
+        if isinstance(v, (int, float)) and v > 0:
+            dims[k] = round(float(v), 2)
+    draft["dimensions"] = dims
+    # Recompute readiness score once vision adds candidates/dimensions
+    draft["assessment"] = assess(draft["candidates"], draft.get("text", ""))
+    if dims:
+        draft["assessment"]["score"] = min(
+            100, draft["assessment"]["score"] + 20)
     return draft
 
 
@@ -428,20 +584,72 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
     os.makedirs(base, exist_ok=True)
     kind = review.get("kind") if review.get("kind") in VALID_KINDS else None
     kind = kind or classify_kind(components)
+    dimensions = dict(draft.get("dimensions") or {})
+    for k, v in (review.get("dimensions") or {}).items():
+        if isinstance(v, (int, float)) and v > 0:
+            dimensions[k] = round(float(v), 2)
+    pack_meta: dict = {
+        "machine": machine, "name": draft["title"],
+        "kind": kind, "created": "2026-10-30",
+        "source_kind": draft.get("source_kind", "pdf"),
+        "notes": "Agent-drafted pack: user-confirmed from manual/blueprint "
+                 "via pack-builder Q&A.",
+        "sources": [{"title": draft["title"]}],
+    }
+    if dimensions:
+        pack_meta["dimensions"] = dimensions
     with open(os.path.join(base, "pack.json"), "w") as f:
-        json.dump({"machine": machine, "name": draft["title"],
-                   "kind": kind, "created": "2026-10-27",
-                   "notes": "Agent-drafted pack: user-confirmed from manual "
-                            "via pack-builder Q&A.",
-                   "sources": [{"title": draft["title"]}]}, f, indent=1)
+        json.dump(pack_meta, f, indent=1)
     with open(os.path.join(base, "components.json"), "w") as f:
         json.dump(components, f, indent=1)
+    # Prefer vision/manual-extracted ordered assembly steps if valid, else BFS
+    asm = derive_assembly(components)
+    raw_steps = review.get("assembly_steps") or []
+    valid_steps = []
+    for st in raw_steps:
+        if isinstance(st, dict) and st.get("caption"):
+            pts = [p for p in (st.get("parts") or []) if p in ids]
+            if pts:
+                valid_steps.append({"caption": str(st["caption"])[:240],
+                                    "parts": pts})
+    if len(valid_steps) >= 2:
+        asm = {"order": valid_steps, "source": "blueprint-vision"}
     with open(os.path.join(base, "assembly.json"), "w") as f:
-        json.dump(derive_assembly(components), f, indent=1)
+        json.dump(asm, f, indent=1)
     with open(os.path.join(base, "scenarios.json"), "w") as f:
         json.dump(derive_scenarios(components, kind, draft["title"]), f,
                   indent=1)
+    # Write a concise markdown excerpt + index into FTS5 RAG when using the
+    # default packs directory so manual Q&A works immediately on new packs.
+    ex_dir = os.path.join(base, "excerpts")
+    os.makedirs(ex_dir, exist_ok=True)
+    summary_lines = [f"# {draft['title']} — Blueprint & Component Specification", ""]
+    if dimensions:
+        summary_lines.append("## Extracted Dimensions & Ratings")
+        for dk, dv in dimensions.items():
+            summary_lines.append(f"- {dk}: {dv}")
+        summary_lines.append("")
+    summary_lines.append("## Confirmed Components")
+    for c in components:
+        pos_s = f" (Pos. {c['pos']})" if c.get("pos") else ""
+        summary_lines.append(f"- **{c['name']}{pos_s}**: {c['role']}")
+    if asm.get("order"):
+        summary_lines.extend(["", "## Assembly Sequence"])
+        for idx_s, st in enumerate(asm["order"], 1):
+            summary_lines.append(f"{idx_s}. {st['caption']}")
+    with open(os.path.join(ex_dir, "blueprint-spec.md"), "w") as f:
+        f.write("\n".join(summary_lines) + "\n")
+    if packs_dir == "packs":
+        try:
+            from . import rag
+            pages = (draft.get("text") or "").split(chr(12))
+            if any(p.strip() for p in pages):
+                rag.save_manual_pages(machine, draft["title"], pages)
+            rag.index_pack(machine)
+        except Exception:
+            pass
     draft["status"] = "finalized"
     save_draft(draft)
     return {"machine": machine, "components": len(components),
-            "kind": kind, "dropped_by_review": dropped}
+            "kind": kind, "dimensions": dimensions,
+            "dropped_by_review": dropped}

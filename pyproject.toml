@@ -1,0 +1,10 @@
+[project]
+name = "machine-fault-investigator"
+version = "0.2.0"
+requires-python = ">=3.12"
+description = "Local multi-agent machine investigation workspace (Meta muse-spark + SAM 2)."
+
+[tool.pytest.ini_options]
+# Lets `pytest tests/` resolve `backend.app...` without `python -m`.
+pythonpath = ["."]
+testpaths = ["tests"]

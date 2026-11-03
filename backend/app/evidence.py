@@ -39,6 +39,13 @@ def series_for(recording, item: dict) -> dict:
         s = item.get("settings", {})
         f, m, _ = A.envelope_spectrum(x, fs, s["band_lo"], s["band_hi"])
         label = ("Envelope frequency (Hz)", "Magnitude")
+    elif kind == "band_probe" and item.get("best"):
+        b = item["best"]
+        f, m, _ = A.envelope_spectrum(x, fs, b["band_lo"], b["band_hi"])
+        label = (f"Envelope frequency (Hz), band {b['band_lo']:.0f}-"
+                 f"{b['band_hi']:.0f} Hz", "Magnitude")
+        keep = f <= 600.0  # fault lines + harmonics live well below 600 Hz
+        f, m = f[keep], m[keep]
     else:
         return {"kind": kind, "data": item}
     xs, ys = _decimate(f, m)
@@ -47,6 +54,11 @@ def series_for(recording, item: dict) -> dict:
     if kind == "fault_match":
         out["targets"] = item.get("targets", {})
         out["hits"] = item.get("hits", {})
+    if kind == "band_probe":
+        t = item.get("targets", {})
+        out["targets"] = {k: t[k] for k in ("bpfo", "bpfi") if k in t}
+        out["bands"] = item.get("bands", [])
+        out["verdict"] = item.get("verdict")
     return out
 
 

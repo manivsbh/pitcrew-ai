@@ -15,8 +15,9 @@ import uuid
 
 from .config import (API_BASE_URL, INVESTIGATION_TIMEOUT_S, MAX_TOOL_CALLS,
                      MODEL_ID, REASONING_EFFORT)
-from .prompts import PROMPT_VERSION, SYSTEM_PROMPT, TERMINATION_NUDGE
-from .tools import TOOL_SCHEMAS, ToolContext, execute
+from .prompts import (PROMPT_VERSION, PROMPT_VERSION_V2, SYSTEM_PROMPT,
+                      SYSTEM_PROMPT_V2, TERMINATION_NUDGE)
+from .tools import TOOL_SCHEMAS, TOOL_SCHEMAS_V2, ToolContext, execute
 
 REPORTS_DIR = "data/reports"
 _RETRYABLE = {"RateLimitError", "InternalServerError", "ServiceUnavailableError",
@@ -43,23 +44,63 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
         client_factory=None, key: str | None = None,
         max_calls: int = MAX_TOOL_CALLS,
         timeout_s: float = INVESTIGATION_TIMEOUT_S,
-        investigation_id: str | None = None) -> dict:
-    """Run one investigation to a finding or an explicit incomplete state."""
+        investigation_id: str | None = None,
+        mode: str = "v1",
+        machine: str = "rig") -> dict:
+    """Run one investigation to a finding or an explicit incomplete state.
+
+    `mode="v1"` preserves the exact frozen benchmark loop (serial tool calls,
+    PROMPT_VERSION="inv-v2", 5 tools). `mode="v2"` activates the self-evolving
+    harness (`probe_bands`, parallel tool calls, Turn-0 metadata, learned skills).
+    """
     if client_factory is None:
         if not key:
             from .config import model_api_key
             key = model_api_key()
         client_factory = default_client_factory(key)
     client = client_factory()
-    ctx = ToolContext(store, docs, refs)
+
+    use_v2 = (mode == "v2")
+    harness_cfg = None
+    initial_view = None
+    if use_v2:
+        from . import harness as H
+        harness_cfg = H.load_harness(machine)
+        ctx = ToolContext(
+            store, docs, refs,
+            bands=[tuple(b) for b in harness_cfg.get("bands", H.DEFAULT_BANDS)],
+            probe_verdict=lambda p: H.evaluate_probe(p, harness_cfg),
+        )
+        try:
+            initial_view = store.agent_view(recording_id)
+            ctx.evidence.add({"kind": "recording_meta",
+                              "recording_id": recording_id,
+                              "preloaded": True})
+        except Exception:
+            initial_view = None
+        sys_prompt = (SYSTEM_PROMPT_V2 + "\n\n"
+                      + H.render_prompt_block(harness_cfg, initial_view))
+        schemas = TOOL_SCHEMAS_V2
+        prompt_ver = PROMPT_VERSION_V2
+        allow_parallel = True
+    else:
+        ctx = ToolContext(store, docs, refs)
+        sys_prompt = SYSTEM_PROMPT
+        schemas = TOOL_SCHEMAS
+        prompt_ver = PROMPT_VERSION
+        allow_parallel = False
+
     inv_id = investigation_id or new_investigation_id()
     trace: dict = {
         "investigation_id": inv_id, "recording_id": recording_id,
         "question": question, "model_id": MODEL_ID,
-        "prompt_version": PROMPT_VERSION, "status": "incomplete",
+        "prompt_version": prompt_ver, "status": "incomplete",
         "steps": [], "usage": {"input_tokens": 0, "output_tokens": 0,
                                "cached_tokens": 0},
     }
+    if harness_cfg is not None:
+        trace["harness_version"] = harness_cfg.get("version")
+        trace["mode"] = "v2"
     t0 = time.monotonic()
     prev: str | None = None
     pending: object = f"{question}\nRecording under investigation: {recording_id}"
@@ -74,9 +115,9 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
             break
         try:
             resp = client.responses.create(
-                model=MODEL_ID, instructions=SYSTEM_PROMPT, input=pending,
-                tools=TOOL_SCHEMAS, previous_response_id=prev,
-                parallel_tool_calls=False,
+                model=MODEL_ID, instructions=sys_prompt, input=pending,
+                tools=schemas, previous_response_id=prev,
+                parallel_tool_calls=allow_parallel,
                 reasoning={"effort": REASONING_EFFORT})
         except Exception as exc:  # noqa: BLE001 - boundary: record, maybe retry
             if not retried and _is_retryable(exc):
@@ -168,5 +209,40 @@ def save_trace(trace: dict, reports_dir: str = REPORTS_DIR) -> str:
 
 
 def load_trace(investigation_id: str, reports_dir: str = REPORTS_DIR) -> dict:
+    if "/" in investigation_id or investigation_id.startswith("."):
+        raise FileNotFoundError(investigation_id)
     with open(os.path.join(reports_dir, f"{investigation_id}.json")) as f:
         return json.load(f)
+
+
+def list_traces(limit: int = 30, reports_dir: str = REPORTS_DIR) -> list[dict]:
+    """List saved complete/incomplete investigation traces for instant replay."""
+    if not os.path.isdir(reports_dir):
+        return []
+    entries = []
+    files = sorted(
+        (fn for fn in os.listdir(reports_dir) if fn.endswith(".json")),
+        key=lambda fn: os.path.getmtime(os.path.join(reports_dir, fn)),
+        reverse=True,
+    )
+    for fn in files[: limit * 2]:
+        try:
+            with open(os.path.join(reports_dir, fn)) as f:
+                t = json.load(f)
+        except Exception:
+            continue
+        finding = t.get("finding") or {}
+        entries.append({
+            "investigation_id": t.get("investigation_id", fn[:-5]),
+            "recording_id": t.get("recording_id", ""),
+            "status": t.get("status", "unknown"),
+            "hypothesis": finding.get("hypothesis"),
+            "component": finding.get("component"),
+            "latency_s": t.get("latency_s"),
+            "harness_version": t.get("harness_version"),
+            "prompt_version": t.get("prompt_version"),
+            "steps": len(t.get("steps", [])),
+        })
+        if len(entries) >= limit:
+            break
+    return entries

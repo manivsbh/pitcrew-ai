@@ -15,10 +15,16 @@ REASONING_EFFORT = "low"
 # Reference stats built from K001 development repetitions.
 REFS_PATH = "backend/app/refs.json"
 
-# Local serving.
-HOST = "127.0.0.1"
-PORT = 8000
-ALLOWED_ORIGINS = ["http://127.0.0.1:8000", "http://localhost:8000"]
+# Local & mobile LAN / tunnel serving.
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = int(os.environ.get("PORT", "8000"))
+ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8443",
+    "http://localhost:8443",
+]
+ALLOWED_ORIGIN_REGEX = r"^https?://.*"
 
 
 def model_api_key() -> str:

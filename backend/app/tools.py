@@ -82,6 +82,26 @@ for _s in TOOL_SCHEMAS:  # fail fast on schema bugs, not at call time
     assert _s["type"] == "function" and TOOL_NAME_RE.match(_s["name"])
     assert _s["parameters"]["type"] == "object"
 
+# V2 (self-evolving harness) adds one reference-free tool. V1 TOOL_SCHEMAS
+# stay byte-identical so the frozen evaluation remains reproducible.
+PROBE_SCHEMA = {
+    "type": "function", "name": "probe_bands",
+    "description": ("Propose-probe-compose: demodulate several candidate "
+                    "bands and return band kurtosis plus reference-free "
+                    "BPFO/BPFI envelope harmonic SNR per band, and the band "
+                    "with the strongest fault-line contrast."),
+    "parameters": {"type": "object",
+                   "properties": {
+                       "recording_id": {"type": "string"},
+                       "bands": {"type": "array", "description": (
+                           "Optional [[lo, hi], ...] in Hz; default is the "
+                           "harness band set."),
+                           "items": {"type": "array",
+                                     "items": {"type": "number"}}}},
+                   "required": ["recording_id"],
+                   "additionalProperties": False}}
+TOOL_SCHEMAS_V2 = TOOL_SCHEMAS[:-1] + [PROBE_SCHEMA, TOOL_SCHEMAS[-1]]
+
 
 class EvidenceStore:
     """Per-investigation evidence registry. Full series stay in memory;
@@ -102,11 +122,14 @@ class EvidenceStore:
 
 
 class ToolContext:
-    def __init__(self, store, docs, refs: dict):
+    def __init__(self, store, docs, refs: dict, bands=None, probe_verdict=None):
         self.store = store
         self.docs = docs
         self.refs = refs
         self.evidence = EvidenceStore()
+        # V2 harness hooks (unused by the frozen V1 loop).
+        self.bands = bands or list(A.PROBE_BANDS)
+        self.probe_verdict = probe_verdict
 
 
 def _err(summary: str, retry: str, stop: str) -> dict:
@@ -136,6 +159,8 @@ def execute(tool: str, args: dict, ctx: ToolContext) -> dict:
             return _t_compare(args, ctx)
         if tool == "submit_finding":
             return _t_submit(args, ctx)
+        if tool == "probe_bands":
+            return _t_probe(args, ctx)
         return _err(f"unknown tool {tool!r}", "call a defined tool",
                     "unknown tool")
     except Exception as exc:  # noqa: BLE001 - boundary: never crash the loop
@@ -248,6 +273,47 @@ def _top_peaks(f, m, n: int = 10) -> list:
     idx = sorted(range(1, m.size), key=lambda i: -m[i])[:n]
     return [{"freq": round(float(f[i]), 2), "amp": round(float(m[i]), 3)}
             for i in sorted(idx)]
+
+
+def _t_probe(args: dict, ctx: ToolContext) -> dict:
+    rid = args.get("recording_id")
+    try:
+        rec = ctx.store.load(rid)
+    except KeyError:
+        return _err(f"unknown recording {rid!r}", "use the given recording ID",
+                    "unknown recording")
+    ch = rec.channels.get("vibration_1")
+    if ch is None or ch.fs is None:
+        return _err("no usable vibration channel", "choose insufficient_evidence",
+                    "missing channel")
+    if not np.all(np.isfinite(ch.data)) or np.all(ch.data == ch.data.flat[0]):
+        return _err("signal is non-finite or flat; probe refuses",
+                    "choose insufficient_evidence", "degenerate signal")
+    if rec.speed_rpm is None:
+        return _err("speed unavailable; fault frequencies withheld",
+                    "choose insufficient_evidence", "missing speed")
+    bands = args.get("bands") or ctx.bands
+    try:
+        bands = [(float(lo), float(hi)) for lo, hi in bands][:5]
+    except (TypeError, ValueError):
+        return _err("bands must be [[lo, hi], ...] in Hz",
+                    "retry without bands to use the defaults", "invalid bands")
+    probe = A.multi_band_probe(ch.data, ch.fs, rec.speed_rpm, bands)
+    if probe["best"] is None:
+        return _err(probe.get("note", "no valid band"), "retry with lower bands",
+                    "invalid bands")
+    verdict = ctx.probe_verdict(probe) if ctx.probe_verdict else None
+    eid = ctx.evidence.add({"kind": "band_probe", "targets": probe["targets"],
+                            "bands": probe["bands"], "best": probe["best"],
+                            "verdict": verdict})
+    b = probe["best"]
+    desc = (f"best band {b['band_lo']:.0f}-{b['band_hi']:.0f}Hz: "
+            f"BPFO SNR {b['bpfo_snr']['mean']}, BPFI SNR "
+            f"{b['bpfi_snr']['mean']}, kurtosis {b['kurtosis_excess']}")
+    if verdict:
+        desc += f"; harness rule suggests {verdict['suggests']}"
+    return _ok(desc, ["submit_finding citing this evidence id"], [eid],
+               {"probe": probe, "verdict": verdict})
 
 
 def _t_compare(args: dict, ctx: ToolContext) -> dict:

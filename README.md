@@ -18,6 +18,11 @@ three-arm comparison protocol.
 - `docs-pack/` — cited setup/geometry excerpts (label-free) + attribution.
 - `evals/` — frozen splits, protocol, and results.
 - `data/` — local recordings and reports (NOT committed; see below).
+- `.claude/skills/anatomy/` — Anatomy agent skill (MIT, pinned at upstream
+  `1482e84`, 2026-10-18): deterministic isometric SVG figures for docs/demo.
+  Installed via `git clone` (the `npx skills` CLI is unusable here: broken
+  root-owned npm cache); nested `.git` removed so the files commit with the
+  repo. To update, re-clone and re-pin. See `visual-plan/reviews/` verdict.
 
 ## Setup
 

@@ -1,0 +1,1921 @@
+{
+  "machine": "cr-pump",
+  "pack": {
+    "name": "Grundfos CR vertical multistage pump",
+    "kind": "pump",
+    "components": 58,
+    "excerpts": 11
+  },
+  "concept": "CR-H vertical multistage pump in exploded rest; step through the reassembly torque sequence, each station lighting its fastener with its true torque.",
+  "dimensions": [
+    {
+      "kind": "dimension",
+      "value": 104,
+      "unit": "\u00b0",
+      "context": "where temperature at overload protection devices is above 104 \u00b0F (40 \u00b0C), replace standard protection devices wit h ambien",
+      "ref": "excerpts/io-diagnosing-problems.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 40,
+      "unit": "\u00b0",
+      "context": "emperature at overload protection devices is above 104 \u00b0F (40 \u00b0C), replace standard protection devices wit h ambient-compe",
+      "ref": "excerpts/io-diagnosing-problems.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 104,
+      "unit": "\u00b0",
+      "context": "ature (max.) Environment Approved t ypes of grease Standard 104 \u00b0F (40 \u00b0C) Clean, little corrosion Grundfos ML motors are gre",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 40,
+      "unit": "\u00b0",
+      "context": "ax.) Environment Approved t ypes of grease Standard 104 \u00b0F (40 \u00b0C) Clean, little corrosion Grundfos ML motors are greased fo",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 122,
+      "unit": "\u00b0",
+      "context": "motors are greased with Polyrex EM (Exxon Mobile). Severe 122 \u00b0F (50 \u00b0C) Moderate dirt, corrosion Extreme > 122 \u00b0F (50 \u00b0C)",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 50,
+      "unit": "\u00b0",
+      "context": "are greased with Polyrex EM (Exxon Mobile). Severe 122 \u00b0F (50 \u00b0C) Moderate dirt, corrosion Extreme > 122 \u00b0F (50 \u00b0C) or clas",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 122,
+      "unit": "\u00b0",
+      "context": "). Severe 122 \u00b0F (50 \u00b0C) Moderate dirt, corrosion Extreme > 122 \u00b0F (50 \u00b0C) or class H insulation Severe dirt, abrasive dust,",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 50,
+      "unit": "\u00b0",
+      "context": "e 122 \u00b0F (50 \u00b0C) Moderate dirt, corrosion Extreme > 122 \u00b0F (50 \u00b0C) or class H insulation Severe dirt, abrasive dust, corrosi",
+      "ref": "excerpts/io-maintaining.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 150,
+      "unit": "mm",
+      "context": "mperature. Make sure the pump is mounted at least 6 inches (150 mm) clear of any obstruction or hot surfaces. The motor requi",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 176,
+      "unit": "\u00b0",
+      "context": "re a check valve on the outlet piping. Pump type min. \u00b0F to 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C)",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 80,
+      "unit": "\u00b0",
+      "context": "n the outlet piping. Pump type min. \u00b0F to 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 210,
+      "unit": "\u00b0",
+      "context": "et piping. Pump type min. \u00b0F to 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CR",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 99,
+      "unit": "\u00b0",
+      "context": "Pump type min. \u00b0F to 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CRI, CRN 1s",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 248,
+      "unit": "\u00b0",
+      "context": "min. \u00b0F to 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CRI, CRN 1s 0.5 0.7 1.",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 120,
+      "unit": "\u00b0",
+      "context": "o 176 \u00b0F(min. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CRI, CRN 1s 0.5 0.7 1.2 1.2* CR,",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 356,
+      "unit": "\u00b0",
+      "context": "n. \u00b0C to 80 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CRI, CRN 1s 0.5 0.7 1.2 1.2* CR, CRI, CRN 1",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 180,
+      "unit": "\u00b0",
+      "context": "0 \u00b0C) at 210 \u00b0F(at 99 \u00b0C) at 248 \u00b0F(at 120 \u00b0C) at 356 \u00b0F(at 180 \u00b0C) CR, CRI, CRN 1s 0.5 0.7 1.2 1.2* CR, CRI, CRN 1 0.9 1.3 2",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 18,
+      "unit": "\u00b0",
+      "context": "terminal box cover. Pump type Time for temperature rise of 18 \u00b0F (10 \u00b0C) Seconds Minutes CR 1s, 1, 3 210 3.5 CR 5 240 4.0 C",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "\u00b0",
+      "context": "al box cover. Pump type Time for temperature rise of 18 \u00b0F (10 \u00b0C) Seconds Minutes CR 1s, 1, 3 210 3.5 CR 5 240 4.0 CR 10 21",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 17,
+      "unit": "ft-lb",
+      "context": "onally and evenly: \u2013 For 3/8\" bolts (1/2 - 2 HP), torque = 17 ft-lb. \u2013 For 1/2\" bolts (3 - 40 HP), torque = 30 ft-lb. \u2013 For 5/8",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 30,
+      "unit": "ft-lb",
+      "context": ", torque = 17 ft-lb. \u2013 For 1/2\" bolts (3 - 40 HP), torque = 30 ft-lb. \u2013 For 5/8\" bolts (50 - 100 HP), torque = 59 ft-lb. \u2013 Follo",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 59,
+      "unit": "ft-lb",
+      "context": "torque = 30 ft-lb. \u2013 For 5/8\" bolts (50 - 100 HP), torque = 59 ft-lb. \u2013 Follow instructions for partic ular pump mode l in secti",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "ft-lb",
+      "context": "0 CRT 2, 4, 8, and 16 Coupling screw size Minimum torque M6 10 ft-lb M8 23 ft-lb M10 46 ft-lb TM04 3919 3613 CORRECT Keyway Keyw",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "ft-lb",
+      "context": "8, and 16 Coupling screw size Minimum torque M6 10 ft-lb M8 23 ft-lb M10 46 ft-lb TM04 3919 3613 CORRECT Keyway Keyway Gap betwe",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 46,
+      "unit": "ft-lb",
+      "context": "pling screw size Minimum torque M6 10 ft-lb M8 23 ft-lb M10 46 ft-lb TM04 3919 3613 CORRECT Keyway Keyway Gap between coupling",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 5,
+      "unit": "mm",
+      "context": "13 The shaft can only be raised approximately 0.20 inches (5 mm). TM02 1051 0501 M6 - 13 Nm M8 - 31 Nm M10 - 62 Nm 0.5x x T",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "Nm",
+      "context": "ised approximately 0.20 inches (5 mm). TM02 1051 0501 M6 - 13 Nm M8 - 31 Nm M10 - 62 Nm 0.5x x TM04 3913 0409TM04 3914 0409",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 31,
+      "unit": "Nm",
+      "context": "imately 0.20 inches (5 mm). TM02 1051 0501 M6 - 13 Nm M8 - 31 Nm M10 - 62 Nm 0.5x x TM04 3913 0409TM04 3914 0409 To avoid da",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 62,
+      "unit": "Nm",
+      "context": "inches (5 mm). TM02 1051 0501 M6 - 13 Nm M8 - 31 Nm M10 - 62 Nm 0.5x x TM04 3913 0409TM04 3914 0409 To avoid damaging the c",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 62,
+      "unit": "ft-lbs",
+      "context": "n in fig. 16. 27 English (US) 5. Tighten coupling screws to 62 ft-lbs (75 and 100 HP motors to 74 ft-lbs). Remove the adjusti ng",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 74,
+      "unit": "ft-lbs",
+      "context": "hten coupling screws to 62 ft-lbs (75 and 100 HP motors to 74 ft-lbs). Remove the adjusti ng fork from under the cartridge seal",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "n Shaft Seal Collar and Hex Nut Outer Seal. Next, insert a 2.5 mm allen wrench through one of the lower vent port holes and",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "que the lower inboard seal securing screws to 2.0 ft.- lbs./2.5 Nm. Remove allen wrench and replace plugs (Pos. 23a) into the",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 1.5,
+      "unit": "ft.-lbs",
+      "context": "Screwdriver, with a slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "Nm",
+      "context": "with a slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already lifted",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 5,
+      "unit": "mm",
+      "context": "are even (see Diagram). Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "ft.-lbs",
+      "context": "e Diagram). Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "Nm",
+      "context": "Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 6,
+      "unit": "mm",
+      "context": "Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "ft.-lbs",
+      "context": "ol Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm Place and seat O-ri",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 31,
+      "unit": "Nm",
+      "context": "5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm Place and seat O-ring (Pos",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 8,
+      "unit": "mm",
+      "context": "M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm Place and seat O-ring (Pos. 39b).",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 46,
+      "unit": "ft.-lbs",
+      "context": "lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm Place and seat O-ring (Pos. 39b). If the Discharge Ad",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 62,
+      "unit": "Nm",
+      "context": "6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm Place and seat O-ring (Pos. 39b). If the Discharge Adaptor",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 15,
+      "unit": "ft.-lbs",
+      "context": "(Pos. 23b). Diagonally torque Allen Screws (Pos. 35) to 15 ft.-lbs./20 Nm. Make sure flange is fully seated without any gaps",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 20,
+      "unit": "Nm",
+      "context": "Diagonally torque Allen Screws (Pos. 35) to 15 ft.-lbs./20 Nm. Make sure flange is fully seated without any gaps. 43 TH",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 8,
+      "unit": "mm",
+      "context": "dfos-cr-service-h.pdf, PDF pp. 2-10.) 2 Remove the 5, 6 or 8 mm Hex Head Coupling Bolts (Pos. 9) from the Coupling Halves",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 24,
+      "unit": "mm",
+      "context": "e the motor assembly. Loosen (but do not remove) the four 24 mm Staybolt Nuts (Pos. 36). These will be removed in step 12.",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "e cartridge Shaft Seal (Pos. 105) by: \u00b7 Loosening the three 2.5 mm Shaft Seal Securing Allen Screws (Pos. 113) approximately 1",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "n. \u00b7 Using the Specialty Tubular Box Spanner (00SV2107), a 41 mm ring spanner (00SV2101), or a deep socket, fully unscrew t",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "plug to allow access to Shaft Seal securing screw. Insert a 2.5 mm allen wrench to loosen (approximately 1/2 to 1 turn) the t",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "5b). Using the specialty Tubular Box Spanner (00SV2107) or 41 mm Deep Socket, loosen and unscrew the Shaft Seal. 19 Remove t",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "ay pump) 5 Use specialty Tubular Box Spanner (00SV2107), a 41 mm Deep Socket, or an Open Ring Spanner to loosen. Finish re",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "7. 24 26 23 Loosen (approximately 1/2 to 1 turn) the three 2.5 mm Set Screws (Pos. 113) of the Inboard Seal (Pos. 105b). Ta",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "mm",
+      "context": "impeller stack into the shaft holder. Tighten vise. Using a 13 mm wrench, remove the Chamber Stack Strap Bolt (Pos. 26b), Wa",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "mm",
+      "context": "inserting a screwdriver between the chambers. 34 Using a 13 mm wrench, remove the Shaft Lock Nut (Pos. 67), Lock Washer (",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23.52,
+      "unit": "mm",
+      "context": "imum inside diameter for the bearing in position 4a SiC is 23.52 mm; bronze and Graflon is 22.02 mm. If a groove can be seen o",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 22.02,
+      "unit": "mm",
+      "context": "ring in position 4a SiC is 23.52 mm; bronze and Graflon is 22.02 mm. If a groove can be seen or felt, the chamber should be re",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23.4,
+      "unit": "mm",
+      "context": "4 to 60.02 Bearing ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874 mm. If a groove can be seen or felt, the be",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 21.874,
+      "unit": "mm",
+      "context": "g ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874 mm. If a groove can be seen or felt, the bearing should be re",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "mm",
+      "context": ". 26c) and Strap Bolt (Pos. 26b) on/into the Straps using a 13 mm Socket (00SV0091), and Torque Wrench (00SV0292), with Ratch",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 11,
+      "unit": "ft.-lbs",
+      "context": "ench (00SV0292), with Ratchet (00SV0295) to Torque Bolt to 11 ft.-lbs./15 Nm. Bolt should be lubricated with Gardolube. 10 Lubric",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 15,
+      "unit": "Nm",
+      "context": "92), with Ratchet (00SV0295) to Torque Bolt to 11 ft.-lbs./15 Nm. Bolt should be lubricated with Gardolube. 10 Lubricate the",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 16.3,
+      "unit": "ft.-lbs",
+      "context": "hread the Lock Nut (Pos. 67) onto the shaft and torque to 16.3 ft.-lbs./22 Nm. Use 13 mm Socket (00SV0091), Ratchet (00SV0295),",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 22,
+      "unit": "Nm",
+      "context": "k Nut (Pos. 67) onto the shaft and torque to 16.3 ft.-lbs./22 Nm. Use 13 mm Socket (00SV0091), Ratchet (00SV0295), and Tor",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "mm",
+      "context": "67) onto the shaft and torque to 16.3 ft.-lbs./22 Nm. Use 13 mm Socket (00SV0091), Ratchet (00SV0295), and Torque Wrench,",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "reinstall onto Shaft and sleeve. Do not tighten the three 2.5 mm set screws at this time. This will be done in step 37. Pro",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "). Using the specialty Tubular Box Spanner (00SV2107), or a 41 mm Deep Socket, tighten/torque seal the 26 ft.-lbs./35Nm. NOT",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 26,
+      "unit": "ft.-lbs",
+      "context": "00SV2107), or a 41 mm Deep Socket, tighten/torque seal the 26 ft.-lbs./35Nm. NOTE: If Pump Head Cover has not yet been prepped wi",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 35,
+      "unit": "Nm",
+      "context": "r a 41 mm Deep Socket, tighten/torque seal the 26 ft.-lbs./35Nm. NOTE: If Pump Head Cover has not yet been prepped with PTF",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "pump head. Use specialty Tubular Box Spanner (00SV2107), a 41 mm Open Ring Spanner (00SV2101) or a 41mm Deep Socket to torq",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "nner (00SV2107), a 41 mm Open Ring Spanner (00SV2101) or a 41mm Deep Socket to torque the Inboard Seal to 26 ft.-lbs./35 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 26,
+      "unit": "ft.-lbs",
+      "context": "V2101) or a 41mm Deep Socket to torque the Inboard Seal to 26 ft.-lbs./35 Nm. 20 Tandem Seal Reassembly Procedures CR-H, CRN-H 1",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 35,
+      "unit": "Nm",
+      "context": "41mm Deep Socket to torque the Inboard Seal to 26 ft.-lbs./35 Nm. 20 Tandem Seal Reassembly Procedures CR-H, CRN-H 10\u202215\u202220",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 123,
+      "unit": "mm",
+      "context": "area of the Seal, then lift Shaft to create a clearance of 123 mm from the top of the Shaft (Pos. 51) to the top of the Shaf",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "(Pos. 51) to the top of the Shaft Seal. Tighten the three 2.5 mm set screws to 2 ft.-lbs./2.5 Nm. Proceed to step 22. 21 An",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "ft.-lbs",
+      "context": "of the Shaft Seal. Tighten the three 2.5 mm set screws to 2 ft.-lbs./2.5 Nm. Proceed to step 22. 21 An alternative to step 21",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "ft Seal. Tighten the three 2.5 mm set screws to 2 ft.-lbs./2.5 Nm. Proceed to step 22. 21 An alternative to step 21 is when t",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 27.5,
+      "unit": "mm",
+      "context": "tive to step 21 is when the special tool (00SV2078) and two 27.5 mm Spacers (96491537) are used with two Staybolt Nuts and Was",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 27,
+      "unit": "mm",
+      "context": "olts and seat against Pump Head Assembly (Pos. 77a). Slide 27 mm Spacers down Staybolts. Place Washers and Nuts onto Staybol",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 59,
+      "unit": "ft.-lbs",
+      "context": "and Nuts onto Staybolts and tighten diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm Push Shaft down, then tig",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 80,
+      "unit": "Nm",
+      "context": "to Staybolts and tighten diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm Push Shaft down, then tighten th",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 74,
+      "unit": "ft.-lbs",
+      "context": "nd tighten diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm Push Shaft down, then tighten the three 2.5 mm Set",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 100,
+      "unit": "Nm",
+      "context": "iagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm Push Shaft down, then tighten the three 2.5 mm Set Screws t",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "74 ft.-lbs./100 Nm Push Shaft down, then tighten the three 2.5 mm Set Screws to 2 ft.-lbs./2.5 Nm. Remove Staybolt Nuts/Wash",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "ft.-lbs",
+      "context": "ush Shaft down, then tighten the three 2.5 mm Set Screws to 2 ft.-lbs./2.5 Nm. Remove Staybolt Nuts/Washers, 27 mm Spacers, and",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "own, then tighten the three 2.5 mm Set Screws to 2 ft.-lbs./2.5 Nm. Remove Staybolt Nuts/Washers, 27 mm Spacers, and tool (00",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 27,
+      "unit": "mm",
+      "context": "Screws to 2 ft.-lbs./2.5 Nm. Remove Staybolt Nuts/Washers, 27 mm Spacers, and tool (00SV2078). Proceed to step 22. Alternati",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 24,
+      "unit": "mm",
+      "context": "Gardolube (00SV9995), or Thread-Eze (96611372). Place the 24 mm Staybolt Nuts (Pos. 36) onto staybolts and loosely tighten",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "the Shaft. Use the specialty Tubular Spanner (00SV2107), a 41 mm Open Ring Spanner (00SV2101), or a 41 mm Deep Socket to ti",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": "ner (00SV2107), a 41 mm Open Ring Spanner (00SV2101), or a 41 mm Deep Socket to tighten to 26 ft.-lbs./35 Nm. Do not tighte",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 26,
+      "unit": "ft.-lbs",
+      "context": "ng Spanner (00SV2101), or a 41 mm Deep Socket to tighten to 26 ft.-lbs./35 Nm. Do not tighten the three set screws (Pos. 113) at",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 35,
+      "unit": "Nm",
+      "context": "00SV2101), or a 41 mm Deep Socket to tighten to 26 ft.-lbs./35 Nm. Do not tighten the three set screws (Pos. 113) at this ti",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 1.5,
+      "unit": "ft.-lbs",
+      "context": "ue screwdriver with a slotted or Torx\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. The cartridge assembly is now ready to take back to",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "Nm",
+      "context": "r with a slotted or Torx\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. The cartridge assembly is now ready to take back to where",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 55,
+      "unit": "ft.-lbs",
+      "context": "lube or Thread-eze to the screws, then torque diagonally to 55 ft.-lbs./75Nm. Slide the motor assembly toward the Motor Stool and/",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 75,
+      "unit": "Nm",
+      "context": "ad-eze to the screws, then torque diagonally to 55 ft.-lbs./75Nm. Slide the motor assembly toward the Motor Stool and/or Spa",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 17,
+      "unit": "ft.-lbs",
+      "context": "en Motor Bolts (Pos. 28) diagonally to the proper torque. 17 ft.-lbs./23 Nm for UNC 3/8\" bolts (9/16\" Head), and 30 ft.-lbs./4",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "Nm",
+      "context": "ts (Pos. 28) diagonally to the proper torque. 17 ft.-lbs./23 Nm for UNC 3/8\" bolts (9/16\" Head), and 30 ft.-lbs./40 Nm fo",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 30,
+      "unit": "ft.-lbs",
+      "context": "17 ft.-lbs./23 Nm for UNC 3/8\" bolts (9/16\" Head), and 30 ft.-lbs./40 Nm for UNC 1/2\u201d bolts (3/4\" Head) If the bolt holes do",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 40,
+      "unit": "Nm",
+      "context": "s./23 Nm for UNC 3/8\" bolts (9/16\" Head), and 30 ft.-lbs./40 Nm for UNC 1/2\u201d bolts (3/4\" Head) If the bolt holes do not ali",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 59,
+      "unit": "ft.-lbs",
+      "context": "H 10\u202215\u202220 17 Torque the staybolt nuts diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm 31 Tighten the Slide Rail",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 80,
+      "unit": "Nm",
+      "context": "7 Torque the staybolt nuts diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm 31 Tighten the Slide Rail Screws",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 74,
+      "unit": "ft.-lbs",
+      "context": "staybolt nuts diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm 31 Tighten the Slide Rail Screws (Pos. 90d) connec",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 100,
+      "unit": "Nm",
+      "context": "s diagonally to: CR-H: 59 ft.-lbs./80 Nm CRN-H: 74 ft.-lbs./100 Nm 31 Tighten the Slide Rail Screws (Pos. 90d) connecting the",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "continue to apply downward force), then tighten the three 2.5 mm Shaft Seal Securing Allen Screws torque to 2 ft.-lbs./2.5",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "ft.-lbs",
+      "context": "he three 2.5 mm Shaft Seal Securing Allen Screws torque to 2 ft.-lbs./2.5 Nm. 33 Reassembly Procedures CR-H, CRN-H 10\u202215\u202220 Us",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "5 mm Shaft Seal Securing Allen Screws torque to 2 ft.-lbs./2.5 Nm. 33 Reassembly Procedures CR-H, CRN-H 10\u202215\u202220 Using a sc",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": "n Shaft Seal Collar and Hex Nut Outer Seal. Next, insert a 2.5 mm allen wrench through one of the lower vent port holes and",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "que the lower inboard seal securing screws to 2.0 ft.- lbs./2.5 Nm. Remove allen wrench and replace plugs (Pos. 23a) into the",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 1.5,
+      "unit": "ft.-lbs",
+      "context": "Screwdriver, with a slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "Nm",
+      "context": "with a slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already lifted",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 5,
+      "unit": "mm",
+      "context": "are even (see Diagram). Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "ft.-lbs",
+      "context": "e Diagram). Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "Nm",
+      "context": "Standard Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 6,
+      "unit": "mm",
+      "context": "Units and Cool Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "ft.-lbs",
+      "context": "ol Top\u00ae36 38 5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 31,
+      "unit": "Nm",
+      "context": "5 mm - M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 8,
+      "unit": "mm",
+      "context": "M6 to 10 ft.-lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 46,
+      "unit": "ft.-lbs",
+      "context": "lbs./13 Nm 6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 62,
+      "unit": "Nm",
+      "context": "6 mm - M8 to 23 ft.-lbs./31 Nm 8 mm - M10 to 46 ft.-lbs/62 Nm",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23.52,
+      "unit": "mm",
+      "context": "imum inside diameter for the bearing in position 4a SiC is 23.52 mm; bronze and Graflon is 22.02 mm. If a groove can be seen o",
+      "ref": "excerpts/svc-replacement-criteria.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 22.02,
+      "unit": "mm",
+      "context": "ring in position 4a SiC is 23.52 mm; bronze and Graflon is 22.02 mm. If a groove can be seen or felt, the chamber should be re",
+      "ref": "excerpts/svc-replacement-criteria.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23.4,
+      "unit": "mm",
+      "context": "4 to 60.02 Bearing ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874 mm. If a groove can be seen or felt, the be",
+      "ref": "excerpts/svc-replacement-criteria.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 21.874,
+      "unit": "mm",
+      "context": "g ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874 mm. If a groove can be seen or felt, the bearing should be re",
+      "ref": "excerpts/svc-replacement-criteria.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 1.5,
+      "unit": "ft.-lbs",
+      "context": "umber 7a Coupling Guard Screw .............................1.5 ft.-lbs./2 Nm 9 Coupling Hex Screw 5 mm M6 Screw ................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "Nm",
+      "context": "pling Guard Screw .............................1.5 ft.-lbs./2 Nm 9 Coupling Hex Screw 5 mm M6 Screw ......................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 5,
+      "unit": "mm",
+      "context": "...................1.5 ft.-lbs./2 Nm 9 Coupling Hex Screw 5 mm M6 Screw ....................................10 ft.-lbs./13",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "ft.-lbs",
+      "context": "ex Screw 5 mm M6 Screw ....................................10 ft.-lbs./13 Nm 6 mm M8 Screw ................................... 2",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "Nm",
+      "context": "mm M6 Screw ....................................10 ft.-lbs./13 Nm 6 mm M8 Screw ................................... 23 ft.-l",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 6,
+      "unit": "mm",
+      "context": "crew ....................................10 ft.-lbs./13 Nm 6 mm M8 Screw ................................... 23 ft.-lbs./31",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "ft.-lbs",
+      "context": "s./13 Nm 6 mm M8 Screw ................................... 23 ft.-lbs./31 Nm 8 mm M10 Screw .................................46",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 31,
+      "unit": "Nm",
+      "context": "mm M8 Screw ................................... 23 ft.-lbs./31 Nm 8 mm M10 Screw .................................46 ft.-lbs",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 8,
+      "unit": "mm",
+      "context": "crew ................................... 23 ft.-lbs./31 Nm 8 mm M10 Screw .................................46 ft.-lbs./62 N",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 46,
+      "unit": "ft.-lbs",
+      "context": "lbs./31 Nm 8 mm M10 Screw .................................46 ft.-lbs./62 Nm 26b Strap Bolt 13 mm M8 x 25 mm ..................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 62,
+      "unit": "Nm",
+      "context": "8 mm M10 Screw .................................46 ft.-lbs./62 Nm 26b Strap Bolt 13 mm M8 x 25 mm .........................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "mm",
+      "context": ".........................46 ft.-lbs./62 Nm 26b Strap Bolt 13 mm M8 x 25 mm ...............................11 ft.-lbs./15 Nm",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 25,
+      "unit": "mm",
+      "context": "..............46 ft.-lbs./62 Nm 26b Strap Bolt 13 mm M8 x 25 mm ...............................11 ft.-lbs./15 Nm 28 Motor",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 11,
+      "unit": "ft.-lbs",
+      "context": "Strap Bolt 13 mm M8 x 25 mm ...............................11 ft.-lbs./15 Nm 28 Motor Bolt 9/16\" UNC 3/8\" Bolt ................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 15,
+      "unit": "Nm",
+      "context": "13 mm M8 x 25 mm ...............................11 ft.-lbs./15 Nm 28 Motor Bolt 9/16\" UNC 3/8\" Bolt .......................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 10,
+      "unit": "ft.-lbs",
+      "context": "otor Bolt 9/16\" UNC 3/8\" Bolt .............................10 ft.-lbs./13 Nm 3/4\" UNC 1/2\" Bolt ................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 13,
+      "unit": "Nm",
+      "context": "/16\" UNC 3/8\" Bolt .............................10 ft.-lbs./13 Nm 3/4\" UNC 1/2\" Bolt ................................23 ft.-",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 23,
+      "unit": "ft.-lbs",
+      "context": "./13 Nm 3/4\" UNC 1/2\" Bolt ................................23 ft.-lbs./31 Nm 28g Allen Screw for Foot/Base .....................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 31,
+      "unit": "Nm",
+      "context": "\" UNC 1/2\" Bolt ................................23 ft.-lbs./31 Nm 28g Allen Screw for Foot/Base ......................15 ft.",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 15,
+      "unit": "ft.-lbs",
+      "context": "/31 Nm 28g Allen Screw for Foot/Base ......................15 ft.-lbs./20 Nm 35 Allen Screw for Discharge Flange ........15 ft.-",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 20,
+      "unit": "Nm",
+      "context": "Allen Screw for Foot/Base ......................15 ft.-lbs./20 Nm 35 Allen Screw for Discharge Flange ........15 ft.-lbs./20",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 15,
+      "unit": "ft.-lbs",
+      "context": "ft.-lbs./20 Nm 35 Allen Screw for Discharge Flange ........15 ft.-lbs./20 Nm 36 Staybolt Nut CR-H .............................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 20,
+      "unit": "Nm",
+      "context": "Nm 35 Allen Screw for Discharge Flange ........15 ft.-lbs./20 Nm 36 Staybolt Nut CR-H ....................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 59,
+      "unit": "ft.-lbs",
+      "context": "-H ........................................................ 59 ft.-lbs./80 Nm CRN-H .............................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 80,
+      "unit": "Nm",
+      "context": "............................................... 59 ft.-lbs./80 Nm CRN-H ...................................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 74,
+      "unit": "ft.-lbs",
+      "context": "CRN-H ................................................... 74 ft.-lbs./100 Nm 56 c/e Allen Screw for Sleeve Flange .............",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 100,
+      "unit": "Nm",
+      "context": "............................................... 74 ft.-lbs./100 Nm 56 c/e Allen Screw for Sleeve Flange ...............55 ft.",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 55,
+      "unit": "ft.-lbs",
+      "context": "100 Nm 56 c/e Allen Screw for Sleeve Flange ...............55 ft.-lbs./75 Nm 67 Shaft Lock Nut .................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 75,
+      "unit": "Nm",
+      "context": "/e Allen Screw for Sleeve Flange ...............55 ft.-lbs./75 Nm 67 Shaft Lock Nut ........................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 16.3,
+      "unit": "ft.-lbs",
+      "context": "67 Shaft Lock Nut ........................................16.3 ft.-lbs./22 Nm 105 (a,b) Shaft Seal 41 mm Nut ...................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 22,
+      "unit": "Nm",
+      "context": "k Nut ........................................16.3 ft.-lbs./22 Nm 105 (a,b) Shaft Seal 41 mm Nut ..........................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 41,
+      "unit": "mm",
+      "context": ".................16.3 ft.-lbs./22 Nm 105 (a,b) Shaft Seal 41 mm Nut ............................................ 26 ft.-lbs",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 26,
+      "unit": "ft.-lbs",
+      "context": "eal 41 mm Nut ............................................ 26 ft.-lbs./35 Nm 113 2.5 mm Set Screw ..............................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 35,
+      "unit": "Nm",
+      "context": "ut ............................................ 26 ft.-lbs./35 Nm 113 2.5 mm Set Screw ..................................2 f",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "mm",
+      "context": ".................................... 26 ft.-lbs./35 Nm 113 2.5 mm Set Screw ..................................2 ft.-lbs./2.5",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2,
+      "unit": "ft.-lbs",
+      "context": "Nm 113 2.5 mm Set Screw ..................................2 ft.-lbs./2.5 Nm",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 2.5,
+      "unit": "Nm",
+      "context": "5 mm Set Screw ..................................2 ft.-lbs./2.5 Nm",
+      "ref": "excerpts/svc-torque-table.md"
+    }
+  ],
+  "counts": [
+    {
+      "kind": "count",
+      "value": 4,
+      "unit": "bolts",
+      "context": "ous pump types. Secure the pump to the foundation using all four bolts and shim pump base to assure the pump is vertical and all",
+      "ref": "excerpts/io-mechanical-installation.md"
+    },
+    {
+      "kind": "count",
+      "value": 4,
+      "unit": "screws",
+      "context": "guards. 2. Use the proper metric hexagon key to loosen the four cap screws in the coupling. Remove coupling halves completely. On CR",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "count",
+      "value": 4,
+      "unit": "bolts",
+      "context": "n. 3. Use the correct size spanner to loosen and remove the four mounting bolts joining motor and pump. 4. Lift the motor straight up un ti",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "count",
+      "value": 4,
+      "unit": "bolts",
+      "context": "the desired position by rotating the motor. 4. Insert the four mounting bolts, then tighten diagonally and evenly: \u2013 For 3/8\" bolts (1/2",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "count",
+      "value": 16,
+      "unit": "screws",
+      "context": "CR, CRI, CRN 1s, 1, 3, 5, 10, 15, and 20 CRT 2, 4, 8, and 16 Coupling screw size Minimum torque M6 10 ft-lb M8 23 ft-lb M10 46 ft-lb TM",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "count",
+      "value": 1,
+      "unit": "parts",
+      "context": "epacked chamber stack kits Fig. 23 Prepacked flange kits 16.1 Spare parts Grundfos offers an extensive list of spare parts for CR pum",
+      "ref": "excerpts/io-motor-replacement.md"
+    },
+    {
+      "kind": "count",
+      "value": 40,
+      "unit": "springs",
+      "context": "slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already lifted the Shaft u",
+      "ref": "excerpts/svc-coupling-height.md"
+    },
+    {
+      "kind": "count",
+      "value": 41,
+      "unit": "rings",
+      "context": "n. \u00b7 Using the Specialty Tubular Box Spanner (00SV2107), a 41 mm ring spanner (00SV2101), or a deep socket, fully unscrew the Sh",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "count",
+      "value": 3,
+      "unit": "screws",
+      "context": "m allen wrench to loosen (approximately 1/2 to 1 turn) the three Set Screws (Pos. 113) of the Inboard Seal (Pos. 105b). Back-to-Back",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "count",
+      "value": 20,
+      "unit": "rings",
+      "context": "y be required.) 37 Dismantling Procedures CR-H, CRN-H 10\u202215\u202220 Wear Rings (Pos. 49c) can be removed on CR-H, CRN-H 15 and 20 models.",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "count",
+      "value": 2,
+      "unit": "rings",
+      "context": "4.01 to 45.04 Inside diameter for CRH15 & 20 = 59.84 to 60.02 Bearing ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874",
+      "ref": "excerpts/svc-dismantling.md"
+    },
+    {
+      "kind": "count",
+      "value": 2,
+      "unit": "nuts",
+      "context": "00SV2078) and two 27.5 mm Spacers (96491537) are used with two Staybolt Nuts and Washers. Place tool over Staybolts and seat against Pu",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 3,
+      "unit": "screws",
+      "context": "Socket to tighten to 26 ft.-lbs./35 Nm. Do not tighten the three set screws (Pos. 113) at this time, this will be done in step 33. 25 2",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 40,
+      "unit": "springs",
+      "context": "slotted or a TORX\u00ae tip T20, torque to 1.5 ft.-lbs./2 Nm. 40 Spring tension from the seals may have already lifted the Shaft u",
+      "ref": "excerpts/svc-reassembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 2,
+      "unit": "rings",
+      "context": "4.01 to 45.04 Inside diameter for CRH15 & 20 = 59.84 to 60.02 Bearing ring 47a Minimum outside diameter SiC is 23.4 mm, TC is 21.874",
+      "ref": "excerpts/svc-replacement-criteria.md"
+    },
+    {
+      "kind": "count",
+      "value": 20,
+      "unit": "parts",
+      "context": "f, PDF pp. 20-24.) Reassembly Procedures CR-H, CRN-H 10\u202215\u202220 Legend Part Combination A Part Combination B Part Combination C Order o",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 10,
+      "unit": "parts",
+      "context": "Combination C Order of Stage Assembly \u2013 Models CR-H, CRN-H 10 Part Combination E Begin reassembly on this end Bottom chamber 1",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "5 16 17 18 19 20 21 22 X A 64 Spacing Pipe 4 Chamber - CPL 49 Impeller C 69a Spacing Pipe E (*see note below) 69 Spacing Pipe D",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "Spacer Part Combination D 61 Stop Spacer End Combination X 66 Star Washer 64c Clamp 67 Lock Nut 3a Top Chamber without Guide Vanes 2",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "D 61 Stop Spacer End Combination X 66 Star Washer 64c Clamp 67 Lock Nut 3a Top Chamber without Guide Vanes 26c Strap Washer 26b St",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "with Retainer & Seal Ring 3 Top Chamber with Guide Vanes 49 Impeller 64a Spacing Pipe 64d Spacing Pipe 49 Impeller 47a Bearing R",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "h Guide Vanes 49 Impeller 64a Spacing Pipe 64d Spacing Pipe 49 Impeller 47a Bearing Ring 4a Chamber with Bearing 26a Strap 20 Stage",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 20,
+      "unit": "stages",
+      "context": "Impeller 47a Bearing Ring 4a Chamber with Bearing 26a Strap 20 Stages NOTES: 1. If an impeller is to be permanently removed (pum",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "ate number of impellers A 64a Spacing Pipe 64d Spacing Pipe 49 Impeller 3 Top Chamber with Guide Vane D 64 Spacing Pipe CBPart C",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "D 64 Spacing Pipe CBPart Combination C Part Combination E 66 Lock Washer 64c Clamp 67 Nut 49 Impeller 3a Top Chamber without Guide",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "t Combination C Part Combination E 66 Lock Washer 64c Clamp 67 Nut 49 Impeller 3a Top Chamber without Guide Vane 69a Spacing",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "nation C Part Combination E 66 Lock Washer 64c Clamp 67 Nut 49 Impeller 3a Top Chamber without Guide Vane 69a Spacing Bush 4 Chamb",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "Top Chamber without Guide Vane 69a Spacing Bush 4 Chamber 49 Impeller 4b Chamber 49i Impeller Low NPSH 64e Spacing Pipe 61 Stop",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 21,
+      "unit": "stages",
+      "context": "e 61 Stop Spacer Reassembly Procedures CR-H, CRN-H 10\u202215\u202220 21 Stages 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 Be",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 2,
+      "unit": "impellers",
+      "context": "thickness of a standard chamber, it has the performance of two impellers. Physically, there is one less chamber in a stack than the",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "(opening) faces upward away from vise. Part Combination AA- 66 Lock Washer 64c Clamp 67 Nut 64d Spacing Pipe A 66 Star Washer 64c Clam",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "ay from vise. Part Combination AA- 66 Lock Washer 64c Clamp 67 Nut 64d Spacing Pipe A 66 Star Washer 64c Clamp 67 Lock Nut Par",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "tion AA- 66 Lock Washer 64c Clamp 67 Nut 64d Spacing Pipe A 66 Star Washer 64c Clamp 67 Lock Nut Part Combination B B 64a Spacing Pipe",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "4c Clamp 67 Nut 64d Spacing Pipe A 66 Star Washer 64c Clamp 67 Lock Nut Part Combination B B 64a Spacing Pipe 64d Spacing Pipe 49 I",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "Nut Part Combination B B 64a Spacing Pipe 64d Spacing Pipe 49 Impeller 47a Bearing Ring 4a Chamber with Bearing Part Combination C",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "Bearing Part Combination C 64 Spacing Pipe 4 Chamber - CPL 49 Impeller C Part Combination BB- 64f Spacing Pipe 64d Spacing Pipe 4",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "r C Part Combination BB- 64f Spacing Pipe 64d Spacing Pipe 49 Impeller 47a Bearing Ring 4a Chamber with Bearing Part Combination E",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "1 Stop Spacer 61 Stop Spacer 3 Top Chamber with Guide Vanes 49 Impeller X End Combination X 26c Strap Washer 26b Strap Bolt 44b Lo",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 20,
+      "unit": "parts",
+      "context": "end Bottom chamber Reassembly Procedures CR-H, CRN-H 10\u202215\u202220 Legend Part Combination A Part Combination A- Part Combination A+ Order",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "l - Tungsten Carbide 4. SiC = Sintered Silicon Carbide A+ 66 Lock Washer 67 Nut 64c Clamp 64e Spacing Pipe 47a Bearing Ring, HM 64e",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "rbide 4. SiC = Sintered Silicon Carbide A+ 66 Lock Washer 67 Nut 64c Clamp 64e Spacing Pipe 47a Bearing Ring, HM 64e Spacing",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "Pipe 47a Bearing Ring, HM 64e Spacing Pipe 64b Spacing Pipe 66 Lock Washer 67 Nut 64e Spacing Pipe 64c Clamp Part Combination EPart Co",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "g Ring, HM 64e Spacing Pipe 64b Spacing Pipe 66 Lock Washer 67 Nut 64e Spacing Pipe 64c Clamp Part Combination EPart Combinati",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "1 Stop Spacer 61 Stop Spacer 3 Top Chamber with Guide Vanes 49 Impeller X End Combination X 26c Strap Washer 26b Strap Bolt 44b Lo",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 49,
+      "unit": "impellers",
+      "context": "47a Bearing Ring, SiC B64a Spacing Pipe 64d Spacing Pipe 49 Impeller 4a Chamber with Bearing 47a Bearing Ring, SiC B 47a Beari",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 66,
+      "unit": "washers",
+      "context": "Bearing Ring, SiC B 47a Bearing Ring, HM 64e Spacing Pipe 66 Lock Washer 67 Nut 64c Clamp 64e Spacing Pipe 64b Spacing Pipe 47a Bear",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 67,
+      "unit": "nuts",
+      "context": "SiC B 47a Bearing Ring, HM 64e Spacing Pipe 66 Lock Washer 67 Nut 64c Clamp 64e Spacing Pipe 64b Spacing Pipe 47a Bearing Rin",
+      "ref": "excerpts/svc-stage-assembly.md"
+    },
+    {
+      "kind": "count",
+      "value": 28,
+      "unit": "bolts",
+      "context": "8 x 25 mm ...............................11 ft.-lbs./15 Nm 28 Motor Bolt 9/16\" UNC 3/8\" Bolt .............................10 ft.-lb",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "count",
+      "value": 35,
+      "unit": "screws",
+      "context": "crew for Foot/Base ......................15 ft.-lbs./20 Nm 35 Allen Screw for Discharge Flange ........15 ft.-lbs./20 Nm 36 Staybolt",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "count",
+      "value": 36,
+      "unit": "nuts",
+      "context": "Allen Screw for Discharge Flange ........15 ft.-lbs./20 Nm 36 Staybolt Nut CR-H .....................................................",
+      "ref": "excerpts/svc-torque-table.md"
+    },
+    {
+      "kind": "count",
+      "value": 41,
+      "unit": "nuts",
+      "context": ".................16.3 ft.-lbs./22 Nm 105 (a,b) Shaft Seal 41 mm Nut ............................................ 26 ft.-lbs./35",
+      "ref": "excerpts/svc-torque-table.md"
+    }
+  ],
+  "parts": [
+    {
+      "id": "motor",
+      "name": "Motor",
+      "parent": "motor-stool",
+      "role": "Drives the pump shaft through the coupling halves; CR units ship with heavy-duty 2-pole motors.",
+      "service_ref": "I&O \u00a715 Replacing the motor; \u00a719 problems 1, 4"
+    },
+    {
+      "id": "motor-stool",
+      "name": "Motor stool",
+      "parent": "pump-head-cover",
+      "role": "Standoff between pump head and motor; encloses the coupling and gives access to the shaft seal.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "coupling-guard",
+      "name": "Coupling guard",
+      "parent": "motor-stool",
+      "role": "Covers the rotating coupling halves for safety.",
+      "service_ref": "CR-H service, Dismantling p. 2"
+    },
+    {
+      "id": "coupling-guard-screw",
+      "name": "Coupling guard screw",
+      "parent": "coupling-guard",
+      "role": "Fastens the coupling guards (T20, 2 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1"
+    },
+    {
+      "id": "coupling-bolt",
+      "name": "Coupling hex bolt",
+      "parent": "coupling-half",
+      "role": "Clamps the coupling halves together; torque depends on bolt size (13-62 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1"
+    },
+    {
+      "id": "shaft-pin",
+      "name": "Shaft pin",
+      "parent": "shaft",
+      "role": "Locates the coupling half and impeller stack on the shaft.",
+      "service_ref": "CR-H service, Dismantling p. 2"
+    },
+    {
+      "id": "coupling-half",
+      "name": "Coupling half",
+      "parent": "motor-stool",
+      "role": "Transmits motor torque to the pump shaft; halves are a matched set, never interchanged between pumps.",
+      "service_ref": "CR-H service, Dismantling p. 2; coupling height pp. 18-19"
+    },
+    {
+      "id": "shaft",
+      "name": "Pump shaft",
+      "parent": "impeller-stack",
+      "role": "Carries the impellers and transmits coupling torque through the stage stack; must rotate freely by hand.",
+      "service_ref": "CR-H service, Reassembly p. 11; I&O \u00a719 problems 1h, 4f"
+    },
+    {
+      "id": "shaft-lock-nut",
+      "name": "Shaft lock nut",
+      "parent": "shaft",
+      "role": "Retains the impeller stack on the threaded shaft end (22 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1; Reassembly p. 12"
+    },
+    {
+      "id": "lock-washer",
+      "name": "Lock washer set",
+      "parent": "shaft",
+      "role": "Washer set locking the shaft nut; halves must stay paired as supplied.",
+      "service_ref": "CR-H service, Reassembly p. 12"
+    },
+    {
+      "id": "splined-spacer",
+      "name": "Splined (clamp) spacer",
+      "parent": "shaft",
+      "role": "Spacer clamping and positioning the stack on the shaft spline.",
+      "service_ref": "CR-H service, Dismantling p. 7; Reassembly p. 11"
+    },
+    {
+      "id": "stack-spacer",
+      "name": "Stage spacer",
+      "parent": "impeller-stack",
+      "role": "Axial spacer setting stage positions within the chamber stack.",
+      "service_ref": "CR-H service, Reassembly p. 11"
+    },
+    {
+      "id": "shaft-seal",
+      "name": "Cartridge shaft seal",
+      "parent": "pump-head-cover",
+      "role": "Cartridge seal stopping pumped fluid leaking along the shaft; cannot be disassembled, replaced as a unit.",
+      "service_ref": "CR-H service, Dismantling p. 3; replacement criteria p. 10"
+    },
+    {
+      "id": "inboard-seal",
+      "name": "Inboard seal",
+      "parent": "pump-head-cover",
+      "role": "Inboard seal element used in tandem and back-to-back seal variants.",
+      "service_ref": "CR-H service, Dismantling p. 5"
+    },
+    {
+      "id": "seal-securing-screw",
+      "name": "Shaft seal securing screw",
+      "parent": "shaft-seal",
+      "role": "2.5 mm screws locking the seal collar to the shaft (2.5 Nm).",
+      "service_ref": "CR-H service, Dismantling p. 3; Torque table p. 1"
+    },
+    {
+      "id": "pump-head",
+      "name": "Pump head",
+      "parent": "sleeve-flange",
+      "role": "Top pressure casing (N models) carrying the head cover, seal, and discharge outlet.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "pump-head-cover",
+      "name": "Pump head cover",
+      "parent": "pump-head",
+      "role": "Cover closing the pump head; carries the shaft seal, stack compression springs, and Cool-Top disk plate.",
+      "service_ref": "CR-H service, Dismantling pp. 4-6"
+    },
+    {
+      "id": "disk-plate",
+      "name": "Cool-Top disk plate",
+      "parent": "pump-head-cover",
+      "role": "Cool-Top plate in the head cover carrying the guide bushing.",
+      "service_ref": "CR-H service, Dismantling p. 4"
+    },
+    {
+      "id": "disk-bushing",
+      "name": "Disk plate bushing",
+      "parent": "disk-plate",
+      "role": "Bushing guiding the shaft in the disk plate.",
+      "service_ref": "CR-H service, Dismantling p. 4"
+    },
+    {
+      "id": "disk-retaining-washer",
+      "name": "Bushing retaining washer",
+      "parent": "disk-plate",
+      "role": "Washer retaining the bushings in the disk plate.",
+      "service_ref": "CR-H service, Reassembly p. 13"
+    },
+    {
+      "id": "disk-oring",
+      "name": "Disk plate O-ring",
+      "parent": "disk-plate",
+      "role": "O-ring sealing the disk plate; replaced whenever the pump is disassembled.",
+      "service_ref": "CR-H service, Reassembly p. 13; replacement criteria p. 10"
+    },
+    {
+      "id": "head-plug",
+      "name": "Head cover plug",
+      "parent": "pump-head-cover",
+      "role": "Plug closing the seal-securing-screw access in the head cover.",
+      "service_ref": "CR-H service, Reassembly p. 18"
+    },
+    {
+      "id": "compression-spring",
+      "name": "PTFE stack compression spring",
+      "parent": "pump-head-cover",
+      "role": "PTFE springs pressing the chamber stack together from the head cover.",
+      "service_ref": "CR-H service, Dismantling pp. 4-6"
+    },
+    {
+      "id": "sleeve",
+      "name": "Outer sleeve",
+      "parent": "suction-discharge-base",
+      "role": "Outer pressure casing enclosing the chamber stack between base and head.",
+      "service_ref": "CR-H service, Dismantling p. 8; Reassembly p. 12"
+    },
+    {
+      "id": "sleeve-flange",
+      "name": "Sleeve flange",
+      "parent": "sleeve",
+      "role": "Flange clamping the sleeve to the pump head with screws, washers, and nuts.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "sleeve-flange-screw",
+      "name": "Sleeve flange allen screw",
+      "parent": "sleeve-flange",
+      "role": "Allen screws fastening the sleeve flange (75 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1"
+    },
+    {
+      "id": "sleeve-flange-washer",
+      "name": "Sleeve flange washer",
+      "parent": "sleeve-flange",
+      "role": "Washers under the sleeve flange screws.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "sleeve-flange-nut",
+      "name": "Sleeve flange nut",
+      "parent": "sleeve-flange",
+      "role": "Nuts for the sleeve flange screws.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "sleeve-oring",
+      "name": "Sleeve O-ring",
+      "parent": "sleeve-flange",
+      "role": "O-rings sealing the sleeve joints at head and flange; the hot-section ring always seats toward the stack.",
+      "service_ref": "CR-H service, Reassembly p. 11"
+    },
+    {
+      "id": "suction-discharge-base",
+      "name": "Suction/discharge base",
+      "parent": "mounting-base",
+      "role": "Bottom casing with suction inlet and discharge outlet; the cartridge assembly seats into it.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "mounting-base",
+      "name": "Mounting base",
+      "parent": null,
+      "role": "Bedplate the pump and motor mount on; the motor slides back on rails for seal and coupling service.",
+      "service_ref": "CR-H service, Dismantling p. 2"
+    },
+    {
+      "id": "slide-rail",
+      "name": "Motor slide rail screw",
+      "parent": "mounting-base",
+      "role": "Rail screws connecting the motor to the base; loosened to slide the motor back.",
+      "service_ref": "CR-H service, Dismantling p. 2; Reassembly p. 17"
+    },
+    {
+      "id": "motor-bolt",
+      "name": "Motor bolt",
+      "parent": "motor-stool",
+      "role": "Bolts fastening the motor to the stool, tightened diagonally (13-23 Nm by size).",
+      "service_ref": "CR-H service, Torque table p. 1; Reassembly p. 17"
+    },
+    {
+      "id": "base-oring",
+      "name": "Base O-ring",
+      "parent": "suction-discharge-base",
+      "role": "O-ring sealing the cartridge into the base groove.",
+      "service_ref": "CR-H service, Reassembly p. 16"
+    },
+    {
+      "id": "support-foot",
+      "name": "Cartridge support foot",
+      "parent": "cartridge-assembly",
+      "role": "Support plate/foot slid over the staybolts under the cartridge.",
+      "service_ref": "CR-H service, Reassembly p. 16"
+    },
+    {
+      "id": "staybolt",
+      "name": "Staybolt",
+      "parent": "suction-discharge-base",
+      "role": "Long through-bolts clamping base, sleeve, and head into one pressure casing.",
+      "service_ref": "CR-H service, Dismantling pp. 3, 8"
+    },
+    {
+      "id": "staybolt-nut",
+      "name": "Staybolt nut",
+      "parent": "staybolt",
+      "role": "24 mm nuts tensioning the staybolts (CR-H 80 Nm, CRN-H 100 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1; Dismantling p. 3"
+    },
+    {
+      "id": "staybolt-washer",
+      "name": "Staybolt washer",
+      "parent": "staybolt",
+      "role": "Washers under the staybolt nuts.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "cartridge-assembly",
+      "name": "Cartridge assembly",
+      "parent": "sleeve",
+      "role": "Removable cartridge: stack, shaft, and seal handled as one service unit lifted from the base.",
+      "service_ref": "CR-H service, Dismantling p. 3"
+    },
+    {
+      "id": "impeller-stack",
+      "name": "Impeller (stage) stack",
+      "parent": "cartridge-assembly",
+      "role": "Rotating assembly of shaft, impellers, and chambers; each stage adds head toward the rated total.",
+      "service_ref": "CR-H service, Dismantling p. 7; stage assembly pp. 20-24"
+    },
+    {
+      "id": "top-chamber",
+      "name": "Top chamber",
+      "parent": "impeller-stack",
+      "role": "Top chamber of the stack; anchors the stack straps.",
+      "service_ref": "CR-H service, Reassembly p. 12"
+    },
+    {
+      "id": "chamber",
+      "name": "Stage chamber",
+      "parent": "impeller-stack",
+      "role": "Stationary diffuser chamber of one stage, converting impeller velocity into pressure.",
+      "service_ref": "CR-H service, Dismantling p. 7; stage assembly pp. 20-24"
+    },
+    {
+      "id": "chamber-bearing",
+      "name": "Chamber with bearing",
+      "parent": "impeller-stack",
+      "role": "Stage chamber with an integral bearing supporting the shaft mid-stack.",
+      "service_ref": "CR-H service, Dismantling p. 7"
+    },
+    {
+      "id": "suction-inlet-connector",
+      "name": "Suction inlet connector",
+      "parent": "impeller-stack",
+      "role": "Two-piece connector feeding suction flow into the first stage.",
+      "service_ref": "CR-H service, Dismantling p. 7; Reassembly p. 12"
+    },
+    {
+      "id": "neck-ring",
+      "name": "Neck (seal) ring",
+      "parent": "chamber",
+      "role": "Wear ring sealing the impeller eyelet against the chamber; inner edge faces the impeller.",
+      "service_ref": "CR-H service, Reassembly p. 11"
+    },
+    {
+      "id": "seal-ring-retainer",
+      "name": "Seal ring retainer",
+      "parent": "chamber",
+      "role": "Retainer holding the neck ring in the chamber; has a relief slot for removal.",
+      "service_ref": "CR-H service, Dismantling p. 8"
+    },
+    {
+      "id": "bearing-ring",
+      "name": "Bearing ring",
+      "parent": "chamber-bearing",
+      "role": "Rotating ring running inside the chamber bearing.",
+      "service_ref": "CR-H service, Dismantling p. 8; Reassembly p. 11"
+    },
+    {
+      "id": "impeller",
+      "name": "Stage impeller",
+      "parent": "impeller-stack",
+      "role": "Rotating stage impeller adding head to the fluid; all stages sum to rated head.",
+      "service_ref": "CR-H service, Dismantling p. 7; stage assembly pp. 20-24"
+    },
+    {
+      "id": "impeller-wear-ring",
+      "name": "Impeller wear ring",
+      "parent": "impeller",
+      "role": "Replaceable wear ring pressed onto the impeller (15/20 models); the wearing surface instead of the impeller.",
+      "service_ref": "CR-H service, Reassembly p. 11"
+    },
+    {
+      "id": "stack-strap",
+      "name": "Chamber stack strap",
+      "parent": "impeller-stack",
+      "role": "Straps binding the chamber stack for handling and assembly.",
+      "service_ref": "CR-H service, Dismantling p. 7"
+    },
+    {
+      "id": "stack-strap-bolt",
+      "name": "Chamber stack strap bolt",
+      "parent": "stack-strap",
+      "role": "Bolt tensioning the stack strap (13 mm, 15 Nm).",
+      "service_ref": "CR-H service, Torque table p. 1"
+    },
+    {
+      "id": "stack-strap-washer",
+      "name": "Chamber stack strap washer",
+      "parent": "stack-strap",
+      "role": "Washer under the stack strap bolt.",
+      "service_ref": "CR-H service, Dismantling p. 7"
+    },
+    {
+      "id": "discharge-flange",
+      "name": "Discharge flange",
+      "parent": "pump-head",
+      "role": "Flange at the discharge outlet with a greased seal groove.",
+      "service_ref": "CR-H service, Reassembly p. 19"
+    },
+    {
+      "id": "flange-pipe-plug",
+      "name": "Flange pipe plug",
+      "parent": "discharge-flange",
+      "role": "1/4 in. pipe plug in the discharge flange.",
+      "service_ref": "CR-H service, Reassembly p. 19"
+    },
+    {
+      "id": "flange-allen-screw",
+      "name": "Flange allen screw",
+      "parent": "discharge-flange",
+      "role": "Allen screws seating the discharge flange diagonally (20 Nm) with no gaps.",
+      "service_ref": "CR-H service, Reassembly p. 19"
+    },
+    {
+      "id": "flange-ring",
+      "name": "Flange ring",
+      "parent": "pump-head",
+      "role": "Flange ring on the discharge adaptor, locked by the retaining ring.",
+      "service_ref": "CR-H service, Dismantling p. 9"
+    },
+    {
+      "id": "flange-retaining-ring",
+      "name": "Flange retaining ring",
+      "parent": "flange-ring",
+      "role": "Ring locking the flange ring into its groove.",
+      "service_ref": "CR-H service, Dismantling p. 9"
+    },
+    {
+      "id": "discharge-oring",
+      "name": "Discharge O-ring",
+      "parent": "pump-head",
+      "role": "O-ring sealing the discharge joint.",
+      "service_ref": "CR-H service, Dismantling p. 9"
+    }
+  ],
+  "readout": "Pos number + name + torque (Nm, CR-H values from the torque table)",
+  "honesty": [
+    "base footprint + bolt holes true (L1/L2/B1/B2/dia)",
+    "torques + sequence + counts verified",
+    "heights/proportions illustrative",
+    "motor + furniture illustrative"
+  ],
+  "status": "eval_pass"
+}

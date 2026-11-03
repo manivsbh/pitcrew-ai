@@ -33,3 +33,6 @@ frontend/.vite/
 *.swp
 .vscode/
 .idea/
+data/rag.db
+data/rag_sources/
+data/harness/

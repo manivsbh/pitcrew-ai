@@ -1,0 +1,10 @@
+{
+  "name": "FORMA Industrial Fault Investigator",
+  "short_name": "FORMA Field",
+  "description": "Multi-agent industrial machine simulation, acoustic fault diagnosis, SAM 2.1 assembly guide & parts inventory.",
+  "start_url": "/?mobile=1",
+  "display": "standalone",
+  "background_color": "#0d1113",
+  "theme_color": "#0d1113",
+  "orientation": "portrait-primary"
+}

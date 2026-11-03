@@ -1,0 +1,4 @@
+time,val,extra
+not_a_number,,
+inf,nan,999
+1.234,foo,bar

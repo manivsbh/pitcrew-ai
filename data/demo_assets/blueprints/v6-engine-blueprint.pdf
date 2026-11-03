@@ -1,0 +1,32 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 869 >>
+stream
+BT /F1 11 Tf 48 745 Td (V6 DIRECT INJECTION ENGINE BLUEPRINT - EXPLODED VIEW AND PARTS LIST) Tj 0 -15 Td (Bore: 86 mm; Stroke: 86 mm; 6 cylinders; Rated speed: 4200 rpm; Torque: 340 Nm.) Tj 0 -15 Td (1 Crankcase Block .................... 65 Nm) Tj 0 -15 Td (2 Forged Crankshaft .................. 85 Nm) Tj 0 -15 Td (3 Connecting Rods .................... 48 Nm) Tj 0 -15 Td (4 Piston Assembly .................... 22 Nm) Tj 0 -15 Td (5 Cylinder Bank L .................... 70 Nm) Tj 0 -15 Td (6 Cylinder Bank R .................... 70 Nm) Tj 0 -15 Td (7 Fuel Rail L ........................ 24 Nm) Tj 0 -15 Td (8 Direct Fuel Injector ............... 12 Nm) Tj 0 -15 Td (9 Iridium Spark Plugs ................ 18 Nm) Tj 0 -15 Td (10 Oil Pan Sump ...................... 14 Nm) Tj 0 -15 Td (Step 1 seats Forged Crankshaft \(Pos. 2\) in Crankcase Block \(Pos. 1\).) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1231
+%%EOF

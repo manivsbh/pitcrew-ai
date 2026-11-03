@@ -22,7 +22,8 @@ def list_packs() -> list[dict]:
             with open(comp_path) as f:
                 n_comp = len(json.load(f))
         out.append({"machine": meta["machine"], "name": meta["name"],
-                    "kind": meta.get("kind"), "components": n_comp})
+                    "kind": meta.get("kind"), "components": n_comp,
+                    "dimensions": meta.get("dimensions")})
     return out
 
 

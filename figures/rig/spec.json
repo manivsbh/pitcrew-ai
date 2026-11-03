@@ -1,0 +1,115 @@
+{
+  "machine": "rig",
+  "pack": {
+    "name": "Paderborn bearing test rig (motor + 6203 test bearing)",
+    "kind": "bearing-rig",
+    "components": 7,
+    "excerpts": 1
+  },
+  "concept": "Exploded 6203 test bearing in register above its rig shaft; speed sets the orbit, readout shows BPFO/BPFI.",
+  "dimensions": [
+    {
+      "kind": "dimension",
+      "value": 24,
+      "unit": "mm",
+      "context": "Verified dimensions (Table 1): - Inner raceway diameter: 24.0 mm - Outer raceway diameter: 33.1 mm - Pitch circle diameter:",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 33.1,
+      "unit": "mm",
+      "context": "- Inner raceway diameter: 24.0 mm - Outer raceway diameter: 33.1 mm - Pitch circle diameter: 28.55 mm - Rolling elements: 8, di",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 28.55,
+      "unit": "mm",
+      "context": "- Outer raceway diameter: 33.1 mm - Pitch circle diameter: 28.55 mm - Rolling elements: 8, diameter 6.75 mm, length 6.75 mm - N",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 6.75,
+      "unit": "mm",
+      "context": "h circle diameter: 28.55 mm - Rolling elements: 8, diameter 6.75 mm, length 6.75 mm - Nominal pressure angle: 0 degrees Cross-",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    },
+    {
+      "kind": "dimension",
+      "value": 6.75,
+      "unit": "mm",
+      "context": "r: 28.55 mm - Rolling elements: 8, diameter 6.75 mm, length 6.75 mm - Nominal pressure angle: 0 degrees Cross-manufacturer not",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    }
+  ],
+  "counts": [
+    {
+      "kind": "count",
+      "value": 8,
+      "unit": "elements",
+      "context": "3): test bearings come from FAG, MTK and IBU/IBB; all have eight rolling elements and near-identical sizes, so characteristic kinematic frequ",
+      "ref": "docs-pack/excerpts/test-rig-6203-geometry.md"
+    }
+  ],
+  "parts": [
+    {
+      "id": "motor",
+      "name": "Drive motor",
+      "parent": null,
+      "role": "Drives the rig shaft; its stator current is one of the rig's main measured variables.",
+      "service_ref": "docs-pack test-rig-6203-geometry (measurement context)"
+    },
+    {
+      "id": "shaft",
+      "name": "Rig shaft",
+      "parent": "motor",
+      "role": "Carries the test bearing inner ring; transmits motor torque to the bearing under test.",
+      "service_ref": "standard test-rig construction"
+    },
+    {
+      "id": "housing",
+      "name": "Bearing housing",
+      "parent": null,
+      "role": "Holds the test bearing outer ring; housing vibration (acceleration) is measured here.",
+      "service_ref": "docs-pack test-rig-6203-geometry (measurement context)"
+    },
+    {
+      "id": "ring_inner",
+      "name": "Inner ring (6203)",
+      "parent": "housing",
+      "role": "Inner raceway (24.0 mm dia) rotating with the shaft; damage here raises energy at the inner-ring fault frequency.",
+      "service_ref": "docs-pack test-rig-6203-geometry (verified dimensions)"
+    },
+    {
+      "id": "ring_outer",
+      "name": "Outer ring (6203)",
+      "parent": "housing",
+      "role": "Outer raceway (33.1 mm dia) fixed in the housing; damage here raises energy at the outer-ring fault frequency.",
+      "service_ref": "docs-pack test-rig-6203-geometry (verified dimensions)"
+    },
+    {
+      "id": "rollers",
+      "name": "Rolling elements (8x)",
+      "parent": "housing",
+      "role": "Eight 6.75 mm balls rolling between the raceways on a 28.55 mm pitch circle.",
+      "service_ref": "docs-pack test-rig-6203-geometry (verified dimensions)"
+    },
+    {
+      "id": "cage",
+      "name": "Cage",
+      "parent": "housing",
+      "role": "Spaces the rolling elements evenly around the raceways.",
+      "service_ref": "standard rolling-bearing construction"
+    }
+  ],
+  "readout": "rpm + BPFO + BPFI from faultFreq (mirrors backend fault_frequencies)",
+  "honesty": [
+    "ring shoulders illustrative",
+    "cage body illustrative",
+    "rig furniture illustrative",
+    "motion slowed 30x; readout true"
+  ],
+  "status": "awaiting_author"
+}

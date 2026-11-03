@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { initAssembly, type AssemblyHandle } from "./assembly"
 import type { Pack, PackScenario } from "../api"
 
-/** Mounts the verified simulation engine: sheet / assemble / run / fault. */
+/** Mounts the verified simulation engine: sheet / assemble / run / fault / CAD wireframe. */
 export default function AssemblySim({
   pack,
   machineId,
@@ -11,6 +11,11 @@ export default function AssemblySim({
   suspect,
   selectedId,
   scales,
+  stepPlacedIds,
+  stepHighlightId,
+  externalExplode,
+  externalFaultId,
+  onFaultChange,
 }: {
   pack: Pack
   machineId: string
@@ -19,12 +24,18 @@ export default function AssemblySim({
   suspect: string | null
   selectedId: string | null
   scales: { bore: number; stroke: number; shaft: number }
+  stepPlacedIds?: string[] | null
+  stepHighlightId?: string | null
+  externalExplode?: number | null
+  externalFaultId?: string | null
+  onFaultChange?: (id: string) => void
 }) {
   const host = useRef<HTMLDivElement>(null)
   const handle = useRef<AssemblyHandle | null>(null)
   const [layout, setLayoutState] = useState<"assembled" | "sheet">("assembled")
   const [running, setRunning] = useState(false)
   const [isolated, setIsolatedState] = useState(false)
+  const [wireframe, setWireframeState] = useState(false)
   const [faultId, setFaultId] = useState("")
   const [caption, setCaption] = useState("")
   const scenarios: PackScenario[] = pack.scenarios ?? []
@@ -43,6 +54,7 @@ export default function AssemblySim({
     handle.current = h
     setLayoutState("assembled")
     setRunning(false)
+    setWireframeState(false)
     setFaultId(scenarios[0]?.id ?? "")
     const cov = h.getCoverage()
     setCaption(
@@ -66,13 +78,29 @@ export default function AssemblySim({
   }, [suspect])
 
   useEffect(() => {
+    if (selectedId) handle.current?.select(selectedId)
+  }, [selectedId])
+
+  useEffect(() => {
+    if (typeof externalExplode === "number") {
+      handle.current?.setExplode(externalExplode)
+    }
+  }, [externalExplode])
+
+  useEffect(() => {
+    if (stepPlacedIds) {
+      handle.current?.stepTo(stepPlacedIds, stepHighlightId ?? null)
+    }
+  }, [stepPlacedIds, stepHighlightId])
+
+  useEffect(() => {
     handle.current?.setDesign(scales)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scales.bore, scales.stroke, scales.shaft])
 
   const current =
     scenarios.find((s) => s.id === faultId) ?? scenarios[0] ?? null
-  const applyFault = (id: string) => {
+  const applyFault = (id: string, emit = true) => {
     setFaultId(id)
     const sc = scenarios.find((s) => s.id === id) ?? scenarios[0] ?? null
     if (!sc) return
@@ -81,7 +109,17 @@ export default function AssemblySim({
     setCaption(
       `${sc.label}: ${sc.note} Output ${Math.round(sc.slow * 100)}% speed${sc.illustrative ? " (illustrative)." : "."}`,
     )
+    if (emit) onFaultChange?.(id)
   }
+
+  useEffect(() => {
+    if (externalFaultId) {
+      applyFault(externalFaultId, false)
+      handle.current?.setRun(true)
+      setRunning(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalFaultId])
   const setLayout = (l: "assembled" | "sheet") => {
     handle.current?.setLayout(l)
     setLayoutState(l)
@@ -133,6 +171,16 @@ export default function AssemblySim({
       setCaption("Select a component first, then isolate it.")
     }
   }
+  const toggleWireframe = () => {
+    const next = !wireframe
+    setWireframeState(next)
+    handle.current?.setWireframe(next)
+    setCaption(
+      next
+        ? "Blueprint CAD wireframe shader active — inspect internal clearances."
+        : "Studio PBR material shader restored.",
+    )
+  }
 
   return (
     <div className="simwrap">
@@ -168,6 +216,13 @@ export default function AssemblySim({
           onClick={toggleIsolate}
         >
           {isolated ? "Show all" : "Isolate"}
+        </button>
+        <button
+          className="btn"
+          aria-pressed={wireframe}
+          onClick={toggleWireframe}
+        >
+          {wireframe ? "Shaded" : "Blueprint CAD"}
         </button>
         <label className="sim-fault">
           Fault

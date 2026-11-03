@@ -89,7 +89,7 @@ def load_pack_files(machine: str) -> dict | None:
     if os.path.isfile(pb):
         with open(pb) as f:
             playbooks = json.load(f)
-    return {"components": components, "excerpts": excerpts,
+    return {"machine": machine, "components": components, "excerpts": excerpts,
             "playbooks": playbooks}
 
 
@@ -134,6 +134,24 @@ def top_peaks(freqs: np.ndarray, mag: np.ndarray, n: int = 5) -> list[dict]:
     return peaks
 
 
+def _decimate_spectrum(freqs: np.ndarray, mag: np.ndarray,
+                       f_max: float = 4000.0, max_pts: int = 500) -> dict:
+    mask = freqs <= min(float(freqs[-1]) if freqs.size else f_max, f_max)
+    fx = freqs[mask]
+    my = mag[mask]
+    if fx.size > max_pts:
+        step = max(1, fx.size // max_pts)
+        fx = fx[::step]
+        my = my[::step]
+    return {
+        "kind": "acoustic_fft",
+        "xlabel": "Frequency (Hz)",
+        "ylabel": "Normalized amplitude",
+        "x": [round(float(v), 2) for v in fx],
+        "y": [round(float(v), 5) for v in my],
+    }
+
+
 def sound_analyze(x: np.ndarray, fs: float, rpm: float | None,
                   machine: str) -> dict:
     """Deterministic spectral summary. Never calls the model."""
@@ -146,11 +164,26 @@ def sound_analyze(x: np.ndarray, fs: float, rpm: float | None,
     out: dict = {"n_samples": int(x.size), "fs": fs,
                  "duration_s": round(dur, 3),
                  "stats": analysis.time_stats(x),
-                 "top_peaks": top_peaks(freqs, mag)}
+                 "top_peaks": top_peaks(freqs, mag),
+                 "spectrum_series": _decimate_spectrum(freqs, mag)}
     if machine == "rig" and rpm:
         targets = analysis.fault_frequencies(rpm)
         out["targets"] = targets
         out["hits"] = analysis.match_peaks(freqs, mag, targets)
+    eff_rpm = rpm or (1500.0 if machine == "rig" else None)
+    if machine == "rig" and eff_rpm and fs >= 4000 and x.size >= 1024:
+        valid_bands = [(lo, hi) for lo, hi in analysis.PROBE_BANDS
+                       if hi < fs * 0.48 and lo < hi]
+        if valid_bands:
+            try:
+                from . import harness
+                bp = analysis.multi_band_probe(x, fs, eff_rpm, bands=valid_bands)
+                out["band_probe"] = bp["bands"]
+                out["probe_verdict"] = harness.evaluate_probe(
+                    bp, harness.load_harness(machine)
+                )
+            except Exception:
+                pass
     return out
 
 
@@ -189,8 +222,22 @@ CHAT_SYSTEM = (
 
 def chat_answer(pack: dict, message: str, history: list[dict],
                 client_factory, usage: dict | None = None) -> dict:
+    sources_map: dict[str, str] = dict(pack["excerpts"])
+    machine_id = pack.get("machine", "")
+    if machine_id:
+        try:
+            from . import rag
+            hits = rag.retrieve(machine_id, message, k=5)
+            for h in hits:
+                sf = h.get("source") or h.get("source_file", "rag-chunk")
+                if sf not in sources_map:
+                    sources_map[sf] = h["text"]
+                elif h["text"] not in sources_map[sf] and len(sources_map[sf]) < 8000:
+                    sources_map[sf] = sources_map[sf] + "\n" + h["text"]
+        except Exception:
+            pass
     bundle = "\n\n".join(f"=== {fn} ===\n{text[:6000]}"
-                         for fn, text in pack["excerpts"].items())
+                         for fn, text in sources_map.items())
     turns = "\n".join(f"{t['role']}: {t['text'][:500]}"
                       for t in history[-6:])
     prompt = (f"Excerpts:\n{bundle}\n\nConversation:\n{turns}\n"
@@ -204,8 +251,15 @@ def chat_answer(pack: dict, message: str, history: list[dict],
     cites, dropped = [], 0
     for cite in (data or {}).get("citations", []) or []:
         fn, quote = cite.get("file", ""), str(cite.get("quote", ""))
-        body = pack["excerpts"].get(fn, "")
-        if body and len(quote) >= 20 and norm(quote) in norm(body):
+        body = sources_map.get(fn, "")
+        verified = bool(body and len(quote) >= 20 and norm(quote) in norm(body))
+        if not verified and machine_id and len(quote) >= 20:
+            try:
+                from . import rag
+                verified = rag.verify_quote(machine_id, fn, quote)
+            except Exception:
+                verified = False
+        if verified:
             cites.append({"file": fn, "quote": quote[:400]})
         else:
             dropped += 1
@@ -315,8 +369,16 @@ def assist_turn(machine: str, message: str, client_factory,
     total["input_tokens"] += turn_usage["input_tokens"]
     total["output_tokens"] += turn_usage["output_tokens"]
     save_session(sess)
+    enrichment = {}
+    try:
+        from . import orchestrator
+        enrichment = orchestrator.enrich_assist_turn(
+            machine, message, pack, vision, sound, chat, checks, fired
+        )
+    except Exception:
+        enrichment = {}
     return {"session": sess["session"], "reply": reply,
             "specialists": fired, "vision": vision, "sound": sound,
             "chat": chat, "playbook": checks, "next_checks": next_checks,
             "needs": needs, "usage": turn_usage,
-            "session_usage": dict(total)}
+            "session_usage": dict(total), **enrichment}

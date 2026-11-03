@@ -18,6 +18,8 @@ export interface AssemblyHandle {
   setExplode(f: number): void;
   setLayout(layout: 'assembled' | 'sheet', instant?: boolean): void;
   assemble(visualIds: string[][], onStep?: (k: number, n: number) => void): Promise<void>;
+  stepTo(placedIds: string[], highlightId?: string | null): void;
+  setWireframe(on: boolean): void;
   setRun(run: boolean): void;
   setSpinSpeed(f: number): void;
   setFault(regIds: string[], wobble: number): void;
@@ -1526,6 +1528,24 @@ export function initAssembly(
     },
     setLayout(l: 'assembled' | 'sheet', instant?: boolean): void { setLayout(l, instant); },
     assemble(visualSteps: string[][], onStep?: (k: number, n: number) => void): Promise<void> { return assembleSteps(visualSteps, onStep); },
+    stepTo(placedIds: string[], highlightId?: string | null): void {
+      assembleEpoch++;
+      running = false;
+      const placedSet = new Set(placedIds.map((r) => resolve(r)).filter((v): v is string => v !== null));
+      for (const id of idList) {
+        tweenTo(id, placedSet.has(id) ? homeOf.get(id)! : sheetOf.get(id)!, 520);
+      }
+      selected = highlightId ? resolve(highlightId) : null;
+      grid.visible = placedSet.size < idList.length;
+      repaint(0);
+    },
+    setWireframe(on: boolean): void {
+      for (const id of P.parts.keys()) {
+        for (const m of materialsOf(id)) {
+          m.wireframe = on;
+        }
+      }
+    },
     setRun(r: boolean): void { running = r; },
     setSpinSpeed(f: number): void { spinSpeed = f; },
     setFault(regIds: string[], wobble: number): void { setFault(regIds, wobble); },

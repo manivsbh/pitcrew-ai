@@ -1,0 +1,32 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 720 >>
+stream
+BT /F1 11 Tf 48 745 Td (SPINDLE 6203 BEARING RIG BLUEPRINT - EXPLODED VIEW AND PARTS LIST) Tj 0 -15 Td (Shaft diameter: 20 mm; Rated speed: 1500 rpm; Torque: 12 Nm.) Tj 0 -15 Td (1 Drive Motor ........................ 25 Nm) Tj 0 -15 Td (2 Drive Shaft ........................ 12 Nm) Tj 0 -15 Td (3 Bearing Housing .................... 45 Nm) Tj 0 -15 Td (4 Test Bearing Outer Ring ............ 18 Nm) Tj 0 -15 Td (5 Test Bearing Inner Ring ............ 18 Nm) Tj 0 -15 Td (6 Rolling Elements \(Pos. 6\) seated inside Bearing Cage \(Pos. 7\).) Tj 0 -15 Td (Install Drive Shaft \(Pos. 2\) through Test Bearing Inner Ring \(Pos. 5\).) Tj 0 -15 Td (Step 1 mounts Bearing Housing \(Pos. 3\) to Drive Motor \(Pos. 1\).) Tj ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+1082
+%%EOF

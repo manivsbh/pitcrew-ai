@@ -121,3 +121,186 @@ def segment_photo(data: bytes) -> dict:
             "device": dev, "elapsed_ms": ms,
             "note": "Unsupervised regions for triage; not part IDs. "
                     "Only the vision specialist names registry parts."}
+
+
+ASSEMBLY_GROUND_SYSTEM = (
+    "You are a Vision & Assembly Engineer fusing Meta SAM 2 region masks with "
+    "a verified machine component registry. Look at the numbered segmentation "
+    "overlay image and match numbered regions (0..N) to registry component IDs "
+    "(ONLY use component IDs from the provided registry; omit background "
+    "regions). Also flag any visible wear/spalling/damage and produce a clear "
+    "step-by-step assembly sequence with torque/check guidance from the manual "
+    "excerpts. Reply with JSON only: "
+    '{"grounded_regions": [{"region_id": 0, "component_id": "<registry id>", '
+    '"confidence": 0.0-1.0, "condition": "healthy" | "suspect_wear", '
+    '"visual_note": "short observation"}], '
+    '"steps": [{"step": 1, "region_id": 0, "component_id": "<registry id>", '
+    '"instruction": "concise assembly action", "torque_or_check": "spec from manual or visual check"}]}'
+)
+
+
+def ground_assembly_guide(data: bytes, machine: str, client_factory=None,
+                          seg_fn=None) -> dict:
+    """Fuse local Meta SAM 2 masks with Meta muse-spark-1.3 Vision + RAG to
+    produce a grounded, step-by-step Image-to-Assembly & Visual Fault Guide."""
+    import json
+    import re
+    from .packs import load_pack
+
+    pack = load_pack(machine)
+    if pack is None:
+        return {"error": f"unknown machine pack {machine}"}
+
+    run_seg = seg_fn or segment_photo
+    seg = run_seg(data)
+    regions = seg.get("regions", [])
+    comps = pack["components"]
+    by_id = {c["id"]: c for c in comps}
+    region_ids = {r["id"] for r in regions}
+
+    rag_snippets = ""
+    try:
+        from . import rag
+        hits = rag.retrieve(machine, "assembly install torque sequence dismantle",
+                            k=4)
+        rag_snippets = "\n".join(
+            f"[{h['source']}] {h['text'][:350]}" for h in hits)
+    except Exception:
+        rag_snippets = ""
+
+    usage = {"input_tokens": 0, "output_tokens": 0}
+    parsed = None
+    if client_factory is not None and regions:
+        try:
+            from .config import MODEL_ID, REASONING_EFFORT
+            reg_slim = [{"id": c["id"], "name": c["name"], "pos": c.get("pos"),
+                         "parent": c.get("parent")} for c in comps[:45]]
+            prompt = (
+                f"Machine: {pack['meta']['name']} ({machine})\n"
+                f"SAM 2 Region IDs available: {sorted(region_ids)}\n"
+                f"Component Registry:\n{json.dumps(reg_slim)}\n\n"
+                f"Manual Assembly / Torque Context:\n{rag_snippets[:2500]}"
+            )
+            resp = client_factory().responses.create(
+                model=MODEL_ID,
+                instructions=ASSEMBLY_GROUND_SYSTEM,
+                input=[{"role": "user", "content": [
+                    {"type": "input_text", "text": prompt},
+                    {"type": "input_image",
+                     "image_url": f"data:image/png;base64,{seg['overlay_b64']}"},
+                ]}],
+                reasoning={"effort": REASONING_EFFORT},
+            )
+            u = getattr(resp, "usage", None)
+            usage["input_tokens"] = getattr(u, "input_tokens", 0) or 0
+            usage["output_tokens"] = getattr(u, "output_tokens", 0) or 0
+            out = getattr(resp, "output_text", "") or ""
+            m = re.search(r"\{.*\}", out, re.DOTALL)
+            if m:
+                parsed = json.loads(m.group(0))
+        except Exception:
+            parsed = None
+
+    grounded_regions: list[dict] = []
+    if isinstance(parsed, dict):
+        for gr in parsed.get("grounded_regions") or []:
+            if not isinstance(gr, dict):
+                continue
+            rid = gr.get("region_id")
+            cid = gr.get("component_id")
+            if rid in region_ids and cid in by_id:
+                cond = gr.get("condition")
+                if cond not in ("healthy", "suspect_wear"):
+                    cond = "healthy"
+                grounded_regions.append({
+                    "region_id": rid,
+                    "component_id": cid,
+                    "component_name": by_id[cid]["name"],
+                    "pos": by_id[cid].get("pos"),
+                    "confidence": round(min(max(float(gr.get("confidence", 0.7)
+                                                      or 0.7), 0.0), 1.0), 2),
+                    "condition": cond,
+                    "visual_note": str(gr.get("visual_note", ""))[:220],
+                })
+
+    steps: list[dict] = []
+    if isinstance(parsed, dict):
+        for idx, st in enumerate(parsed.get("steps") or [], 1):
+            if not isinstance(st, dict):
+                continue
+            cid = st.get("component_id")
+            if cid not in by_id:
+                continue
+            rid = st.get("region_id")
+            if rid not in region_ids:
+                rid = next((g["region_id"] for g in grounded_regions
+                            if g["component_id"] == cid), None)
+            steps.append({
+                "step": idx,
+                "region_id": rid,
+                "component_id": cid,
+                "component_name": by_id[cid]["name"],
+                "parts": [cid],
+                "instruction": str(st.get("instruction",
+                                          f"Install {by_id[cid]['name']}."))[:260],
+                "torque_or_check": str(st.get("torque_or_check",
+                                              "Verify seating & alignment."))[:180],
+            })
+
+    # Deterministic fallback when model is unavailable or returned <2 steps:
+    # pair pack's verified assembly.json order with detected SAM 2 regions.
+    if not grounded_regions and regions and comps:
+        asm_order = (pack.get("assembly") or {}).get("order") or []
+        ordered_ids: list[str] = []
+        for a_step in asm_order:
+            for pid in a_step.get("parts", []):
+                if pid in by_id and pid not in ordered_ids:
+                    ordered_ids.append(pid)
+        for c in comps:
+            if c["id"] not in ordered_ids:
+                ordered_ids.append(c["id"])
+        for r_item, cid in zip(regions, ordered_ids):
+            grounded_regions.append({
+                "region_id": r_item["id"],
+                "component_id": cid,
+                "component_name": by_id[cid]["name"],
+                "pos": by_id[cid].get("pos"),
+                "confidence": 0.55,
+                "condition": "healthy",
+                "visual_note": "Heuristic region-to-sequence alignment (offline fallback).",
+            })
+
+    if not steps:
+        asm_order = (pack.get("assembly") or {}).get("order") or []
+        reg_by_comp = {g["component_id"]: g["region_id"]
+                       for g in grounded_regions}
+        for idx, a_step in enumerate(asm_order[:12], 1):
+            pts = [pid for pid in a_step.get("parts", []) if pid in by_id]
+            if not pts:
+                continue
+            cid = pts[0]
+            steps.append({
+                "step": idx,
+                "region_id": reg_by_comp.get(cid),
+                "component_id": cid,
+                "component_name": by_id[cid]["name"],
+                "parts": pts,
+                "instruction": a_step.get("caption",
+                                          f"Install {by_id[cid]['name']}."),
+                "torque_or_check": f"Ref: {by_id[cid].get('service_ref', 'manual')}",
+            })
+
+    suspects = [g["component_id"] for g in grounded_regions
+                if g.get("condition") == "suspect_wear"]
+    return {
+        "machine": machine,
+        "regions": regions,
+        "grounded_regions": grounded_regions,
+        "steps": steps,
+        "suspect_components": suspects,
+        "overlay_b64": seg.get("overlay_b64"),
+        "image_size": seg.get("image_size", [0, 0]),
+        "device": seg.get("device", "cpu"),
+        "elapsed_ms": seg.get("elapsed_ms", 0),
+        "usage": usage,
+    }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+
 type Recognition = {
   lang: string
   interimResults: boolean
@@ -11,6 +12,39 @@ type Recognition = {
   onerror: ((e: { error: string }) => void) | null
   onend: (() => void) | null
 }
+
+/** Speak concise copilot text aloud via Web Speech synthesis when enabled. */
+export function speakText(text: string, enabled: boolean): void {
+  if (!enabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
+    return
+  }
+  try {
+    window.speechSynthesis.cancel()
+    const clean = text
+      .replace(/\[[^\]]+\]/g, "")
+      .replace(/[*_`#>]/g, "")
+      .slice(0, 380)
+      .trim()
+    if (!clean) return
+    const u = new SpeechSynthesisUtterance(clean)
+    u.rate = 1.03
+    u.pitch = 1.0
+    window.speechSynthesis.speak(u)
+  } catch {
+    // Non-blocking fallback when browser speech synthesis is restricted
+  }
+}
+
+export function stopSpeaking(): void {
+  if (typeof window !== "undefined" && "speechSynthesis" in window) {
+    try {
+      window.speechSynthesis.cancel()
+    } catch {
+      // ignore
+    }
+  }
+}
+
 export function useVoiceInput(
   machine: string,
   onTranscript: (s: string) => void,
@@ -51,13 +85,8 @@ export function useVoiceInput(
       )
       return
     }
-    if (
-      !window.confirm(
-        "Browser speech recognition may send audio to your browser vendor; it is not guaranteed offline. Continue? You can type instead.",
-      )
-    )
-      return
     stop()
+    stopSpeaking()
     const r = new Constructor()
     recognition.current = r
     r.lang = "en-US"
@@ -81,7 +110,7 @@ export function useVoiceInput(
     try {
       r.start()
       setListening(true)
-      setMessage("Listening… Press stop to cancel.")
+      setMessage("Listening (push-to-talk)… Speak command or fault symptom.")
     } catch {
       stop()
       setMessage(

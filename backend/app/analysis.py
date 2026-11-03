@@ -236,3 +236,82 @@ def reference_compare(stats: dict[str, float],
 
 def g_to_ms2(x: float) -> float:
     return x * G_TO_MS2
+
+
+# Candidate demodulation bands (Hz) for the multi-band probe. Upper bands are
+# clipped to the channel's Nyquist at run time.
+PROBE_BANDS = [(500.0, 4000.0), (2000.0, 8000.0), (8000.0, 20000.0)]
+PROBE_HARMONICS = 3
+
+
+def harmonic_snr(freqs: np.ndarray, mag: np.ndarray, f0: float,
+                 n_harm: int = PROBE_HARMONICS,
+                 tol: float = GEOMETRY_TOL) -> dict:
+    """Reference-free fault-line strength in an envelope spectrum.
+
+    For harmonics k*f0 (k=1..n), takes the strongest bin within +/-tol and
+    divides by the median magnitude of a local window (+/-15% of k*f0,
+    excluding the +/-tol core). Dimensionless, so it does not depend on the
+    absolute vibration level of a particular bearing or sensor mount.
+    """
+    ratios: list[float | None] = []
+    for k in range(1, n_harm + 1):
+        fk = k * f0
+        core = (freqs >= fk * (1 - tol)) & (freqs <= fk * (1 + tol))
+        ring = ((freqs >= fk * 0.85) & (freqs <= fk * 1.15)) & ~core
+        if not core.any() or ring.sum() < 4:
+            ratios.append(None)
+            continue
+        floor = float(np.median(mag[ring]))
+        peak = float(np.max(mag[core]))
+        ratios.append(peak / floor if floor > 0 else None)
+    valid = [r for r in ratios if r is not None]
+    return {"per_harmonic": [round(r, 3) if r is not None else None
+                             for r in ratios],
+            "mean": round(float(np.mean(valid)), 3) if valid else None,
+            "n_above_3": int(sum(1 for r in valid if r >= 3.0))}
+
+
+def multi_band_probe(x: np.ndarray, fs: float, rpm: float,
+                     bands: list[tuple[float, float]] | None = None,
+                     geometry: dict = GEOMETRY_6203) -> dict:
+    """Propose-probe-compose over demodulation bands, reference-free.
+
+    Probes each candidate band: band kurtosis (impulsiveness of the filtered
+    signal) and envelope harmonic SNR at BPFO and BPFI. Composes the band
+    with the strongest fault-line contrast. Deterministic; no references,
+    so it is immune to the single-healthy-bearing amplitude bias.
+    """
+    x = np.asarray(x, dtype=float).ravel()
+    ff = fault_frequencies(rpm, geometry)
+    nyq = fs / 2.0
+    out_bands = []
+    for lo, hi in (bands or PROBE_BANDS):
+        hi_c = min(hi, nyq * 0.95)
+        if not 0 < lo < hi_c:
+            continue
+        sos = sp_signal.butter(4, [lo, hi_c], btype="band", fs=fs,
+                               output="sos")
+        filt = sp_signal.sosfiltfilt(sos, x)
+        with np.errstate(all="ignore"):
+            k = float(sp_kurtosis(filt, fisher=True, bias=False))
+        env = np.abs(sp_signal.hilbert(filt))
+        env = env - np.mean(env)
+        f, m = spectrum(env, fs)
+        bpfo = harmonic_snr(f, m, ff["bpfo"])
+        bpfi = harmonic_snr(f, m, ff["bpfi"])
+        so, si = bpfo["mean"] or 0.0, bpfi["mean"] or 0.0
+        out_bands.append({
+            "band_lo": lo, "band_hi": round(hi_c, 1),
+            "kurtosis_excess": round(k, 3) if np.isfinite(k) else None,
+            "bpfo_snr": bpfo, "bpfi_snr": bpfi,
+            "contrast": round(max(so, si), 3),
+            "dominant": "bpfo" if so > si else ("bpfi" if si > so else None),
+        })
+    if not out_bands:
+        return {"targets": ff, "bands": [], "best": None,
+                "note": "no valid band below Nyquist"}
+    best = max(out_bands, key=lambda b: b["contrast"])
+    return {"targets": ff, "bands": out_bands, "best": best,
+            "method": "butter4+sosfiltfilt+hilbert; harmonic SNR vs local "
+                      "median floor; no reference bearings"}
