@@ -1,7 +1,7 @@
 {
-  "name": "FORMA Industrial Fault Investigator",
-  "short_name": "FORMA Field",
-  "description": "Multi-agent industrial machine simulation, acoustic fault diagnosis, SAM 2.1 assembly guide & parts inventory.",
+  "name": "PITCREW.AI — Giving Heavy Machinery a Brain",
+  "short_name": "PitCrew AI",
+  "description": "Giving heavy machinery a brain: 5s acoustic fault diagnosis, parametric 3D twins, and autonomous repair dispatch.",
   "start_url": "/?mobile=1",
   "display": "standalone",
   "background_color": "#0d1113",

@@ -1,8 +1,8 @@
 [project]
-name = "machine-fault-investigator"
+name = "pitcrew-ai"
 version = "0.2.0"
 requires-python = ">=3.12"
-description = "Local multi-agent machine investigation workspace (Meta muse-spark + SAM 2)."
+description = "PITCREW.AI: Giving heavy machinery a brain — Autonomous machine diagnostics, parametric 3D twins, and acoustic investigation."
 
 [tool.pytest.ini_options]
 # Lets `pytest tests/` resolve `backend.app...` without `python -m`.

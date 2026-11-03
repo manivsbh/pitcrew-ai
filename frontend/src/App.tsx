@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { PitCrewMark } from "./PitCrewMark"
 import {
   Activity,
   Box,
@@ -1022,8 +1023,8 @@ export default function App({ visible = true }: { visible?: boolean }) {
   return (
     <div className="app">
       <aside className="rail">
-        <div className="brandmark" title="FORMA Industrial AI Studio">
-          <Layers size={25} />
+        <div className="brandmark" title="PITCREW.AI — Giving Heavy Machinery a Brain">
+          <PitCrewMark size={27} />
         </div>
         <div className="railnav">
           {nav.map((n, i) => {
@@ -1062,8 +1063,11 @@ export default function App({ visible = true }: { visible?: boolean }) {
       </aside>
       <div className="appbody">
         <header>
-          <div className="brand">
-            FORMA<span>INDUSTRIAL AI STUDIO</span>
+          <div className="brand pitcrew-brand">
+            <div className="brand-title">
+              PITCREW<span className="voltage-badge">⚡ AI</span>
+            </div>
+            <span className="brand-tagline">GIVING HEAVY MACHINERY A BRAIN</span>
           </div>
           <div className="divider" />
           <div className="project">

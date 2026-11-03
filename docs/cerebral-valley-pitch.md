@@ -1,4 +1,4 @@
-# FORMA — Cerebral Valley × Meta Hackathon Stage Script & Asset Guide
+# PITCREW ⚡ AI — Giving Heavy Machinery a Brain (Cerebral Valley × Meta Hackathon Stage Script)
 
 **Stack:** 100% Meta AI Models (`muse-spark-1.3` Multimodal / Tool-Calling via `https://api.meta.ai/v1` + Local **Meta SAM 2.1** `sam2.1_hiera_tiny.pt`) + Self-Evolving `Harness²` Diagnostic Engine + SQLite FTS5 Component-Graph Hybrid RAG + Parametric Three.js Physics & Closed-Loop BOM Procurement.
 

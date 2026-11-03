@@ -1,6 +1,6 @@
 {
-  "title": "Machine Fault Investigator",
-  "description": "Helps technicians investigate motor and bearing faults by analyzing vibration recordings, reviewing evidence, and highlighting suspected components in an interactive 3D assembly.",
+  "title": "PITCREW ⚡ AI — Giving Heavy Machinery a Brain",
+  "description": "Giving heavy machinery a brain: Autonomous machine diagnostics, parametric 3D twins, and acoustic investigation.",
   "robots": {
     "index": false
   },

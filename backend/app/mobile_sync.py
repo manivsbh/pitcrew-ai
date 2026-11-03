@@ -598,7 +598,7 @@ def get_mobile_connection_info(room_id: str, request_host: str | None = None,
 
 def _clean_room(room_id: str) -> str:
     cleaned = re.sub(r"[^a-zA-Z0-9_-]", "", (room_id or "").strip().upper())
-    return cleaned[:24] or "FORMA1"
+    return cleaned[:24] or "PITCREW1"
 
 
 class SyncHub:

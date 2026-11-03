@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&family=Syne:wght@700;800&display=swap');
 @import 'tailwindcss';
 
 :root {
@@ -82,14 +82,22 @@
 
 .brandmark {
   color: var(--accent);
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: #c5f29214;
-  border: 1px solid #c5f29233;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: radial-gradient(circle at 35% 30%, rgba(197, 242, 146, 0.18), rgba(103, 212, 255, 0.08) 65%, rgba(12, 16, 18, 0.6) 100%);
+  border: 1px solid rgba(197, 242, 146, 0.38);
+  box-shadow: 0 0 16px rgba(197, 242, 146, 0.15), inset 0 0 10px rgba(103, 212, 255, 0.08);
   display: grid;
   place-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 26px;
+  transition: all 0.22s ease-in-out;
+}
+
+.brandmark:hover {
+  border-color: rgba(197, 242, 146, 0.7);
+  box-shadow: 0 0 22px rgba(197, 242, 146, 0.3), inset 0 0 14px rgba(103, 212, 255, 0.15);
+  transform: translateY(-1px) scale(1.03);
 }
 
 .railnav {
@@ -183,19 +191,60 @@ header {
 }
 
 .brand {
-  font-size: 20px;
-  letter-spacing: 3.5px;
-  font-weight: 700;
-  line-height: 1.05;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.brand span {
-  display: block;
-  font-size: 9px;
-  letter-spacing: 1.5px;
+.pitcrew-brand .brand-title {
+  font-family: 'Space Grotesk', 'Syne', -apple-system, sans-serif;
+  font-size: 19px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f3f8f6;
+}
+
+.pitcrew-brand .voltage-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #0c1012;
+  background: linear-gradient(135deg, #c5f292 0%, #a4ea58 100%);
+  padding: 1.5px 6.5px;
+  border-radius: 4px;
+  box-shadow: 0 0 12px rgba(197, 242, 146, 0.45);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid #d4f8a8;
+  vertical-align: middle;
+}
+
+.pitcrew-brand .brand-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 1.6px;
   color: var(--muted);
-  margin-top: 4px;
-  font-weight: 500;
+  margin-top: 3.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pitcrew-brand .brand-tagline::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
 }
 
 .divider {

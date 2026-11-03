@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { PitCrewMark } from "../../PitCrewMark"
 import {
   ArrowUpRight,
   ArrowDown,
@@ -214,9 +215,9 @@ export default function LandingPage() {
       </a>
       <nav className="landing-nav" aria-label="Main navigation">
         <a href="#introduction" className="landing-wordmark">
-          <Layers size={22} />
+          <PitCrewMark size={24} />
           <span>
-            FORMA<span className="landing-wordmark-dot">®</span>
+            PITCREW<span className="landing-voltage-badge">⚡ AI</span>
           </span>
         </a>
         <div className="landing-nav-links">
@@ -508,7 +509,7 @@ export default function LandingPage() {
       </main>
       <footer className="landing-footer">
         <a href="#introduction" className="landing-wordmark">
-          <Layers size={18} /> FORMA
+          <PitCrewMark size={18} /> PITCREW <span className="landing-voltage-badge">⚡ AI</span>
         </a>
         <span>
           Cinematic illustration. Generated dimensions are not engineering

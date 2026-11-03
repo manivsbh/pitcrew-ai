@@ -60,7 +60,12 @@ export default function LandingExperience() {
             <Suspense
               fallback={
                 <div className="landing-load">
-                  <span>FORMA</span>
+                  <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800 }}>
+                    PITCREW ⚡ AI
+                  </span>
+                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "1px", color: "var(--accent)" }}>
+                    GIVING HEAVY MACHINERY A BRAIN
+                  </p>
                   <p>Opening your engineering workspace…</p>
                   <a href="#introduction">Back to introduction</a>
                 </div>

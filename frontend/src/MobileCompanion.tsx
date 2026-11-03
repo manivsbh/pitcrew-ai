@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { PitCrewMark } from "./PitCrewMark"
 import {
   Activity,
   AlertTriangle,
@@ -48,26 +49,26 @@ import { createSession } from "./features/engineering/EngineeringPanel"
 
 /** Read or generate a stable 6-char sync room ID. */
 export function resolveInitialRoomId(): string {
-  if (typeof window === "undefined") return "FORMA1"
+  if (typeof window === "undefined") return "PITCREW1"
   const params = new URLSearchParams(window.location.search)
   const fromUrl = params.get("room")?.trim().toUpperCase()
   if (fromUrl) {
-    const clean = fromUrl.replace(/[^A-Z0-9_-]/g, "").slice(0, 16) || "FORMA1"
+    const clean = fromUrl.replace(/[^A-Z0-9_-]/g, "").slice(0, 16) || "PITCREW1"
     try {
-      sessionStorage.setItem("forma_room_id", clean)
+      sessionStorage.setItem("pitcrew_room_id", clean)
     } catch {
       // ignore storage errors
     }
     return clean
   }
   try {
-    const saved = sessionStorage.getItem("forma_room_id")
+    const saved = sessionStorage.getItem("pitcrew_room_id") || sessionStorage.getItem("forma_room_id")
     if (saved) return saved
-    const created = `FRM${Math.floor(100 + Math.random() * 900)}`
-    sessionStorage.setItem("forma_room_id", created)
+    const created = `PIT${Math.floor(100 + Math.random() * 900)}`
+    sessionStorage.setItem("pitcrew_room_id", created)
     return created
   } catch {
-    return "FORMA1"
+    return "PITCREW1"
   }
 }
 
@@ -727,13 +728,15 @@ export function MobileFieldView({
     <div className="mobile-shell">
       <header className="mobile-topbar">
         <div className="mobile-brand">
-          <div className="mobile-logo">
-            <Layers size={18} />
+          <div className="mobile-logo pitcrew-mobile-logo">
+            <PitCrewMark size={22} />
           </div>
           <div>
-            <strong>FORMA FIELD</strong>
+            <strong style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "1.2px", display: "flex", alignItems: "center", gap: "6px" }}>
+              PITCREW <span className="voltage-badge" style={{ fontSize: "9px", padding: "1px 5.5px" }}>⚡ AI</span>
+            </strong>
             <span className="sync-dot-pill">
-              <i className={syncWsLive ? "live" : ""} /> ROOM {roomId}
+              <i className={syncWsLive ? "live" : ""} /> FIELD ROOM {roomId}
             </span>
           </div>
         </div>

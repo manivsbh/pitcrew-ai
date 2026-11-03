@@ -31,7 +31,7 @@ from .packs import list_packs, load_pack
 from . import figures, harness, mobile_sync, orchestrator, rag
 from .store import Store
 
-app = FastAPI(title="Machine Fault Investigator")
+app = FastAPI(title="PITCREW.AI — Giving Heavy Machinery a Brain")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -852,7 +852,7 @@ class SyncEventBody(BaseModel):
 
 
 @app.get("/api/mobile/info")
-def mobile_info(request: Request, room: str = "FORMA1") -> dict:
+def mobile_info(request: Request, room: str = "PITCREW1") -> dict:
     host = request.headers.get("host")
     return mobile_sync.get_mobile_connection_info(room, request_host=host, default_port=PORT)
 
@@ -950,7 +950,7 @@ async def ws_sync(websocket: WebSocket, room_id: str, peer_id: str = "",
 
 @app.post("/api/mobile/capture")
 async def mobile_capture(
-    room_id: str = Form("FORMA1"),
+    room_id: str = Form("PITCREW1"),
     machine: str = Form("rig"),
     message: str = Form("Field inspection capture"),
     session: str | None = Form(None),
@@ -1000,7 +1000,7 @@ async def mobile_capture(
 
 @app.post("/api/mobile/assembly-guide")
 async def mobile_assembly_guide(
-    room_id: str = Form("FORMA1"),
+    room_id: str = Form("PITCREW1"),
     machine: str = Form("rig"),
     sender: str = Form("mobile"),
     photo: UploadFile = File(...),

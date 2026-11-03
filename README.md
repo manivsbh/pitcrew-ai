@@ -1,9 +1,6 @@
-# Machine Fault Investigator
+# ⚡ PITCREW.AI: Giving Heavy Machinery a Brain
 
-Local AI investigation workspace for a technician diagnosing a motor-and-bearing
-assembly. The technician supplies a vibration recording; the system consults
-technical documentation, runs numerical analyses, explains the evidence, and
-highlights the suspected bearing component in an interactive 3D assembly.
+Autonomous machine diagnostics, parametric 3D digital twins, and acoustic fault investigation for industrial equipment. The technician supplies a vibration or microphone recording; the multi-agent mesh consults technical documentation via RAG, runs numerical and acoustic analyses, explains the evidence, and highlights the suspected component in an interactive 3D assembly while auto-drafting the replacement BOM.
 
 Research question: can an agent that selects its own analyses produce a
 better-supported investigation than a fixed workflow? See `evals/` for the
