@@ -1,0 +1,174 @@
+[
+ {
+  "id": "suction-discharge-base",
+  "name": "Suction Discharge Base",
+  "pos": "1",
+  "parent": null,
+  "role": "Base housing containing suction/discharge at bottom of stack",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.371,
+   "cy": 0.787,
+   "w": 0.185,
+   "h": 0.12,
+   "axis": "none",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "boxy"
+  }
+ },
+ {
+  "id": "stage-impeller",
+  "name": "Stage Impeller",
+  "pos": "2",
+  "parent": null,
+  "role": "Rotating impeller stages that add pressure",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.373,
+   "cy": 0.6,
+   "w": 0.115,
+   "h": 0.18,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "impeller"
+  }
+ },
+ {
+  "id": "diffuser-chamber",
+  "name": "Diffuser Chamber",
+  "pos": "3",
+  "parent": null,
+  "role": "Stationary diffuser chambers around each impeller",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.373,
+   "cy": 0.6,
+   "w": 0.13,
+   "h": 0.2,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "pump-shaft",
+  "name": "Pump Shaft",
+  "pos": "4",
+  "parent": null,
+  "role": "Central vertical shaft driving impellers",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.372,
+   "cy": 0.59,
+   "w": 0.03,
+   "h": 0.42,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "cartridge-shaft-seal",
+  "name": "Cartridge Shaft Seal",
+  "pos": "5",
+  "parent": null,
+  "role": "Cartridge mechanical seal above pump stack",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.375,
+   "cy": 0.505,
+   "w": 0.06,
+   "h": 0.06,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "seal"
+  }
+ },
+ {
+  "id": "sleeve-o-ring",
+  "name": "Sleeve O-Ring",
+  "pos": "6",
+  "parent": null,
+  "role": "O-ring sealing sleeve in stack",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.373,
+   "cy": 0.675,
+   "w": 0.115,
+   "h": 0.055,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "ring",
+   "mount": {
+    "on": "4",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "coupling-halves",
+  "name": "Coupling Halves",
+  "pos": "7",
+  "parent": null,
+  "role": "Shaft coupling connecting motor to pump",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.372,
+   "cy": 0.416,
+   "w": 0.06,
+   "h": 0.08,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "coupling"
+  }
+ },
+ {
+  "id": "drive-motor",
+  "name": "Drive Motor",
+  "pos": "8",
+  "parent": null,
+  "role": "Top-mounted electric drive motor",
+  "role_source": "standard",
+  "service_ref": "Centrifugal pump blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.376,
+   "cy": 0.27,
+   "w": 0.13,
+   "h": 0.2,
+   "axis": "vertical",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "motor"
+  }
+ }
+]

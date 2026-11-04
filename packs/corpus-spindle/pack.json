@@ -1,0 +1,24 @@
+{
+ "machine": "corpus-spindle",
+ "name": "Spindle 6203 blueprint",
+ "kind": "bearing-rig",
+ "created": "2026-10-30",
+ "source_kind": "blueprint_image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "Spindle 6203 blueprint"
+  }
+ ],
+ "dimensions": {
+  "shaft_diameter_mm": 20.0,
+  "rated_rpm": 1500.0,
+  "max_torque_nm": 12.0
+ },
+ "drawing": {
+  "view": "schematic",
+  "main_axis": "horizontal",
+  "up": "top",
+  "image": "drawing.jpg"
+ }
+}

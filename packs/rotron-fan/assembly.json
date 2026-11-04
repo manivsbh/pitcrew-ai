@@ -1,0 +1,50 @@
+{
+ "order": [
+  {
+   "caption": "Fit stator stack and windings into housing outer wall",
+   "parts": [
+    "stator-stack",
+    "stator-winding",
+    "cylindrical-outer-wall"
+   ]
+  },
+  {
+   "caption": "Force-fit tubular support with sleeve bearing into housing rim",
+   "parts": [
+    "tubular-bearing-support",
+    "stationary-bearing",
+    "axially-extending-annular-rim"
+   ]
+  },
+  {
+   "caption": "Assemble shaft into inner sleeve and rotor between sleeves",
+   "parts": [
+    "shaft",
+    "inner-sleeve",
+    "outer-sleeve",
+    "conventional-laminated-stack",
+    "end-rings"
+   ]
+  },
+  {
+   "caption": "Insert shaft through bearing, add seals washers and snap ring",
+   "parts": [
+    "shaft",
+    "sealing-ring",
+    "retaining-ring",
+    "rubber-plug",
+    "rigid-ring"
+   ]
+  },
+  {
+   "caption": "Attach fan blades and venturi ring to rotor/housing",
+   "parts": [
+    "fan-blades",
+    "venturi-ring",
+    "venturi-supporting-spokes",
+    "generally-cupwshaped-hub"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

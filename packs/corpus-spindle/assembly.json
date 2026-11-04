@@ -1,0 +1,32 @@
+{
+ "order": [
+  {
+   "caption": "Mount Bearing Housing (3) and Drive Motor (1) aligned on common horizontal axis",
+   "parts": [
+    "drive-motor",
+    "bearing-housing"
+   ]
+  },
+  {
+   "caption": "Insert Drive Shaft (2) through housing, couple to motor; 20 mm diameter shaft",
+   "parts": [
+    "drive-shaft"
+   ]
+  },
+  {
+   "caption": "Press Test Bearing Inner Ring (5) onto shaft and Outer Ring (4) into housing",
+   "parts": [
+    "test-bearing-inner-ring",
+    "test-bearing-outer-ring"
+   ]
+  },
+  {
+   "caption": "Install Rolling Elements (6) with Bearing Cage (7) between rings",
+   "parts": [
+    "rolling-elements",
+    "bearing-cage"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

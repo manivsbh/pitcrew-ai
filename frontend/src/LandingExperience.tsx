@@ -61,7 +61,7 @@ export default function LandingExperience() {
               fallback={
                 <div className="landing-load">
                   <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 800 }}>
-                    PITCREW ⚡ AI
+                    PITCREW.ai
                   </span>
                   <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "11px", letterSpacing: "1px", color: "var(--accent)" }}>
                     GIVING HEAVY MACHINERY A BRAIN

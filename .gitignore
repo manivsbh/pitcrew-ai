@@ -28,6 +28,13 @@ frontend/node_modules/
 frontend/dist/
 frontend/.vite/
 
+# Demo video working files (sources and scripts are committed)
+submission/video/clips/
+submission/video/shots/
+submission/video/out/
+submission/video/**/node_modules/
+.playwright-mcp/
+
 # OS / editors
 .DS_Store
 *.swp
@@ -36,3 +43,9 @@ frontend/.vite/
 data/rag.db
 data/rag_sources/
 data/harness/
+
+# Local backups and graph caches (the graph itself is committed)
+packs/*/components.*.json
+graphify-out/cache/
+graphify-out/2026-*/
+graphify-out/.graphify_labels.pending.json

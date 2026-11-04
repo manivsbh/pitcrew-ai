@@ -1,0 +1,50 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "v6-engine-blueprint.png",
+  "wobble": 0.0
+ },
+ {
+  "id": "misfire",
+  "illustrative": true,
+  "label": "Injector misfire",
+  "note": "One cylinder stops contributing: uneven crank pulses. Illustrative.",
+  "parts": [
+   "direct-fuel-injector",
+   "iridium-spark-plugs"
+  ],
+  "slow": 0.7,
+  "source": "v6-engine-blueprint.png",
+  "wobble": 0.6
+ },
+ {
+  "id": "fuel-starve",
+  "illustrative": true,
+  "label": "Fuel starvation",
+  "note": "Weak fuel delivery: rail pressure sags, output drops. Illustrative.",
+  "parts": [
+   "fuel-rail-l"
+  ],
+  "slow": 0.5,
+  "source": "v6-engine-blueprint.png",
+  "wobble": 0.3
+ },
+ {
+  "id": "crank-knock",
+  "illustrative": true,
+  "label": "Crank knock",
+  "note": "Excess crank/rod clearance: audible knock each revolution. Illustrative.",
+  "parts": [
+   "forged-crankshaft",
+   "connecting-rods"
+  ],
+  "slow": 0.9,
+  "source": "v6-engine-blueprint.png",
+  "wobble": 1.0
+ }
+]

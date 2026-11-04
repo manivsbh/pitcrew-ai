@@ -10,7 +10,8 @@ import backend.app.inventory as inv
 from backend.app.main import app
 from backend.app.packbuilder import (apply_edits, assess, classify_kind,
                                      extract_candidates, finalize,
-                                     reason_with_model)
+                                     merge_vision_candidates,
+                                     reason_with_model, select_context)
 
 client = TestClient(app)
 
@@ -33,6 +34,31 @@ def test_extract_candidates():
     assert by_pos["10a"] == "Coupling Halves"
     assert by_pos["90"] == "Base"
     assert len({c["id"] for c in cands}) == len(cands)
+
+
+PATENT = """FIG. 1 is a longitudinal section through a centrifugal pump.
+The pump includes a ‘base mean-s 10, and a case 12 is secured to the base.
+A `case wear ring 16 is supported by the case. A front bearing means 100 is
+supported between portion 34 and the shaft. An oil seal 66 engages the end
+portion 70 of the shaft, and a seal with said retainer 190 is formed."""
+
+
+def test_extract_candidates_reads_patent_reference_numerals():
+    by_pos = {c["pos"]: c["name"] for c in extract_candidates(PATENT)}
+    assert by_pos["12"] == "Case"
+    assert by_pos["16"] == "Case Wear Ring"
+    assert by_pos["100"] == "Front Bearing"
+    assert by_pos["66"] == "Oil Seal"
+    assert "34" not in by_pos and "70" not in by_pos
+
+
+def test_select_context_keeps_part_dense_passages_within_budget():
+    filler = "General history of pumping in the region. " * 400
+    text = filler + PATENT + filler
+    ctx = select_context(text, budget=2000)
+    assert len(ctx) <= 2100
+    assert "case wear ring 16" in ctx
+    assert select_context(PATENT) == PATENT
 
 
 def test_assess_scores_evidence():
@@ -63,6 +89,99 @@ def test_reason_with_model_stub():
                                lambda: _StubClient())
     assert review["verdict"] == "enough"
     assert review["roles"]["base"].startswith("Holds")
+
+
+def test_answers_add_dimensions_and_reach_the_model(monkeypatch):
+    monkeypatch.setattr("backend.app.packbuilder.save_draft", lambda d: None)
+    draft = {"candidates": extract_candidates(PATENT), "dimensions": {}}
+    apply_edits(draft, [], [], "Impeller diameter 250 mm, shaft 45 mm, 1750 rpm.")
+    assert draft["dimensions"] == {"impeller_diameter_mm": 250.0,
+                                   "shaft_diameter_mm": 45.0,
+                                   "rated_rpm": 1750.0}
+    seen = {}
+
+    class Client:
+        class responses:
+            @staticmethod
+            def create(**kwargs):
+                seen["input"] = kwargs["input"]
+                return _StubResp()
+
+    reason_with_model(PATENT, draft["candidates"], lambda: Client(),
+                      answers=draft["answers"])
+    assert "Impeller diameter 250 mm" in seen["input"]
+
+
+def test_vision_names_replace_ocr_names_at_the_same_callout():
+    draft = {"candidates": [{"id": "rods", "name": "Rods", "pos": "236",
+                             "mentions": 2}], "text": PATENT}
+    merge_vision_candidates(draft, {"extracted_components": [
+        {"name": "Push Rod", "pos": "236"},
+        {"name": "Elongated Shaft", "pos": "72"}]})
+    by_pos = {c["pos"]: c for c in draft["candidates"]}
+    assert len(draft["candidates"]) == 2
+    assert by_pos["236"]["name"] == "Push Rod" and by_pos["236"]["id"] == "rods"
+    assert by_pos["72"]["name"] == "Elongated Shaft"
+
+
+def test_reason_retries_once_on_unparseable_reply():
+    replies = iter(["Here you go: {verdict: enough, oops",
+                    'Sure.\n```json\n{"verdict": "enough", "confidence": 0.9}\n```\nDone {x}'])
+    calls = []
+
+    class Client:
+        class responses:
+            @staticmethod
+            def create(**kwargs):
+                calls.append(1)
+                return type("R", (), {"output_text": next(replies), "usage": None})()
+
+    review = reason_with_model(PATENT, [], lambda: Client())
+    assert len(calls) == 2
+    assert review["verdict"] == "enough" and review["confidence"] == 0.9
+
+
+def test_layout_from_drawing_attaches_by_callout_and_gaps_fill_from_assembly():
+    from backend.app.packbuilder import (_clean_layout, fill_layout_from_assembly,
+                                         fill_layout_from_text)
+    layout = _clean_layout([
+        {"pos": "138", "cx": -0.2, "cy": 0.6, "w": 0.1, "h": 0.4, "axis": "horizontal",
+         "revolved": True, "shape": "impeller", "mount": None},
+        {"pos": "76", "cx": 0.9, "cy": 0.5, "w": 0.05, "h": 2, "shape": "teapot",
+         "mount": {"on": "", "as": "bolt_circle"}},
+        {"pos": "100", "x": 0.55, "len": 0.08, "d": 0.3, "axial": True},
+        {"pos": "10", "cx": "bad", "cy": 0.5},
+        {"cx": 0.5, "cy": 0.5}])
+    assert [e["pos"] for e in layout] == ["138", "76", "100"]
+    assert layout[0]["cx"] == 0.0 and layout[0]["shape"] == "impeller"
+    assert layout[1]["h"] == 1.0 and "shape" not in layout[1] and "mount" not in layout[1]
+    assert layout[2]["cx"] == 0.55 and layout[2]["axis"] == "horizontal"
+    draft = {"candidates": [{"id": "impeller", "name": "Impeller", "pos": "138"},
+                            {"id": "rear-bearing", "name": "Rear Bearing", "pos": "76"},
+                            {"id": "case", "name": "Case", "pos": "12"}],
+             "text": PATENT}
+    merge_vision_candidates(draft, {"layout": layout,
+                                    "drawing": {"view": "section", "main_axis": "horizontal"}})
+    by_id = {c["id"]: c for c in draft["candidates"]}
+    assert by_id["impeller"]["layout"]["source"] == "drawing"
+    assert draft["drawing"]["main_axis"] == "horizontal"
+    assert "layout" not in by_id["case"]
+    comps = [dict(c) for c in draft["candidates"]]
+    fill_layout_from_assembly(comps, [{"caption": "a", "parts": ["case"]},
+                                      {"caption": "b", "parts": ["rear-bearing"]}],
+                              "vertical")
+    case = next(c for c in comps if c["id"] == "case")
+    assert case["layout"]["source"] == "assembly-order"
+    assert case["layout"]["axis"] == "vertical" and case["layout"]["cx"] == 0.5
+    assert next(c for c in comps if c["id"] == "rear-bearing")["layout"]["cx"] == 0.9
+
+    hw = [{"id": "front-bearing", "name": "Front Bearing", "pos": "100",
+           "layout": {"cx": 0.55, "cy": 0.5, "w": 0.08, "h": 0.1, "axis": "horizontal",
+                      "revolved": True}},
+          {"id": "lock-nut", "name": "Lock Nut", "pos": "110"}]
+    fill_layout_from_text(hw, "A lock nut 110 maintains the bearing means 100 in place.")
+    assert hw[1]["layout"]["mount"] == {"on": "100", "as": "shaft_ring"}
+    assert hw[1]["layout"]["source"] == "text-anchor"
 
 
 def test_reason_fallback_never_raises():
@@ -168,7 +287,7 @@ def test_finalize_unit_validates(tmp_path):
                              "parent": "zz"}]
     out = finalize(draft, packs_dir=str(tmp_path))
     assert out["components"] == 3
-    comps = json.load(open(tmp_path / "m" / "components.json"))
+    comps = json.load(open(tmp_path / "m" / "components.json", encoding="utf-8"))
     assert all(c["role"] for c in comps)
     assert [c for c in comps if c["id"] == "c"][0]["parent"] is None
 
@@ -213,7 +332,7 @@ def test_finalize_writes_kind_and_override(tmp_path):
     d1 = dict(base, review=None)
     out = finalize(d1, packs_dir=str(tmp_path))
     assert out["kind"] == "pump"
-    pack = json.load(open(tmp_path / "m" / "pack.json"))
+    pack = json.load(open(tmp_path / "m" / "pack.json", encoding="utf-8"))
     assert pack["kind"] == "pump"
     d2 = dict(base, id="k2", machine="m2", review={"kind": "engine"})
     out2 = finalize(d2, packs_dir=str(tmp_path))
@@ -271,6 +390,16 @@ def test_answer_kind_override():
     finally:
         if os.path.exists(f"data/pack_drafts/{draft_id}.json"):
             os.remove(f"data/pack_drafts/{draft_id}.json")
+
+
+def test_end_on_parts_keep_depth_axis_through_upright():
+    from backend.app import layout as L
+    e = L.clean_entry({"cx": 0.2, "cy": 0.4, "w": 0.1, "h": 0.1, "axis": "depth",
+                       "revolved": True, "shape": "gear"})
+    comps = [{"name": "Gear", "layout": e}]
+    drawing = {"up": "left", "main_axis": "depth"}
+    assert L.upright(comps, drawing) == "cw"
+    assert comps[0]["layout"]["axis"] == "depth" and drawing["main_axis"] == "depth"
 
 
 def test_review_records_model_version_and_usage():

@@ -85,9 +85,9 @@ def test_build_spec_refuses_tiny_packs(tmp_path):
     packs = tmp_path / "packs"
     (packs / "mini").mkdir(parents=True)
     (packs / "mini" / "pack.json").write_text(json.dumps(
-        {"machine": "mini", "name": "Mini", "kind": "generic"}))
+        {"machine": "mini", "name": "Mini", "kind": "generic"}), encoding="utf-8")
     (packs / "mini" / "components.json").write_text(json.dumps(
-        [{"id": "a", "name": "Ahu", "parent": None}]))
+        [{"id": "a", "name": "Ahu", "parent": None}]), encoding="utf-8")
     assert build_spec("mini", packs_dir=str(packs)) is None
 
 
@@ -101,7 +101,7 @@ def test_write_spec_preserves_author_fields(tmp_path):
     regen = build_spec("rig")
     path2 = write_spec("rig", regen, figures_dir=str(tmp_path))
     assert path2 == path
-    kept = json.load(open(path))
+    kept = json.load(open(path, encoding="utf-8"))
     assert kept["concept"] == "Test rig"
     assert kept["readout"] == "rpm"
     assert kept["honesty"] == ["shoulders illustrative"]
@@ -138,17 +138,17 @@ def test_parse_capture_output():
 def _fake_skill(tmp_path):
     scripts = tmp_path / "scripts"
     scripts.mkdir(exist_ok=True)
-    (scripts / "lines.mjs").write_text("// fake\n")
-    (scripts / "capture.mjs").write_text("// fake\n")
+    (scripts / "lines.mjs").write_text("// fake\n", encoding="utf-8")
+    (scripts / "capture.mjs").write_text("// fake\n", encoding="utf-8")
 
 
 def _fake_figure(tmp_path, machine="mini"):
     _fake_skill(tmp_path)
     d = tmp_path / machine
     d.mkdir()
-    (d / "build.mjs").write_text("// fake\n")
-    (d / f"{machine}.html").write_text("<html></html>")
-    (d / f"{machine}-light.html").write_text("<html></html>")
+    (d / "build.mjs").write_text("// fake\n", encoding="utf-8")
+    (d / f"{machine}.html").write_text("<html></html>", encoding="utf-8")
+    (d / f"{machine}-light.html").write_text("<html></html>", encoding="utf-8")
     write_spec(machine, build_spec("rig"), figures_dir=str(tmp_path))
     return d
 
@@ -209,11 +209,11 @@ def test_figure_job_lifecycle_pass(tmp_path, monkeypatch):
     assert r.json()["state"] == "eval_pass"
     assert r.json()["gates"][0]["gate"] == "toolchain"
     assert r.json()["verdict"]["score"] == 5
-    spec = json.load(open(tmp_path / "cr-pump" / "spec.json"))
+    spec = json.load(open(tmp_path / "cr-pump" / "spec.json", encoding="utf-8"))
     assert spec["status"] == "eval_pass"
     r = client.post(f"/api/figures/{job}/approve")
     assert r.json()["state"] == "published"
-    spec = json.load(open(tmp_path / "cr-pump" / "spec.json"))
+    spec = json.load(open(tmp_path / "cr-pump" / "spec.json", encoding="utf-8"))
     assert spec["status"] == "published"
 
 
@@ -231,7 +231,7 @@ def test_figure_job_lifecycle_fail(tmp_path, monkeypatch):
     job = client.post("/api/figures", json={"machine": "rig"}).json()["job_id"]
     client.post(f"/api/figures/{job}/submit")
     assert client.get(f"/api/figures/{job}").json()["state"] == "failed"
-    spec = json.load(open(tmp_path / "rig" / "spec.json"))
+    spec = json.load(open(tmp_path / "rig" / "spec.json", encoding="utf-8"))
     assert spec["status"] == "awaiting_author"
     assert "error" in client.post(f"/api/figures/{job}/approve").json()
 

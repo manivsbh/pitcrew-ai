@@ -1,0 +1,18 @@
+{
+ "machine": "new-machine",
+ "name": "v6-engine-blueprint.png",
+ "kind": "engine",
+ "created": "2026-10-30",
+ "source_kind": "blueprint_image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "v6-engine-blueprint.png"
+  }
+ ],
+ "dimensions": {
+  "bore_mm": 86.0,
+  "stroke_mm": 86.0,
+  "rated_rpm": 4200.0
+ }
+}

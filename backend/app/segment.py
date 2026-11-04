@@ -111,8 +111,15 @@ def segment_photo(data: bytes) -> dict:
     t0 = time.time()
     img = decode_photo(data)
     gen, dev = get_model()
-    masks = gen.generate(img)
+    from . import meta_calls
+    t_gen = time.time()
+    with meta_calls.inflight("sam2.1_hiera_tiny", f"local-{dev}",
+                             agent="sam-segmenter"):
+        masks = gen.generate(img)
     regions = masks_to_regions(masks)
+    meta_calls.record(model="sam2.1_hiera_tiny", host=f"local-{dev}",
+                      status="ok", latency_ms=(time.time() - t_gen) * 1000,
+                      detail=f"{len(regions)} masks", agent="sam-segmenter")
     overlay = draw_overlay(img, regions)
     ms = int((time.time() - t0) * 1000)
     return {"regions": regions,
@@ -181,16 +188,18 @@ def ground_assembly_guide(data: bytes, machine: str, client_factory=None,
                 f"Component Registry:\n{json.dumps(reg_slim)}\n\n"
                 f"Manual Assembly / Torque Context:\n{rag_snippets[:2500]}"
             )
-            resp = client_factory().responses.create(
-                model=MODEL_ID,
-                instructions=ASSEMBLY_GROUND_SYSTEM,
-                input=[{"role": "user", "content": [
-                    {"type": "input_text", "text": prompt},
-                    {"type": "input_image",
-                     "image_url": f"data:image/png;base64,{seg['overlay_b64']}"},
-                ]}],
-                reasoning={"effort": REASONING_EFFORT},
-            )
+            from . import meta_calls
+            with meta_calls.role("assembly-grounder"):
+                resp = client_factory().responses.create(
+                    model=MODEL_ID,
+                    instructions=ASSEMBLY_GROUND_SYSTEM,
+                    input=[{"role": "user", "content": [
+                        {"type": "input_text", "text": prompt},
+                        {"type": "input_image",
+                         "image_url": f"data:image/png;base64,{seg['overlay_b64']}"},
+                    ]}],
+                    reasoning={"effort": REASONING_EFFORT},
+                )
             u = getattr(resp, "usage", None)
             usage["input_tokens"] = getattr(u, "input_tokens", 0) or 0
             usage["output_tokens"] = getattr(u, "output_tokens", 0) or 0

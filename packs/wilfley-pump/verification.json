@@ -1,0 +1,165 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 2,
+   "issues": [
+    "wear ring placed at rear bearing not impeller",
+    "shaft sleeve bolted to housing not shaft",
+    "phantom washers/covers with no drawing location"
+   ],
+   "changes": [
+    {
+     "pos": "16",
+     "verdict": "move"
+    },
+    {
+     "pos": "156",
+     "verdict": "attach",
+     "mount": {
+      "on": "72",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "38",
+     "verdict": "hide"
+    },
+    {
+     "pos": "118",
+     "verdict": "hide"
+    },
+    {
+     "pos": "124",
+     "verdict": "hide"
+    },
+    {
+     "pos": "158",
+     "verdict": "hide"
+    },
+    {
+     "pos": "170",
+     "verdict": "hide"
+    },
+    {
+     "pos": "224",
+     "verdict": "hide"
+    },
+    {
+     "pos": "266",
+     "verdict": "hide"
+    },
+    {
+     "pos": "312",
+     "verdict": "hide"
+    },
+    {
+     "pos": "314",
+     "verdict": "hide"
+    }
+   ],
+   "skills_added": [
+    "sk_3c71eba292",
+    "sk_6a2ebec9fe",
+    "sk_73e57df2a9"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeaa52264c2ad3a2d764b4c",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T03:23:16Z"
+  },
+  {
+   "round": 2,
+   "score": 2,
+   "issues": [
+    "bearing housing 34 missing in render, shaft exposed",
+    "base 10 truncated, does not extend under case volute",
+    "front/rear bearings not enclosing shaft",
+    "small nuts/washers floating without mount or shape"
+   ],
+   "changes": [
+    {
+     "pos": "34",
+     "verdict": "move"
+    },
+    {
+     "pos": "10",
+     "verdict": "move"
+    },
+    {
+     "pos": "100",
+     "verdict": "move"
+    },
+    {
+     "pos": "76",
+     "verdict": "move"
+    },
+    {
+     "pos": "12",
+     "verdict": "move"
+    },
+    {
+     "pos": "110",
+     "verdict": "attach",
+     "mount": {
+      "on": "100",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "108",
+     "verdict": "attach",
+     "mount": {
+      "on": "100",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "82",
+     "verdict": "attach",
+     "mount": {
+      "on": "76",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "40",
+     "verdict": "attach",
+     "mount": {
+      "on": "60",
+      "as": "bolt_circle"
+     }
+    },
+    {
+     "pos": "26",
+     "verdict": "attach",
+     "mount": {
+      "on": "20",
+      "as": "bolt_circle"
+     }
+    },
+    {
+     "pos": "222",
+     "verdict": "attach",
+     "mount": {
+      "on": "220",
+      "as": "bolt_circle"
+     }
+    },
+    {
+     "pos": "310",
+     "verdict": "hide"
+    }
+   ],
+   "skills_added": [
+    "sk_63705df344",
+    "sk_2c47e51008",
+    "sk_72df0b79c9"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeaa563cca799f85e6d4774",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T03:24:21Z"
+  }
+ ]
+}

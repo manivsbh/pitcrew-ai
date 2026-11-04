@@ -362,6 +362,14 @@ def enrich_assist_turn(
         machine, message, vision, sound, playbook, components
     )
 
+    last = [time.perf_counter()]
+
+    def lap() -> int:
+        now = time.perf_counter()
+        ms = int((now - last[0]) * 1000)
+        last[0] = now
+        return ms
+
     # 1. Blueprint & CAD Agent
     cad_status = "active" if dims else "ready"
     cad_summary = (
@@ -370,6 +378,7 @@ def enrich_assist_turn(
         if dims
         else f"Mapped {len(components)}-part 3D kinematic hierarchy ({pack_meta.get('kind', 'generic')})."
     )
+    cad_ms = lap()
 
     # 2. Vision & Assembly Engineer
     if vision is not None:
@@ -382,6 +391,7 @@ def enrich_assist_turn(
     else:
         vis_status = "standby"
         vis_summary = "Ready for workbench photo or SAM 2.1 assembly grounding."
+    vis_ms = lap()
 
     # 3. Signal & Acoustic Analyst
     acoustic_series = None
@@ -407,6 +417,7 @@ def enrich_assist_turn(
     else:
         sig_status = "standby"
         sig_summary = "Ready for 5s live mic WAV capture or 64 kHz bearing vibration."
+    sig_ms = lap()
 
     # 4. Design & Physics Reviewer
     p_kind = machine_to_physics_kind(machine, pack_meta)
@@ -439,6 +450,7 @@ def enrich_assist_turn(
     else:
         phys_status = "ready"
         phys_summary = f"Monitoring `{p_kind}` operating envelope."
+    phys_ms = lap()
 
     # 5. Inventory & Procurement Planner
     repair_kit = None
@@ -472,6 +484,7 @@ def enrich_assist_turn(
     else:
         inv_status = "ready"
         inv_summary = "Inventory ledger synced; standing by for suspect component."
+    inv_ms = lap()
 
     # 6. Supervisor Coordinator
     cites_n = len(chat.get("citations") or [])
@@ -485,15 +498,15 @@ def enrich_assist_turn(
         {"agent_id": "supervisor", "name": "Supervisor Coordinator",
          "status": "fired", "summary": sup_summary, "latency_ms": elapsed_ms},
         {"agent_id": "blueprint_cad", "name": "Blueprint & CAD Agent",
-         "status": cad_status, "summary": cad_summary, "latency_ms": 2},
+         "status": cad_status, "summary": cad_summary, "latency_ms": cad_ms},
         {"agent_id": "vision_assembly", "name": "Vision & Assembly Engineer",
-         "status": vis_status, "summary": vis_summary, "latency_ms": 4 if vision else 1},
+         "status": vis_status, "summary": vis_summary, "latency_ms": vis_ms},
         {"agent_id": "signal_acoustic", "name": "Signal & Acoustic Analyst",
-         "status": sig_status, "summary": sig_summary, "latency_ms": 6 if sound else 1},
+         "status": sig_status, "summary": sig_summary, "latency_ms": sig_ms},
         {"agent_id": "design_physics", "name": "Design & Physics Reviewer",
-         "status": phys_status, "summary": phys_summary, "latency_ms": 2},
+         "status": phys_status, "summary": phys_summary, "latency_ms": phys_ms},
         {"agent_id": "inventory_procurement", "name": "Inventory & Procurement Planner",
-         "status": inv_status, "summary": inv_summary, "latency_ms": 3 if repair_kit else 1},
+         "status": inv_status, "summary": inv_summary, "latency_ms": inv_ms},
     ]
 
     ui_actions: list[dict] = []
@@ -566,8 +579,11 @@ def run_design_copilot(
             f"User request: {prompt}"
         )
         try:
+            from . import meta_calls
             from .assist import one_shot, parse_json_blob
-            out = parse_json_blob(one_shot(client_factory, DESIGN_SYSTEM, user_msg))
+            with meta_calls.role("design-physics"):
+                out = parse_json_blob(one_shot(client_factory, DESIGN_SYSTEM,
+                                               user_msg))
             raw_patch = (out or {}).get("patch") or {}
             for k, v in raw_patch.items():
                 if k in allowed and isinstance(v, (int, float)):

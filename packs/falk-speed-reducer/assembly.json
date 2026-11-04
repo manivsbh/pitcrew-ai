@@ -1,0 +1,46 @@
+{
+ "order": [
+  {
+   "caption": "Seat bearing plate 11 on button surfaces 39 of cover 10 with dowels 41 in locating holes 37, weld at 52",
+   "parts": [
+    "dish-shaped-cover",
+    "two-bearing-plates"
+   ]
+  },
+  {
+   "caption": "Insert outer races 21 of tapered bearings 22 against annular portions 45, insert ball bearings 29 34",
+   "parts": [
+    "two-bearing-plates",
+    "outer-races",
+    "ball-bearings"
+   ]
+  },
+  {
+   "caption": "Mount bull gear 25 with snap ring 26 on quill shaft 24, intermediate gear 30 with spacer 31 on shaft 28",
+   "parts": [
+    "quill-output-shaft",
+    "bull-gear",
+    "intermediate-shaft",
+    "input-shaft"
+   ]
+  },
+  {
+   "caption": "Place preassembled shafts in bearing bores 16 17, mesh bull gear to pinion 27 and gear 30 to pinion 32",
+   "parts": [
+    "quill-output-shaft",
+    "intermediate-shaft",
+    "input-shaft"
+   ]
+  },
+  {
+   "caption": "Join housing halves via flange dowels 43 in holes 44, bolt 53 with gasket 15, fit seals 49 50 and cap 51",
+   "parts": [
+    "dish-shaped-cover",
+    "gasket",
+    "oil-seals",
+    "cap"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

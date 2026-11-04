@@ -1,0 +1,138 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 2,
+   "reverted": false,
+   "issues": [
+    "huge horizontal ring around center does not exist in elevation",
+    "lower blue disc hugely oversized for input shaft end",
+    "interior gears and bearings rendered visible but hidden behind cover in Fig.1 elevation"
+   ],
+   "changes": [
+    {
+     "pos": "26",
+     "verdict": "move"
+    },
+    {
+     "pos": "33",
+     "verdict": "move"
+    },
+    {
+     "pos": "28",
+     "verdict": "move"
+    },
+    {
+     "pos": "25",
+     "verdict": "hide"
+    },
+    {
+     "pos": "30",
+     "verdict": "hide"
+    },
+    {
+     "pos": "21",
+     "verdict": "hide"
+    },
+    {
+     "pos": "29",
+     "verdict": "hide"
+    },
+    {
+     "pos": "22",
+     "verdict": "hide"
+    },
+    {
+     "pos": "23",
+     "verdict": "hide"
+    },
+    {
+     "pos": "15",
+     "verdict": "hide"
+    }
+   ],
+   "skills_added": [
+    "sk_23f017c7bd",
+    "sk_7ab6438579",
+    "sk_d0d3be9d29"
+   ],
+   "sam_regions": 1,
+   "response_id": "resp_6aead06d1b632d38d3e1473d",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T06:27:59Z"
+  },
+  {
+   "round": 2,
+   "score": 2,
+   "reverted": false,
+   "issues": [
+    "huge elliptical ring floating around center",
+    "bottom plugs/caps floating below housing as green stalk",
+    "internal gears/bearings/plates rendered as large boxes"
+   ],
+   "changes": [
+    {
+     "pos": "26",
+     "verdict": "move"
+    },
+    {
+     "pos": "51",
+     "verdict": "move"
+    },
+    {
+     "pos": "55",
+     "verdict": "move"
+    },
+    {
+     "pos": "49",
+     "verdict": "move"
+    },
+    {
+     "pos": "45",
+     "verdict": "move"
+    },
+    {
+     "pos": "11",
+     "verdict": "hide"
+    },
+    {
+     "pos": "12",
+     "verdict": "hide"
+    },
+    {
+     "pos": "50",
+     "verdict": "hide"
+    },
+    {
+     "pos": "25",
+     "verdict": "hide"
+    },
+    {
+     "pos": "30",
+     "verdict": "hide"
+    },
+    {
+     "pos": "22",
+     "verdict": "hide"
+    },
+    {
+     "pos": "43",
+     "verdict": "attach",
+     "mount": {
+      "on": "14",
+      "as": "bolt_circle"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_8663440480",
+    "sk_508e4af7dc",
+    "sk_0da0217aec"
+   ],
+   "sam_regions": 1,
+   "response_id": "resp_6aead0bde7ab77f695ff4a1b",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T06:29:17Z"
+  }
+ ]
+}

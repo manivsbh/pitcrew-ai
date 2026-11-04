@@ -162,7 +162,7 @@ def default_harness(machine: str, preset: str = "v2") -> dict:
 def load_harness(machine: str) -> dict:
     path = _harness_path(machine)
     if os.path.isfile(path):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     return default_harness(machine, preset="v2")
 
@@ -171,7 +171,7 @@ def save_harness(machine: str, harness: dict) -> dict:
     os.makedirs(HARNESS_DIR, exist_ok=True)
     harness["machine"] = _safe_machine(machine)
     harness["updated_at"] = time.time()
-    with open(_harness_path(machine), "w") as f:
+    with open(_harness_path(machine), "w", encoding="utf-8") as f:
         json.dump(harness, f, indent=2)
     return harness
 
@@ -185,14 +185,14 @@ def list_experience(machine: str, limit: int = 25) -> list[dict]:
     path = _exp_path(machine)
     if not os.path.isfile(path):
         return []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         rows = [json.loads(ln) for ln in f if ln.strip()]
     return rows[-limit:][::-1]
 
 
 def _append_experience(machine: str, entry: dict) -> None:
     os.makedirs(HARNESS_DIR, exist_ok=True)
-    with open(_exp_path(machine), "a") as f:
+    with open(_exp_path(machine), "a", encoding="utf-8") as f:
         f.write(json.dumps(entry) + "\n")
 
 
@@ -327,12 +327,14 @@ def distill_lesson(machine: str, predicted: str, actual: str,
     parsed = None
     if client_factory is not None:
         try:
-            resp = client_factory().responses.create(
-                model=MODEL_ID,
-                instructions=DISTILL_SYSTEM,
-                input=brief,
-                reasoning={"effort": REASONING_EFFORT},
-            )
+            from . import meta_calls
+            with meta_calls.role("harness-distiller"):
+                resp = client_factory().responses.create(
+                    model=MODEL_ID,
+                    instructions=DISTILL_SYSTEM,
+                    input=brief,
+                    reasoning={"effort": REASONING_EFFORT},
+                )
             u = getattr(resp, "usage", None)
             usage["input_tokens"] = getattr(u, "input_tokens", 0) or 0
             usage["output_tokens"] = getattr(u, "output_tokens", 0) or 0

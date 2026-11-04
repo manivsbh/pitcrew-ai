@@ -119,7 +119,7 @@ def _pack_json(machine: str, name: str):
     path = os.path.join(PACKS_DIR, machine, name)
     if not os.path.isfile(path):
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -130,7 +130,7 @@ def _committed_docs(machine: str) -> list[tuple[str, str, int | None]]:
     if os.path.isdir(exdir):
         for fn in sorted(os.listdir(exdir)):
             if fn.endswith(".md"):
-                with open(os.path.join(exdir, fn)) as f:
+                with open(os.path.join(exdir, fn), encoding="utf-8") as f:
                     out.append((fn, f.read(), None))
     meta = _pack_json(machine, "pack.json") or {}
     repo = os.path.realpath(os.path.join(PACKS_DIR, ".."))
@@ -140,7 +140,7 @@ def _committed_docs(machine: str) -> list[tuple[str, str, int | None]]:
             continue
         full = os.path.realpath(os.path.join(repo, ref))
         if full.startswith(repo + os.sep) and os.path.isfile(full):
-            with open(full) as f:
+            with open(full, encoding="utf-8") as f:
                 out.append((os.path.basename(ref), f.read(), None))
     return out
 
@@ -151,7 +151,7 @@ def save_manual_pages(machine: str, title: str, pages: list[str],
     d = sources_dir or SOURCES_DIR
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, f"{machine}.json")
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump({"machine": machine, "title": title, "pages": pages}, f)
     return path
 
@@ -160,7 +160,7 @@ def _manual_pages(machine: str) -> list[tuple[str, str, int | None]]:
     path = os.path.join(SOURCES_DIR, f"{machine}.json")
     if not os.path.isfile(path):
         return []
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
     title = data.get("title") or machine
     return [(f"{title} p.{i + 1}", text, i + 1)
@@ -258,7 +258,7 @@ def backfill_manual_sources(drafts_dir: str = "data/pack_drafts") -> list[str]:
     for fn in sorted(os.listdir(drafts_dir)):
         if not fn.endswith(".json"):
             continue
-        with open(os.path.join(drafts_dir, fn)) as f:
+        with open(os.path.join(drafts_dir, fn), encoding="utf-8") as f:
             d = json.load(f)
         m = d.get("machine", "")
         if (d.get("status") != "finalized" or not m

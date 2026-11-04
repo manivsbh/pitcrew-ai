@@ -32,14 +32,14 @@ class Store:
         self.recordings: dict[str, dict] = {}
         self.counter = 0
         if os.path.exists(registry_path):
-            with open(registry_path) as f:
+            with open(registry_path, encoding="utf-8") as f:
                 saved = json.load(f)
             self.recordings = saved.get("recordings", {})
             self.counter = saved.get("counter", 0)
 
     def save(self) -> None:
         os.makedirs(os.path.dirname(self.registry_path) or ".", exist_ok=True)
-        with open(self.registry_path, "w") as f:
+        with open(self.registry_path, "w", encoding="utf-8") as f:
             json.dump({"recordings": self.recordings, "counter": self.counter},
                       f, indent=1)
 
@@ -110,7 +110,7 @@ class Store:
         safe = f"upl_{self.counter:04d}_{filename}"
         updir = os.path.join(self.root, "uploads")
         os.makedirs(updir, exist_ok=True)
-        with open(os.path.join(updir, safe), "w") as f:
+        with open(os.path.join(updir, safe), "w", encoding="utf-8") as f:
             f.write("\n".join(str(v) for v in samples))
         meta = {"relpath": f"uploads/{safe}", "upload": True,
                 "condition": None, "bearing": None, "repetition": None,
@@ -158,7 +158,7 @@ class Store:
         import numpy as np
 
         from .analysis import Channel, Recording
-        with open(os.path.join(self.root, meta["relpath"])) as f:
+        with open(os.path.join(self.root, meta["relpath"]), encoding="utf-8") as f:
             data = np.array([float(ln) for ln in f.read().split()],
                             dtype=float)
         channels = {"vibration_1": Channel("vibration_1", data,
@@ -186,6 +186,6 @@ class Store:
         meta = self.recordings.get(recording_id)
         if meta is None or not meta.get("bearing"):
             return None
-        with open(LABELS_PATH) as f:
+        with open(LABELS_PATH, encoding="utf-8") as f:
             labels = json.load(f)["labels"]
         return labels.get(meta["bearing"])

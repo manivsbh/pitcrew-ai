@@ -1,0 +1,19 @@
+{
+ "machine": "rotron-fan",
+ "name": "Rotron fan motor (US 3,513,339)",
+ "kind": "generic",
+ "created": "2026-10-30",
+ "source_kind": "pdf+image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "Rotron fan motor (US 3,513,339)"
+  }
+ ],
+ "drawing": {
+  "view": "section",
+  "main_axis": "horizontal",
+  "up": "top",
+  "image": "drawing.jpg"
+ }
+}

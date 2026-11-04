@@ -18,7 +18,7 @@ import uuid
 import numpy as np
 from scipy.io import wavfile
 
-from . import analysis
+from . import analysis, meta_calls
 from .packs import PACKS_DIR
 
 SESSIONS_DIR = "data/assist"
@@ -75,19 +75,19 @@ def load_pack_files(machine: str) -> dict | None:
     comp = os.path.join(base, "components.json")
     if not os.path.isfile(comp):
         return None
-    with open(comp) as f:
+    with open(comp, encoding="utf-8") as f:
         components = json.load(f)
     excerpts: dict[str, str] = {}
     exdir = os.path.join(base, "excerpts")
     if os.path.isdir(exdir):
         for fn in sorted(os.listdir(exdir)):
             if fn.endswith(".md"):
-                with open(os.path.join(exdir, fn)) as f:
+                with open(os.path.join(exdir, fn), encoding="utf-8") as f:
                     excerpts[fn] = f.read()
     playbooks: list[dict] = []
     pb = os.path.join(base, "playbooks.json")
     if os.path.isfile(pb):
-        with open(pb) as f:
+        with open(pb, encoding="utf-8") as f:
             playbooks = json.load(f)
     return {"machine": machine, "components": components, "excerpts": excerpts,
             "playbooks": playbooks}
@@ -107,8 +107,9 @@ def vision_identify(pack: dict, image: bytes, client_factory,
     prompt = ("Registry:\n" + json.dumps(reg) +
               "\n\nWhich registry part is shown in this photo?")
     try:
-        data = parse_json_blob(one_shot(client_factory, VISION_SYSTEM,
-                                        prompt, image, usage))
+        with meta_calls.role("vision-specialist"):
+            data = parse_json_blob(one_shot(client_factory, VISION_SYSTEM,
+                                            prompt, image, usage))
     except Exception:
         data = None
     ids = {c["id"] for c in pack["components"]}
@@ -243,8 +244,9 @@ def chat_answer(pack: dict, message: str, history: list[dict],
     prompt = (f"Excerpts:\n{bundle}\n\nConversation:\n{turns}\n"
               f"Technician: {message}")
     try:
-        data = parse_json_blob(one_shot(client_factory, CHAT_SYSTEM, prompt,
-                                        None, usage))
+        with meta_calls.role("manual-chat"):
+            data = parse_json_blob(one_shot(client_factory, CHAT_SYSTEM,
+                                            prompt, None, usage))
     except Exception:
         data = None
     answer = str((data or {}).get("answer", ""))[:4000]
@@ -302,7 +304,7 @@ def load_session(session: str) -> dict | None:
     path = _session_path(session)
     if path is None or not os.path.exists(path):
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -310,7 +312,7 @@ def save_session(sess: dict) -> None:
     os.makedirs(SESSIONS_DIR, exist_ok=True)
     path = _session_path(sess["session"])
     assert path is not None
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(sess, f)
 
 
@@ -351,9 +353,10 @@ def assist_turn(machine: str, message: str, client_factory,
                             "sound": sound, "chat": chat,
                             "playbook": (checks or {}).get("symptom")})
         try:
-            fused = parse_json_blob(one_shot(client_factory,
-                                             SUPERVISOR_SYSTEM, brief,
-                                             None, turn_usage))
+            with meta_calls.role("supervisor"):
+                fused = parse_json_blob(one_shot(client_factory,
+                                                 SUPERVISOR_SYSTEM, brief,
+                                                 None, turn_usage))
         except Exception:
             fused = None
         reply = (fused or {}).get("reply") or chat["answer"]

@@ -19,7 +19,7 @@ export const chapters = [
     title: "See beyond\nthe drawing.",
     description:
       "Bring dimensions, components, and machine context into one place. Turn a collection of parts into a clearer picture.",
-    note: "Blueprint intake preview available. Automated reconstruction is planned.",
+    note: "Live: muse-spark-1.3 reads a PDF or drawing into a parametric 3D pack. Illustrative proportions.",
     image: "blueprint",
     start: 0.8,
     end: 2.6,
@@ -45,7 +45,7 @@ export const chapters = [
     title: "Find the part.\nFollow the evidence.",
     description:
       "Move from a signal to a hypothesis—and back to the component. See the steps, sources, and limitations behind a finding.",
-    note: "Synthetic diagnostic replay. No live AI model connected.",
+    note: "Live muse-spark-1.3 agents with cited evidence. Human judgment required.",
     image: "investigate",
     start: 4,
     end: 5.6,
@@ -58,13 +58,29 @@ export const chapters = [
     title: "A better question.\nYour next breakthrough.",
     description:
       "Ask “what if?” Compare a candidate with your baseline. Review the trade-offs, then decide what changes.",
-    note: "Local typed and optional browser speech commands. No real-world failure predictions.",
+    note: "Typed or spoken commands (Meta wav2vec 2.0, on-device). Not validated failure predictions.",
     image: "experiment",
     start: 5.6,
     end: 7.95,
     progress: 0.78,
   },
 ]
+/**
+ * Chapter index and film time from where the chapter sections really sit.
+ * `anchor` is the document y of the reading line, `tops` the chapter tops,
+ * `end` the bottom of the story.
+ */
+export function mapScroll(anchor: number, tops: number[], end: number) {
+  let index = 0
+  for (let i = 0; i < tops.length; i++) if (anchor >= tops[i]) index = i
+  index = Math.min(index, chapters.length - 1)
+  const from = tops[index] ?? 0,
+    to = tops[index + 1] ?? end
+  const f = Math.min(1, Math.max(0, (anchor - from) / Math.max(1, to - from)))
+  const chapter = chapters[index]
+  return { index, time: chapter.start + (chapter.end - chapter.start) * f }
+}
+
 export function mapProgress(progress: number) {
   const p = Math.min(1, Math.max(0, progress))
   let index = chapters.length - 1

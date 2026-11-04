@@ -1,0 +1,38 @@
+{
+ "order": [
+  {
+   "caption": "Mount Suction Discharge Base as foundation of vertical stack",
+   "parts": [
+    "suction-discharge-base"
+   ]
+  },
+  {
+   "caption": "Install vertical Pump Shaft 22 mm through base and stack",
+   "parts": [
+    "pump-shaft"
+   ]
+  },
+  {
+   "caption": "Stack Diffuser Chambers and Stage Impellers with Sleeve O-Rings",
+   "parts": [
+    "diffuser-chamber",
+    "stage-impeller",
+    "sleeve-o-ring"
+   ]
+  },
+  {
+   "caption": "Fit Cartridge Shaft Seal over shaft above stack",
+   "parts": [
+    "cartridge-shaft-seal"
+   ]
+  },
+  {
+   "caption": "Connect Coupling Halves then mount Drive Motor on top, rated 2900 rpm 28 Nm",
+   "parts": [
+    "coupling-halves",
+    "drive-motor"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

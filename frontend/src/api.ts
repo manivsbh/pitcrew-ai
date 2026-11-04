@@ -135,6 +135,19 @@ export interface PackComponent {
   service_ref: string;
   failure_modes?: string[];
   failure_source?: string | null;
+  /** Placement in the drawing plane (normalised, y down), read from the drawing or derived. */
+  layout?: {
+    cx: number;
+    cy: number;
+    w: number;
+    h: number;
+    axis?: 'horizontal' | 'vertical' | 'depth' | 'none';
+    revolved?: boolean;
+    shape?: string;
+    mount?: { on: string; as: 'shaft_ring' | 'bolt_circle' | 'surface' };
+    source?: string;
+    anchor?: string;
+  };
 }
 
 export interface PackScenario {
@@ -159,11 +172,13 @@ export interface Pack {
     name: string;
     kind: string;
     dimensions?: Record<string, number>;
+    drawing?: { view?: string; main_axis?: string; image?: string };
   };
   components: PackComponent[];
   playbooks: { id: string; symptom: string; checks: number }[];
   scenarios: PackScenario[];
   assembly: { source?: string; order: PackAssemblyStep[] } | null;
+  verification?: { round: number; score: number; issues: string[]; response_id: string | null; at: string } | null;
 }
 
 export interface DraftCandidate {
@@ -425,10 +440,10 @@ export const draftApi = {
       `/api/packs/draft/${id}/reason`,
       { method: 'POST' },
     ),
-  answer: (id: string, edits: object[], news: object[]) =>
+  answer: (id: string, edits: object[], news: object[], notes = '') =>
     req<Draft>(`/api/packs/draft/${id}/answer`, {
       method: 'POST',
-      body: JSON.stringify({ edits: edits, new_components: news }),
+      body: JSON.stringify({ edits: edits, new_components: news, notes: notes }),
     }),
   finalize: (id: string) =>
     req<{ machine: string; components: number; dropped_by_review: string[]; dimensions?: Record<string, number> }>(

@@ -1,0 +1,55 @@
+{
+ "order": [
+  {
+   "caption": "Mount bearing housing to bracket and set shaft with 45mm bearings, front and rear",
+   "parts": [
+    "cylindrical-portion-bearing-housing",
+    "case-bracket",
+    "elongated-shaft",
+    "front-bearing",
+    "rear-bearing"
+   ]
+  },
+  {
+   "caption": "Fit caps, oil seals and simplified bolts; 250mm impeller on shaft end",
+   "parts": [
+    "front-bearing-cap",
+    "end-cap",
+    "impeller",
+    "shaft-sleeve"
+   ]
+  },
+  {
+   "caption": "Install case plate, labyrinth ring and simplified seal housing around sleeve",
+   "parts": [
+    "case-plate",
+    "labyrinth-ring",
+    "seal-ring-housing",
+    "sealing-members",
+    "retainer"
+   ]
+  },
+  {
+   "caption": "Assemble push-rod housing, 3 rods, yoke, spider, actuator and weights for speed-dependent seal",
+   "parts": [
+    "rod-housing",
+    "rods",
+    "annular-yoke",
+    "spider",
+    "actuator-body",
+    "weight-members",
+    "three-compression-springs",
+    "compression-spring"
+   ]
+  },
+  {
+   "caption": "Close volute case over impeller, omit drain tube per instruction",
+   "parts": [
+    "case",
+    "case-wear-ring",
+    "base-mean-s"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

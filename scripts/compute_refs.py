@@ -33,7 +33,7 @@ def main() -> int:
                                                  "kurtosis_excess": []})
         for k in bucket:
             bucket[k].append(stats[k])
-    with open(REFS_PATH, "w") as f:
+    with open(REFS_PATH, "w", encoding="utf-8") as f:
         json.dump(refs, f, indent=1)
     print(f"conditions: {sorted(refs)}; "
           f"reps: {[(c, len(v['rms'])) for c, v in refs.items()]}")

@@ -1,0 +1,19 @@
+{
+ "machine": "falk-speed-reducer",
+ "name": "Falk speed reducer (US 3,348,430)",
+ "kind": "generic",
+ "created": "2026-10-30",
+ "source_kind": "pdf+image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "Falk speed reducer (US 3,348,430)"
+  }
+ ],
+ "drawing": {
+  "view": "elevation",
+  "main_axis": "depth",
+  "up": "top",
+  "image": "drawing.jpg"
+ }
+}

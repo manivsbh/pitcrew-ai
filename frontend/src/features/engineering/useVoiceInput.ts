@@ -1,122 +1,141 @@
 import { useEffect, useRef, useState } from "react"
+import { encodeWavFile } from "./useAcousticCapture"
 
-type Recognition = {
-  lang: string
-  interimResults: boolean
-  continuous: boolean
-  start(): void
-  abort(): void
-  onresult: ((e: {
-    results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }>
-  }) => void) | null
-  onerror: ((e: { error: string }) => void) | null
-  onend: (() => void) | null
-}
+const MAX_TALK_MS = 7000
+const MIN_TALK_S = 0.5
 
-/** Speak concise copilot text aloud via Web Speech synthesis when enabled. */
+let currentAudio: HTMLAudioElement | null = null
+let pendingSpeech: AbortController | null = null
+
+/** Speak copilot text aloud with Meta MMS-TTS (local backend) when enabled. */
 export function speakText(text: string, enabled: boolean): void {
-  if (!enabled || typeof window === "undefined" || !("speechSynthesis" in window)) {
-    return
-  }
-  try {
-    window.speechSynthesis.cancel()
-    const clean = text
-      .replace(/\[[^\]]+\]/g, "")
-      .replace(/[*_`#>]/g, "")
-      .slice(0, 380)
-      .trim()
-    if (!clean) return
-    const u = new SpeechSynthesisUtterance(clean)
-    u.rate = 1.03
-    u.pitch = 1.0
-    window.speechSynthesis.speak(u)
-  } catch {
-    // Non-blocking fallback when browser speech synthesis is restricted
-  }
+  if (!enabled || typeof window === "undefined" || !text.trim()) return
+  stopSpeaking()
+  const ctrl = new AbortController()
+  pendingSpeech = ctrl
+  fetch("/api/speech/speak", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: text.slice(0, 600) }),
+    signal: ctrl.signal,
+  })
+    .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
+    .then((blob) => {
+      if (ctrl.signal.aborted) return
+      const url = URL.createObjectURL(blob)
+      const audio = new Audio(url)
+      audio.onended = () => URL.revokeObjectURL(url)
+      currentAudio = audio
+      void audio.play().catch(() => undefined)
+    })
+    .catch(() => undefined)
 }
 
 export function stopSpeaking(): void {
-  if (typeof window !== "undefined" && "speechSynthesis" in window) {
-    try {
-      window.speechSynthesis.cancel()
-    } catch {
-      // ignore
-    }
+  pendingSpeech?.abort()
+  pendingSpeech = null
+  if (currentAudio) {
+    currentAudio.pause()
+    currentAudio = null
   }
 }
 
+/**
+ * Push-to-talk: records the microphone, then transcribes locally with Meta
+ * wav2vec 2.0 on the backend. `stop()` ends the recording and sends it.
+ */
 export function useVoiceInput(
   machine: string,
   onTranscript: (s: string) => void,
 ) {
   const [listening, setListening] = useState(false),
     [message, setMessage] = useState("")
-  const recognition = useRef<Recognition | null>(null),
+  const finish = useRef<((send: boolean) => void) | null>(null),
     callback = useRef(onTranscript)
   callback.current = onTranscript
-  const stop = () => {
-    const r = recognition.current
-    recognition.current = null
-    if (r) {
-      r.onresult = null
-      r.onerror = null
-      r.onend = null
-      r.abort()
-    }
-    setListening(false)
-  }
+
+  const discard = () => finish.current?.(false)
+  const stop = () => finish.current?.(true)
+
   useEffect(() => {
     setMessage("")
-    window.addEventListener("forma-workspace-hidden", stop)
+    window.addEventListener("forma-workspace-hidden", discard)
     return () => {
-      window.removeEventListener("forma-workspace-hidden", stop)
-      stop()
+      window.removeEventListener("forma-workspace-hidden", discard)
+      discard()
     }
   }, [machine])
-  const start = () => {
-    const scope = window as unknown as {
-      SpeechRecognition?: new () => Recognition
-      webkitSpeechRecognition?: new () => Recognition
-    }
-    const Constructor = scope.SpeechRecognition || scope.webkitSpeechRecognition
-    if (!Constructor) {
-      setMessage(
-        "Speech recognition is unavailable in this browser. Type the same command instead.",
-      )
-      return
-    }
-    stop()
-    stopSpeaking()
-    const r = new Constructor()
-    recognition.current = r
-    r.lang = "en-US"
-    r.interimResults = false
-    r.continuous = false
-    r.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .filter((result) => result.isFinal)
-        .map((result) => result[0].transcript)
-        .join(" ")
-      if (transcript) {
-        setMessage(`Transcript: ${transcript}`)
-        callback.current(transcript)
-      }
-    }
-    r.onerror = (event) => {
-      setMessage(`Voice input: ${event.error}. You can type instead.`)
-      setListening(false)
-    }
-    r.onend = () => setListening(false)
+
+  const send = async (wav: File) => {
+    setMessage("Transcribing with Meta wav2vec 2.0…")
     try {
-      r.start()
-      setListening(true)
-      setMessage("Listening (push-to-talk)… Speak command or fault symptom.")
-    } catch {
-      stop()
-      setMessage(
-        "Microphone could not start. Check permissions or type instead.",
-      )
+      const form = new FormData()
+      form.append("audio", wav)
+      const r = await fetch("/api/speech/transcribe", { method: "POST", body: form })
+      const body = (await r.json()) as { text?: string; error?: string }
+      if (!r.ok || body.error) throw new Error(body.error ?? String(r.status))
+      const transcript = (body.text ?? "").trim()
+      if (!transcript) {
+        setMessage("Didn't catch that. Try again or type instead.")
+        return
+      }
+      setMessage(`Transcript: ${transcript}`)
+      callback.current(transcript)
+    } catch (err) {
+      setMessage(`Voice input failed (${(err as Error).message}). You can type instead.`)
     }
   }
+
+  const start = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setMessage("Microphone is unavailable in this browser. Type the same command instead.")
+      return
+    }
+    discard()
+    stopSpeaking()
+    let stream: MediaStream
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      })
+    } catch {
+      setMessage("Microphone could not start. Check permissions or type instead.")
+      return
+    }
+    const ctx = new AudioContext()
+    const source = ctx.createMediaStreamSource(stream)
+    const proc = ctx.createScriptProcessor(4096, 1, 1)
+    const chunks: Float32Array[] = []
+    proc.onaudioprocess = (e) => chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)))
+    source.connect(proc)
+    proc.connect(ctx.destination)
+    setListening(true)
+    setMessage("Listening… press again to send (Meta wav2vec 2.0, on-device).")
+    const timer = window.setTimeout(() => finish.current?.(true), MAX_TALK_MS)
+    finish.current = (doSend) => {
+      finish.current = null
+      window.clearTimeout(timer)
+      proc.disconnect()
+      source.disconnect()
+      stream.getTracks().forEach((t) => t.stop())
+      const rate = ctx.sampleRate
+      void ctx.close()
+      setListening(false)
+      const total = chunks.reduce((n, c) => n + c.length, 0)
+      if (!doSend) return
+      if (total / rate < MIN_TALK_S) {
+        setMessage("Too short. Hold the thought a little longer.")
+        return
+      }
+      const merged = new Float32Array(total)
+      let pos = 0
+      for (const c of chunks) {
+        merged.set(c, pos)
+        pos += c.length
+      }
+      void send(encodeWavFile(merged, rate, "voice-command.wav"))
+    }
+  }
+
   return { listening, message, start, stop }
 }

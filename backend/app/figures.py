@@ -106,7 +106,7 @@ def extract_dimensions(excerpts: list[dict]) -> list[dict]:
 
 def _excerpt_entry(ref: str, path: str) -> dict | None:
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             text = f.read()
     except OSError:
         return None
@@ -140,7 +140,7 @@ def read_excerpts(machine: str, packs_dir: str | None = None) -> list[dict]:
                 seen.add(entry["file"])
     meta_path = os.path.join(root, machine, "pack.json")
     if os.path.isfile(meta_path):
-        with open(meta_path) as f:
+        with open(meta_path, encoding="utf-8") as f:
             meta = json.load(f)
         for src in meta.get("sources", []):
             ref = str(src.get("file", ""))
@@ -169,9 +169,9 @@ def build_spec(machine: str, packs_dir: str | None = None) -> dict | None:
     comp_path = os.path.join(root, machine, "components.json")
     if not os.path.isfile(meta_path) or not os.path.isfile(comp_path):
         return None
-    with open(meta_path) as f:
+    with open(meta_path, encoding="utf-8") as f:
         meta = json.load(f)
-    with open(comp_path) as f:
+    with open(comp_path, encoding="utf-8") as f:
         components = json.load(f)
     if len(components) < 3:
         return None
@@ -208,7 +208,7 @@ def write_spec(machine: str, spec: dict,
     """Write spec.json, preserving author fields across regenerations."""
     path = os.path.join(figure_dir(machine, figures_dir), "spec.json")
     if os.path.isfile(path):
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             prev = json.load(f)
         for field in AUTHOR_FIELDS:
             incoming = spec.get(field)
@@ -216,7 +216,7 @@ def write_spec(machine: str, spec: dict,
                     field == "status" and incoming == "spec")):
                 spec[field] = prev[field]
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=2)
     return path
 
@@ -227,7 +227,7 @@ def load_spec(machine: str, figures_dir: str | None = None) -> dict | None:
     path = os.path.join(figures_dir or FIGURES_DIR, machine, "spec.json")
     if not os.path.isfile(path):
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -478,8 +478,10 @@ def vision_verdict(pack: dict, spec: dict, capture_png: bytes,
               "\nSegment summary:\n" + json.dumps(seg_summary) +
               "\n\nJudge the attached figure capture for publishing.")
     try:
-        data = parse_json_blob(one_shot(client_factory, VISION_SYSTEM,
-                                        prompt, capture_png, usage))
+        from . import meta_calls
+        with meta_calls.role("figure-judge"):
+            data = parse_json_blob(one_shot(client_factory, VISION_SYSTEM,
+                                            prompt, capture_png, usage))
     except Exception:
         data = None
     verdict = {"publish": False, "score": 0, "reasons": [], "missing": [],

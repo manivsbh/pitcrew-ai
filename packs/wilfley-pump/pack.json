@@ -1,0 +1,25 @@
+{
+ "machine": "wilfley-pump",
+ "name": "Wilfley centrifugal pump (US 3,402,671)",
+ "kind": "pump",
+ "created": "2026-10-30",
+ "source_kind": "pdf+image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "Wilfley centrifugal pump (US 3,402,671)"
+  }
+ ],
+ "dimensions": {
+  "impeller_diameter_mm": 250.0,
+  "shaft_diameter_mm": 45.0,
+  "rated_rpm": 1750.0
+ },
+ "drawing": {
+  "view": "section",
+  "main_axis": "horizontal",
+  "up": "top",
+  "image": "drawing.jpg",
+  "rotated": "cw"
+ }
+}

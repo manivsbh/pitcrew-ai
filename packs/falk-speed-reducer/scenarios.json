@@ -1,0 +1,30 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "Falk speed reducer (US 3,348,430)",
+  "wobble": 0.0
+ },
+ {
+  "id": "wear",
+  "illustrative": true,
+  "label": "Component wear",
+  "note": "Wear in the matched running parts: output sags. Illustrative.",
+  "parts": [
+   "two-bearing-plates",
+   "gasket",
+   "tapered-roller-bear-ings",
+   "oil-seals",
+   "additional-oil-seal",
+   "ball-bearings",
+   "oil-seal"
+  ],
+  "slow": 0.8,
+  "source": "Falk speed reducer (US 3,348,430)",
+  "wobble": 0.6
+ }
+]

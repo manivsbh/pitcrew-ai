@@ -1,0 +1,673 @@
+{
+ "skills": [
+  {
+   "id": "sk_d466f74dd2",
+   "when": {
+    "name_regex": ".*(Nut|Washer|Screw|Seal|Bushing|Sleeve).*"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "small hardware should be mounted on shaft/housing, not free-floating",
+   "source_response_id": "resp_6aea9e01723925cf06ac454c",
+   "created": "2026-11-04T02:52:50Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2874cf4fd9",
+   "when": {
+    "name_regex": ".*(Spring).*"
+   },
+   "then": {
+    "shape": "spring"
+   },
+   "reason": "compression springs must render as coiled springs, not solid rings",
+   "source_response_id": "resp_6aea9e01723925cf06ac454c",
+   "created": "2026-11-04T02:52:50Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2b8384fd2d",
+   "when": {
+    "name_regex": "(?i)nut|washer|screw|bolt"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "Small fasteners float in free space in renders; always mount nuts/washers/screws on shaft or bolt circle",
+   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
+   "created": "2026-11-04T02:54:07Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_f8fd694f9a",
+   "when": {
+    "name_regex": "(?i)seal|gasket|o-ring"
+   },
+   "then": {
+    "mount_as": "surface"
+   },
+   "reason": "Seals/gaskets must sit on housing/flange surface, never free-standing revolved blobs",
+   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
+   "created": "2026-11-04T02:54:07Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_6963b0eddf",
+   "when": {
+    "name_regex": "(?i)nipple|plug|cap|grease|oil cup",
+    "near_shape": "shell"
+   },
+   "then": {
+    "mount_as": "surface"
+   },
+   "reason": "Lubrication hardware sits on bearing housing surface; hide if housing port not visible",
+   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
+   "created": "2026-11-04T02:54:07Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_3c71eba292",
+   "when": {
+    "name_regex": "Wear Ring",
+    "near_shape": "impeller"
+   },
+   "then": {
+    "shape": "ring"
+   },
+   "reason": "wear rings are thin revolved rings at impeller eye, never bearings at shaft end",
+   "source_response_id": "resp_6aeaa52264c2ad3a2d764b4c",
+   "created": "2026-11-04T03:23:16Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_6a2ebec9fe",
+   "when": {
+    "name_regex": "Sleeve",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "sleeves ride on shaft, not bolted to housing flange",
+   "source_response_id": "resp_6aeaa52264c2ad3a2d764b4c",
+   "created": "2026-11-04T03:23:16Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_73e57df2a9",
+   "when": {
+    "name_regex": "Washer|Gasket|Ear|Pivot Pin|Cover"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "hide incidental hardware with no located drawing region to avoid clutter",
+   "source_response_id": "resp_6aeaa52264c2ad3a2d764b4c",
+   "created": "2026-11-04T03:23:16Z",
+   "enabled": false
+  },
+  {
+   "id": "sk_63705df344",
+   "when": {
+    "name_regex": "(?i)nut|lock nut"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "shaft nuts ride on bearings/shafts, not free floating",
+   "source_response_id": "resp_6aeaa563cca799f85e6d4774",
+   "created": "2026-11-04T03:24:21Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2c47e51008",
+   "when": {
+    "name_regex": "(?i)washer"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "lock washers belong with bearings/nuts on shaft",
+   "source_response_id": "resp_6aeaa563cca799f85e6d4774",
+   "created": "2026-11-04T03:24:21Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_72df0b79c9",
+   "when": {
+    "name_regex": "(?i)housing|case bracket|cylindrical portion"
+   },
+   "then": {
+    "shape": "shell"
+   },
+   "reason": "bearing housings are large enclosing shells around shaft",
+   "source_response_id": "resp_6aeaa563cca799f85e6d4774",
+   "created": "2026-11-04T03:24:21Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_95de910576",
+   "when": {
+    "name_regex": "O-Ring|Sleeve.*Ring",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "o-rings are small and always ride on shaft, never full stage diameter",
+   "source_response_id": "resp_6aeaaee134f8e608672549ac",
+   "created": "2026-11-04T04:04:50Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2c0ff82188",
+   "when": {
+    "name_regex": ".*Seal.*"
+   },
+   "then": {
+    "shape": "seal"
+   },
+   "reason": "cartridge seals sit on top of stage stack below coupling, not inside coupling",
+   "source_response_id": "resp_6aeaaee134f8e608672549ac",
+   "created": "2026-11-04T04:04:50Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_0d0a8fa294",
+   "when": {
+    "name_regex": "Impeller|Diffuser"
+   },
+   "then": {
+    "shape": "impeller"
+   },
+   "reason": "impeller must live inside diffuser shell at same height in centrifugal stage",
+   "source_response_id": "resp_6aeaaee134f8e608672549ac",
+   "created": "2026-11-04T04:04:50Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_dd35c6d1cf",
+   "when": {
+    "name_regex": ".*Impeller.*"
+   },
+   "then": {
+    "shape": "impeller"
+   },
+   "reason": "impellers must stay impeller shape even in stacked multistage pumps, not disappear",
+   "source_response_id": "resp_6aeaaf1b54a3d2f948284ba8",
+   "created": "2026-11-04T04:05:48Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2fa2b43254",
+   "when": {
+    "name_regex": ".*Diffuser.*|.*Chamber.*"
+   },
+   "then": {
+    "shape": "shell"
+   },
+   "reason": "diffuser chambers enclose impellers as revolved shells",
+   "source_response_id": "resp_6aeaaf1b54a3d2f948284ba8",
+   "created": "2026-11-04T04:05:48Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_f69e3a08f7",
+   "when": {
+    "name_regex": ".*O-Ring.*|.*Sleeve.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "o-rings/sleeves are small hardware riding on shaft, never stage-sized discs",
+   "source_response_id": "resp_6aeaaf1b54a3d2f948284ba8",
+   "created": "2026-11-04T04:05:48Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_f08a84185a",
+   "when": {
+    "name_regex": ".*Drive Motor.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "shape": "motor"
+   },
+   "reason": "Motor must be coaxial with shaft, axis along shaft",
+   "source_response_id": "resp_6aeaaf96da5c8f93de8c4a7e",
+   "created": "2026-11-04T04:07:52Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_40f5bbe073",
+   "when": {
+    "name_regex": ".*Bearing.*Ring.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "shape": "ring"
+   },
+   "reason": "Bearing rings must encircle shaft as thin axial rings",
+   "source_response_id": "resp_6aeaaf96da5c8f93de8c4a7e",
+   "created": "2026-11-04T04:07:52Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_a85d13c376",
+   "when": {
+    "name_regex": ".*(Rolling|Cage).*"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "Rolling elements and cage distribute around bearing circumference",
+   "source_response_id": "resp_6aeaaf96da5c8f93de8c4a7e",
+   "created": "2026-11-04T04:07:52Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_8727240981",
+   "when": {
+    "name_regex": "Rolling|Ball|Element",
+    "near_shape": "ring"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "rolling elements ride on bearing rings, not free space",
+   "source_response_id": "resp_6aeaafe4707d70e6f7774682",
+   "created": "2026-11-04T04:09:09Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_c58f1df69e",
+   "when": {
+    "name_regex": "Cylinder Bank.*"
+   },
+   "then": {
+    "shape": "boxy"
+   },
+   "reason": "V banks are outer V prisms, never flat",
+   "source_response_id": "resp_6aeab0342b972b29f40f4fab",
+   "created": "2026-11-04T04:10:29Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_d05bd7c11b",
+   "when": {
+    "name_regex": "Fuel Rail|Fuel Injector|Spark Plug.*",
+    "near_shape": "boxy"
+   },
+   "then": {
+    "mount_as": "surface"
+   },
+   "reason": "small fuel/ignition hardware lives on bank surface",
+   "source_response_id": "resp_6aeab0342b972b29f40f4fab",
+   "created": "2026-11-04T04:10:29Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_262ae5557b",
+   "when": {
+    "name_regex": "Crankshaft|Connecting Rod|Piston"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "internal rotating parts invisible in solid exterior view",
+   "source_response_id": "resp_6aeab0910535a9ca56f144a3",
+   "created": "2026-11-04T04:12:02Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_a2becf2ef7",
+   "when": {
+    "name_regex": "Fuel Rail|Injector|Spark Plug"
+   },
+   "then": {
+    "mount_as": "surface"
+   },
+   "reason": "small engine hardware must sit on bank surface",
+   "source_response_id": "resp_6aeab0910535a9ca56f144a3",
+   "created": "2026-11-04T04:12:02Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_e47e6f499d",
+   "when": {
+    "name_regex": "Cylinder Bank.*",
+    "near_shape": "boxy"
+   },
+   "then": {
+    "shape": "boxy"
+   },
+   "reason": "keep banks as separate V angled blocks not merged",
+   "source_response_id": "resp_6aeab0910535a9ca56f144a3",
+   "created": "2026-11-04T04:12:02Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2c0106cebf",
+   "when": {
+    "name_regex": "(?i)dowel|bolt|plug|screw"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "peripheral small fasteners belong on flange bolt circle in elevation, not as free towers",
+   "source_response_id": "resp_6aeac03b84fa9db7094f4c4a",
+   "created": "2026-11-04T05:18:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_75b5b282d3",
+   "when": {
+    "name_regex": "(?i)shaft|gear|bearing|quill|pinion"
+   },
+   "then": {
+    "shape": "ring"
+   },
+   "reason": "in elevation view coaxial shafts/gears appear as concentric circles, not extruded horizontal shafts",
+   "source_response_id": "resp_6aeac03b84fa9db7094f4c4a",
+   "created": "2026-11-04T05:18:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_aaa58054b5",
+   "when": {
+    "name_regex": "(?i)pocket|vent|cap|seal|portion|lip"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "tiny edge seals/vents/pockets are not visible as large 3D solids from front elevation",
+   "source_response_id": "resp_6aeac03b84fa9db7094f4c4a",
+   "created": "2026-11-04T05:18:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_91eca47773",
+   "when": {
+    "name_regex": "(Bull Gear|Intermediate Gear|Bearing Plate|Gasket|Oil Seal|Inner Races|Outer Races)"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "elevation end view hides internal stack behind dish cover; do not model as separate solids",
+   "source_response_id": "resp_6aeac08043e1f5dd2ae245a6",
+   "created": "2026-11-04T05:20:01Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_7e23d20565",
+   "when": {
+    "name_regex": "(Dowel|Bolt|Plug|Vent).*"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "small peripheral hardware on flange face belongs as bolt circle, not free floating",
+   "source_response_id": "resp_6aeac08043e1f5dd2ae245a6",
+   "created": "2026-11-04T05:20:01Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_6e29801a3f",
+   "when": {
+    "name_regex": "(Cover|Flange)$"
+   },
+   "then": {
+    "shape": "shell"
+   },
+   "reason": "large concentric reducer housings render as thin revolved shells/flanges in end view",
+   "source_response_id": "resp_6aeac08043e1f5dd2ae245a6",
+   "created": "2026-11-04T05:20:01Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_f9097d6956",
+   "when": {
+    "name_regex": ".*[Bb]olt.*|.*[Nn]ut.*|.*[Dd]owel.*",
+    "near_shape": "flange"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "perimeter hardware on a flange/cover seen end-on is a bolt circle, not side-protruding parts",
+   "source_response_id": "resp_6aeac8314a64ce4e00374925",
+   "created": "2026-11-04T05:52:56Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_570f8ed3ee",
+   "when": {
+    "name_regex": ".*[Gg]ear.*|.*[Pp]inion.*"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "internal reduction gears are not visible in an exterior elevation/cover view",
+   "source_response_id": "resp_6aeac8314a64ce4e00374925",
+   "created": "2026-11-04T05:52:56Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_1aa8d10930",
+   "when": {
+    "name_regex": ".*[Ss]eal.*|.*[Ll]ip.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "lip/oil seals ride concentric on their shaft, not as free discs elsewhere",
+   "source_response_id": "resp_6aeac8314a64ce4e00374925",
+   "created": "2026-11-04T05:52:56Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_e93137ea8f",
+   "when": {
+    "name_regex": "(?i)bolt|nut|dowel|screw",
+    "near_shape": "flange"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "perimeter hardware belongs in a bolt circle on the flange face, not floating sideways",
+   "source_response_id": "resp_6aeac883e3f85af2500d4bad",
+   "created": "2026-11-04T05:54:13Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_0176f6a48b",
+   "when": {
+    "name_regex": "(?i)seal|lip|race|snap.*ring|oil.*seal",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "seals, races and snap rings must stay concentric on their shaft",
+   "source_response_id": "resp_6aeac883e3f85af2500d4bad",
+   "created": "2026-11-04T05:54:13Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_8dabba3141",
+   "when": {
+    "name_regex": "(?i)lip|lips|seal"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "hide duplicate concentric seals when drawing shows single lip",
+   "source_response_id": "resp_6aeac883e3f85af2500d4bad",
+   "created": "2026-11-04T05:54:13Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_23f017c7bd",
+   "when": {
+    "name_regex": "Bearing|Races|Ball Bearing|Roller Bearing"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "rolling bearings are interior and invisible in end-elevation cover view, only shaft ends and retainers show",
+   "source_response_id": "resp_6aead06d1b632d38d3e1473d",
+   "created": "2026-11-04T06:27:59Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_7ab6438579",
+   "when": {
+    "name_regex": "Gear|Pinion|Bull Gear|Intermediate Gear"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "reduction gears are inside housing and not visible in elevation, only their shaft covers show",
+   "source_response_id": "resp_6aead06d1b632d38d3e1473d",
+   "created": "2026-11-04T06:27:59Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_d0d3be9d29",
+   "when": {
+    "name_regex": "Snap Ring|Retaining Ring|Snap.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "snap rings must be small depth-axis rings coaxial on their shaft, never large free tori",
+   "source_response_id": "resp_6aead06d1b632d38d3e1473d",
+   "created": "2026-11-04T06:27:59Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_8663440480",
+   "when": {
+    "name_regex": "(?i)dowel|bolt.*nut|registering"
+   },
+   "then": {
+    "mount_as": "bolt_circle"
+   },
+   "reason": "perimeter dowels/bolts belong in flange bolt circle in elevation, not as large plates",
+   "source_response_id": "resp_6aead0bde7ab77f695ff4a1b",
+   "created": "2026-11-04T06:29:17Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_508e4af7dc",
+   "when": {
+    "name_regex": "(?i)snap ring|oil seal|lip",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "rings/seals on shafts must be small coaxial rings, never large free ellipse",
+   "source_response_id": "resp_6aead0bde7ab77f695ff4a1b",
+   "created": "2026-11-04T06:29:17Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_0da0217aec",
+   "when": {
+    "name_regex": "(?i)gear|pinion|bearing|race|spacer|gasket"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "internal gear-train/bearing stack is not visible in exterior elevation cover view",
+   "source_response_id": "resp_6aead0bde7ab77f695ff4a1b",
+   "created": "2026-11-04T06:29:17Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_0a90ef9b7a",
+   "when": {
+    "name_regex": "Venturi|Annular Rim|Rigid Ring"
+   },
+   "then": {
+    "shape": "ring"
+   },
+   "reason": "circular duct rings must stay as thin revolved rings around fan",
+   "source_response_id": "resp_6aead131d90ede8d9ce64bd0",
+   "created": "2026-11-04T06:31:14Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_1db352819e",
+   "when": {
+    "name_regex": "Winding|Coil",
+    "near_shape": "shell"
+   },
+   "then": {
+    "shape": "coil"
+   },
+   "reason": "stator windings are coils around core not solid blocks",
+   "source_response_id": "resp_6aead131d90ede8d9ce64bd0",
+   "created": "2026-11-04T06:31:14Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_909f2ca538",
+   "when": {
+    "name_regex": "Retaining|Thrust|Washer",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "small rings on shaft axis mount concentrically as shaft rings",
+   "source_response_id": "resp_6aead131d90ede8d9ce64bd0",
+   "created": "2026-11-04T06:31:14Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_49bb8679a6",
+   "when": {
+    "name_regex": ".*Opening.*|.*Hole.*|.*Aperture.*"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "circular openings are voids, never model as solid",
+   "source_response_id": "resp_6aead1776d6a29c6e9994d72",
+   "created": "2026-11-04T06:32:25Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_20d09db393",
+   "when": {
+    "name_regex": ".*Retaining.*|.*Thrust.*Washer.*|.*Sealing Ring.*",
+    "near_shape": "shaft"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "small rings/washers on a shaft belong coaxial as shaft_ring",
+   "source_response_id": "resp_6aead1776d6a29c6e9994d72",
+   "created": "2026-11-04T06:32:25Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_efede7caea",
+   "when": {
+    "name_regex": ".*Venturi.*|.*Rim.*|.*Housing.*Ring.*"
+   },
+   "then": {
+    "shape": "ring"
+   },
+   "reason": "thin circular shrouds are revolved rings, not solid bars",
+   "source_response_id": "resp_6aead1776d6a29c6e9994d72",
+   "created": "2026-11-04T06:32:25Z",
+   "enabled": true
+  }
+ ]
+}

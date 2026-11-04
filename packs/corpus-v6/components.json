@@ -1,0 +1,197 @@
+[
+ {
+  "id": "crankcase-block",
+  "name": "Crankcase Block",
+  "pos": "1",
+  "parent": null,
+  "role": "V-block housing joining both banks to crankshaft",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.37,
+   "cy": 0.44,
+   "w": 0.18,
+   "h": 0.28,
+   "axis": "vertical",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "boxy"
+  }
+ },
+ {
+  "id": "forged-crankshaft",
+  "name": "Forged Crankshaft",
+  "pos": "2",
+  "parent": null,
+  "role": "Central rotating shaft driven by connecting rods",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "connecting-rods",
+  "name": "Connecting Rods",
+  "pos": "3",
+  "parent": null,
+  "role": "Link pistons to crankshaft journals",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "piston-assembly",
+  "name": "Piston Assembly",
+  "pos": "4",
+  "parent": null,
+  "role": "Reciprocating pistons in cylinders",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "cylinder-bank-l",
+  "name": "Cylinder Bank L",
+  "pos": "5",
+  "parent": null,
+  "role": "Left cylinder bank of V",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.3,
+   "w": 0.13,
+   "h": 0.26,
+   "axis": "none",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "boxy"
+  }
+ },
+ {
+  "id": "cylinder-bank-r",
+  "name": "Cylinder Bank R",
+  "pos": "6",
+  "parent": null,
+  "role": "Right cylinder bank of V",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.6,
+   "cy": 0.3,
+   "w": 0.13,
+   "h": 0.26,
+   "axis": "none",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "boxy"
+  }
+ },
+ {
+  "id": "fuel-rail-l",
+  "name": "Fuel Rail L",
+  "pos": "7",
+  "parent": null,
+  "role": "Distributes fuel to left bank injectors",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.347,
+   "cy": 0.263,
+   "w": 0.02,
+   "h": 0.02,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "pipe",
+   "mount": {
+    "on": "5",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "direct-fuel-injector",
+  "name": "Direct Fuel Injector",
+  "pos": "8",
+  "parent": null,
+  "role": "Direct-injection fuel delivery into cylinders",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.51,
+   "cy": 0.27,
+   "w": 0.06,
+   "h": 0.02,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "small",
+   "mount": {
+    "on": "6",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "iridium-spark-plugs",
+  "name": "Iridium Spark Plugs",
+  "pos": "9",
+  "parent": null,
+  "role": "Ignites mixture in cylinders",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.537,
+   "cy": 0.293,
+   "w": 0.02,
+   "h": 0.02,
+   "axis": "none",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "small",
+   "mount": {
+    "on": "6",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "oil-pan-sump",
+  "name": "Oil Pan Sump",
+  "pos": "10",
+  "parent": null,
+  "role": "Lower oil reservoir below crankshaft",
+  "role_source": "standard",
+  "service_ref": "V6 engine blueprint",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.375,
+   "cy": 0.702,
+   "w": 0.2,
+   "h": 0.1,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "boxy"
+  }
+ }
+]

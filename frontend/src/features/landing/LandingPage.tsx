@@ -13,7 +13,7 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react"
-import { chapters, mapProgress } from "./chapters"
+import { chapters, mapScroll } from "./chapters"
 import "./landing.css"
 
 function Still({ name, className = "" }: { name: string; className?: string }) {
@@ -73,6 +73,7 @@ export default function LandingPage() {
     if (!node || !film) return
     let top = 0,
       range = 1,
+      tops: number[] = [],
       raf = 0,
       target = 0,
       current = 0,
@@ -84,6 +85,8 @@ export default function LandingPage() {
     const measure = () => {
       top = node.getBoundingClientRect().top + window.scrollY
       range = Math.max(1, node.offsetHeight - window.innerHeight)
+      tops = Array.from(node.querySelectorAll<HTMLElement>(".landing-chapter"),
+        (el) => el.getBoundingClientRect().top + window.scrollY)
       request()
     }
     const seeked = () => {
@@ -95,7 +98,8 @@ export default function LandingPage() {
       raf = 0
       if (!alive) return
       const p = Math.max(0, Math.min(1, (window.scrollY - top) / range)),
-        mapped = mapProgress(p)
+        mapped = mapScroll(window.scrollY + window.innerHeight * 0.45, tops,
+          top + node.offsetHeight)
       if (shown !== mapped.index) {
         shown = mapped.index
         setActive(mapped.index)
@@ -163,7 +167,7 @@ export default function LandingPage() {
     }
   }, [canScrub, ready])
   useEffect(() => {
-    if (!simple && !error && (!saveData || allowFilm)) return
+    if (canScrub) return
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries)
@@ -178,7 +182,7 @@ export default function LandingPage() {
       .querySelectorAll(".landing-chapter")
       .forEach((node) => observer.observe(node))
     return () => observer.disconnect()
-  }, [simple, error, saveData, allowFilm])
+  }, [canScrub])
   const play = async () => {
     setPlayback(true)
     setAllowFilm(true)
@@ -217,7 +221,7 @@ export default function LandingPage() {
         <a href="#introduction" className="landing-wordmark">
           <PitCrewMark size={24} />
           <span>
-            PITCREW<span className="landing-voltage-badge">⚡ AI</span>
+            PITCREW<span className="landing-voltage-badge">.ai</span>
           </span>
         </a>
         <div className="landing-nav-links">
@@ -509,7 +513,7 @@ export default function LandingPage() {
       </main>
       <footer className="landing-footer">
         <a href="#introduction" className="landing-wordmark">
-          <PitCrewMark size={18} /> PITCREW <span className="landing-voltage-badge">⚡ AI</span>
+          <PitCrewMark size={18} /> PITCREW<span className="landing-voltage-badge">.ai</span>
         </a>
         <span>
           Cinematic illustration. Generated dimensions are not engineering

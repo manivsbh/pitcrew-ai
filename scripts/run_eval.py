@@ -78,12 +78,12 @@ def cases(split: str) -> list[tuple[str, str, int, str]]:
 def load_results() -> list[dict]:
     if not os.path.exists(RESULTS):
         return []
-    with open(RESULTS) as f:
+    with open(RESULTS, encoding="utf-8") as f:
         return [json.loads(ln) for ln in f if ln.strip()]
 
 
 def append_result(row: dict) -> None:
-    with open(RESULTS, "a") as f:
+    with open(RESULTS, "a", encoding="utf-8") as f:
         f.write(json.dumps(row) + "\n")
 
 
@@ -120,7 +120,7 @@ def arm_baseline(rec) -> dict:
 
 
 def _ref_dicts(rec) -> list[dict]:
-    refs = json.load(open("backend/app/refs.json")).get(rec.condition or "", {})
+    refs = json.load(open("backend/app/refs.json", encoding="utf-8")).get(rec.condition or "", {})
     keys = [k for k in ("rms", "crest", "kurtosis_excess") if k in refs]
     if not keys:
         return []
@@ -250,7 +250,7 @@ def run_arm(arm: str, split: str, limit: int | None, store, docs, refs,
 
 def report() -> int:
     rows = load_results()
-    labels = json.load(open("evals/labels.json"))["labels"]
+    labels = json.load(open("evals/labels.json", encoding="utf-8"))["labels"]
     out = ["# Evaluation report", ""]
     for split in ("dev", "val", "final"):
         for arm in ("baseline", "fixed", "investigate"):
@@ -267,7 +267,7 @@ def report() -> int:
                        f"{r['hypothesis']} ({r['latency_s']:.0f}s)")
         out.append("")
     text = "\n".join(out)
-    with open("evals/report.md", "w") as f:
+    with open("evals/report.md", "w", encoding="utf-8") as f:
         f.write(text + "\n")
     print(text)
     return 0
@@ -340,7 +340,7 @@ def main() -> int:
     splits = (["dev", "val", "final", "challenge"] if args.split == "all"
               else [args.split])
     store, docs = Store(), DocsStore()
-    refs = json.load(open("backend/app/refs.json"))
+    refs = json.load(open("backend/app/refs.json", encoding="utf-8"))
     client = None
     if "fixed" in arms:
         from openai import OpenAI

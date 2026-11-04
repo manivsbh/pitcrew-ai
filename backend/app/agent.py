@@ -13,6 +13,7 @@ import os
 import time
 import uuid
 
+from . import meta_calls
 from .config import (API_BASE_URL, INVESTIGATION_TIMEOUT_S, MAX_TOOL_CALLS,
                      MODEL_ID, REASONING_EFFORT)
 from .prompts import (PROMPT_VERSION, PROMPT_VERSION_V2, SYSTEM_PROMPT,
@@ -27,8 +28,12 @@ _RETRYABLE = {"RateLimitError", "InternalServerError", "ServiceUnavailableError"
 def default_client_factory(key: str | None = None):
     from openai import OpenAI
 
+    from .meta_calls import RecordingClient
+
     def make():
-        return OpenAI(base_url=API_BASE_URL, api_key=key, timeout=60.0)
+        return RecordingClient(
+            OpenAI(base_url=API_BASE_URL, api_key=key, timeout=60.0),
+            API_BASE_URL)
     return make
 
 
@@ -109,16 +114,17 @@ def run(store, docs, refs: dict, recording_id: str, question: str,
     retried = False
 
     while True:
-        if time.monotonic() - t0 > timeout_s:
+        if time.monotonic() - t0 >= timeout_s:
             trace["incomplete_reason"] = (
                 f"timeout after {timeout_s:.0f}s and {calls} tool calls")
             break
         try:
-            resp = client.responses.create(
-                model=MODEL_ID, instructions=sys_prompt, input=pending,
-                tools=schemas, previous_response_id=prev,
-                parallel_tool_calls=allow_parallel,
-                reasoning={"effort": REASONING_EFFORT})
+            with meta_calls.role("investigator"):
+                resp = client.responses.create(
+                    model=MODEL_ID, instructions=sys_prompt, input=pending,
+                    tools=schemas, previous_response_id=prev,
+                    parallel_tool_calls=allow_parallel,
+                    reasoning={"effort": REASONING_EFFORT})
         except Exception as exc:  # noqa: BLE001 - boundary: record, maybe retry
             if not retried and _is_retryable(exc):
                 retried = True
@@ -203,7 +209,7 @@ def _accumulate(total: dict, resp) -> None:
 def save_trace(trace: dict, reports_dir: str = REPORTS_DIR) -> str:
     os.makedirs(reports_dir, exist_ok=True)
     path = os.path.join(reports_dir, f"{trace['investigation_id']}.json")
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(trace, f, indent=1)
     return path
 
@@ -211,7 +217,7 @@ def save_trace(trace: dict, reports_dir: str = REPORTS_DIR) -> str:
 def load_trace(investigation_id: str, reports_dir: str = REPORTS_DIR) -> dict:
     if "/" in investigation_id or investigation_id.startswith("."):
         raise FileNotFoundError(investigation_id)
-    with open(os.path.join(reports_dir, f"{investigation_id}.json")) as f:
+    with open(os.path.join(reports_dir, f"{investigation_id}.json"), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -227,7 +233,7 @@ def list_traces(limit: int = 30, reports_dir: str = REPORTS_DIR) -> list[dict]:
     )
     for fn in files[: limit * 2]:
         try:
-            with open(os.path.join(reports_dir, fn)) as f:
+            with open(os.path.join(reports_dir, fn), encoding="utf-8") as f:
                 t = json.load(f)
         except Exception:
             continue
@@ -241,7 +247,9 @@ def list_traces(limit: int = 30, reports_dir: str = REPORTS_DIR) -> list[dict]:
             "latency_s": t.get("latency_s"),
             "harness_version": t.get("harness_version"),
             "prompt_version": t.get("prompt_version"),
+            "mode": t.get("mode", "v1"),
             "steps": len(t.get("steps", [])),
+            "n_steps": len(t.get("steps", [])),
         })
         if len(entries) >= limit:
             break

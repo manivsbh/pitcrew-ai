@@ -17,7 +17,7 @@ class DocsStore:
     def __init__(self, excerpts_dir: str = EXCERPTS_DIR):
         self.excerpts: dict[str, dict] = {}
         for path in sorted(glob.glob(os.path.join(excerpts_dir, "*.md"))):
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 text = f.read()
             doc_id = os.path.splitext(os.path.basename(path))[0]
             self._assert_clean(doc_id, text)

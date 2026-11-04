@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import os
 
 from fastapi import (BackgroundTasks, FastAPI, File, Form, Request, Response,
@@ -12,7 +13,8 @@ from pydantic import BaseModel
 
 from .agent import (default_client_factory, list_traces, load_trace,
                     new_investigation_id, run)
-from .config import ALLOWED_ORIGIN_REGEX, ALLOWED_ORIGINS, PORT, REFS_PATH, model_api_key
+from .config import (ALLOWED_ORIGIN_REGEX, ALLOWED_ORIGINS, API_BASE_URL,
+                     MODEL_ID, PORT, REFS_PATH, model_api_key)
 from .docs_store import DocsStore
 from .evidence import series_for, waveform
 from .assist import assist_turn, load_session, parse_signal_csv, parse_wav
@@ -27,8 +29,9 @@ from .packbuilder import (VALID_KINDS, apply_edits, derive_assembly,
                           derive_scenarios, finalize, load_draft,
                           merge_vision_candidates, new_draft,
                           reason_with_model, save_draft)
-from .packs import list_packs, load_pack
-from . import figures, harness, mobile_sync, orchestrator, rag
+from .packs import PACKS_DIR, list_packs, load_pack
+from . import (figures, harness, meta_calls, mobile_sync, orchestrator, rag,
+               render_verify, speech)
 from .store import Store
 
 app = FastAPI(title="PITCREW.AI — Giving Heavy Machinery a Brain")
@@ -42,7 +45,7 @@ app.add_middleware(
 
 store = Store()
 docs = DocsStore()
-refs: dict = json.load(open(REFS_PATH)) if os.path.exists(REFS_PATH) else {}
+refs: dict = json.load(open(REFS_PATH, encoding="utf-8")) if os.path.exists(REFS_PATH) else {}
 jobs: dict[str, dict] = {}
 figure_jobs: dict[str, dict] = {}
 
@@ -79,6 +82,7 @@ class DraftAnswer(BaseModel):
     edits: list[dict] = []
     new_components: list[dict] = []
     kind: str | None = None
+    notes: str = ""
 
 
 class GuideStart(BaseModel):
@@ -140,6 +144,49 @@ def _ensure_rag() -> None:
 @app.get("/api/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+class _QuietCallLogPolls(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/api/meta/calls" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(_QuietCallLogPolls())
+
+
+class SpeakBody(BaseModel):
+    text: str
+
+
+@app.post("/api/speech/transcribe")
+async def speech_transcribe(audio: UploadFile = File(...)) -> dict:
+    data = await audio.read()
+    if not data:
+        return {"error": "empty audio upload"}
+    if len(data) > 5_000_000:
+        return {"error": "audio exceeds the 5 MB cap"}
+    try:
+        return await asyncio.to_thread(speech.transcribe, data)
+    except Exception as e:
+        return {"error": f"could not transcribe: {e}"}
+
+
+@app.post("/api/speech/speak")
+async def speech_speak(body: SpeakBody) -> Response:
+    try:
+        wav = await asyncio.to_thread(speech.speak, body.text)
+    except Exception as e:
+        return Response(content=json.dumps({"error": str(e)}),
+                        media_type="application/json", status_code=422)
+    return Response(content=wav, media_type="audio/wav")
+
+
+@app.get("/api/meta/calls")
+def meta_call_log(after: int = 0, limit: int = 50) -> dict:
+    return {"calls": meta_calls.recent(after=after,
+                                       limit=min(max(limit, 1), 200)),
+            "inflight": meta_calls.running(),
+            "model": MODEL_ID, "base_url": API_BASE_URL}
 
 
 @app.get("/api/cases")
@@ -411,16 +458,62 @@ def meta() -> dict:
             checks += sum(pb["checks"] for pb in loaded["playbooks"])
     eval_rows = 0
     if os.path.exists("evals/results.jsonl"):
-        with open("evals/results.jsonl") as f:
+        with open("evals/results.jsonl", encoding="utf-8") as f:
             eval_rows = sum(1 for line in f if line.strip())
     unsupported = None
     if os.path.exists("evals/analysis.md"):
-        with open("evals/analysis.md") as f:
+        with open("evals/analysis.md", encoding="utf-8") as f:
             m = re.search(r"Unsupported claims:\s*(\d+)/(\d+)", f.read())
         if m:
             unsupported = {"n": int(m.group(1)), "of": int(m.group(2))}
     return {"packs": len(packs), "components": components, "checks": checks,
             "eval_rows": eval_rows, "unsupported_claims": unsupported}
+
+
+class VerifyBody(BaseModel):
+    image: str
+    round: int = 1
+
+
+class SkillToggle(BaseModel):
+    enabled: bool
+
+
+@app.post("/api/packs/{machine}/verify")
+async def pack_verify(machine: str, body: VerifyBody) -> dict:
+    try:
+        key = model_api_key()
+    except RuntimeError as e:
+        return {"error": str(e)}
+    try:
+        return await asyncio.to_thread(render_verify.verify, machine, body.image,
+                                       default_client_factory(key), body.round)
+    except ValueError as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/packs/{machine}/drawing")
+def pack_drawing(machine: str) -> Response:
+    loaded = load_pack(machine)
+    image = ((loaded or {}).get("meta", {}).get("drawing") or {}).get("image")
+    path = os.path.join(PACKS_DIR, machine, image) if image else ""
+    if not image or "/" in image or not os.path.isfile(path):
+        return Response(status_code=404)
+    rotated = loaded["meta"]["drawing"].get("rotated")
+    with open(path, "rb") as f:
+        return Response(content=render_verify.upright_image(f.read(), rotated),
+                        media_type="image/jpeg")
+
+
+@app.get("/api/render-skills")
+def render_skills() -> dict:
+    return {"skills": render_verify.load_skills()}
+
+
+@app.post("/api/render-skills/{skill_id}/toggle")
+def render_skill_toggle(skill_id: str, body: SkillToggle) -> dict:
+    s = render_verify.toggle_skill(skill_id, body.enabled)
+    return s if s else {"error": f"unknown skill {skill_id}"}
 
 
 @app.get("/api/packs/{machine}")
@@ -437,6 +530,7 @@ def _draft_view(draft: dict) -> dict:
             "source_kind": draft.get("source_kind", "pdf"),
             "has_image": bool(draft.get("image_b64")),
             "dimensions": draft.get("dimensions") or {},
+            "answers": draft.get("answers", ""),
             "candidates": draft["candidates"],
             "assessment": draft["assessment"], "review": draft["review"]}
 
@@ -490,7 +584,8 @@ def draft_reason(draft_id: str) -> dict:
         return {"error": str(e)}
     review = reason_with_model(draft["text"], draft["candidates"],
                                default_client_factory(key),
-                               image_b64=draft.get("image_b64"))
+                               image_b64=draft.get("image_b64"),
+                               answers=draft.get("answers", ""))
     draft["review"] = review
     if review.get("extracted_components") or review.get("dimensions"):
         draft = merge_vision_candidates(draft, review)
@@ -512,7 +607,8 @@ def draft_answer(draft_id: str, body: DraftAnswer) -> dict:
         if body.kind not in VALID_KINDS:
             return {"error": f"unknown kind {body.kind}"}
         draft["review"] = {**(draft.get("review") or {}), "kind": body.kind}
-    return _draft_view(apply_edits(draft, body.edits, body.new_components))
+    return _draft_view(apply_edits(draft, body.edits, body.new_components,
+                                   body.notes))
 
 
 @app.post("/api/assist")
@@ -809,9 +905,9 @@ def pack_derive(machine: str) -> dict:
     scn = derive_scenarios(
         loaded["components"], loaded["meta"].get("kind", "generic"),
         loaded["meta"].get("name", machine))
-    with open(os.path.join(base, "assembly.json"), "w") as f:
+    with open(os.path.join(base, "assembly.json"), "w", encoding="utf-8") as f:
         json.dump(asm, f, indent=1)
-    with open(os.path.join(base, "scenarios.json"), "w") as f:
+    with open(os.path.join(base, "scenarios.json"), "w", encoding="utf-8") as f:
         json.dump(scn, f, indent=1)
     return {"machine": machine, "steps": len(asm["order"]),
             "scenarios": len(scn)}
@@ -833,7 +929,7 @@ def inv_backfill() -> dict:
 def _hashes() -> dict:
     out = {}
     if os.path.exists("data/hashes.txt"):
-        with open("data/hashes.txt") as f:
+        with open("data/hashes.txt", encoding="utf-8") as f:
             for line in f:
                 parts = line.split()
                 if len(parts) == 2:

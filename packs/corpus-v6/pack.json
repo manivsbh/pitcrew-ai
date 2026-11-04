@@ -1,0 +1,24 @@
+{
+ "machine": "corpus-v6",
+ "name": "V6 engine blueprint",
+ "kind": "engine",
+ "created": "2026-10-30",
+ "source_kind": "blueprint_image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "V6 engine blueprint"
+  }
+ ],
+ "dimensions": {
+  "bore_mm": 86.0,
+  "stroke_mm": 86.0,
+  "rated_rpm": 4200.0
+ },
+ "drawing": {
+  "view": "schematic",
+  "main_axis": "none",
+  "up": "top",
+  "image": "drawing.jpg"
+ }
+}

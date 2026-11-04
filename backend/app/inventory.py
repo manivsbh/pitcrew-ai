@@ -161,7 +161,7 @@ def seed(conn: sqlite3.Connection) -> int:
     reg_path = os.path.join(PACKS_DIR, "cr-pump", "components.json")
     names = {}
     if os.path.exists(reg_path):
-        with open(reg_path) as f:
+        with open(reg_path, encoding="utf-8") as f:
             for c in json.load(f):
                 names[c["id"]] = (c["name"], c.get("pos"))
     n = 0
@@ -179,7 +179,7 @@ def seed(conn: sqlite3.Connection) -> int:
         m_path = os.path.join(PACKS_DIR, machine, "components.json")
         m_names = {}
         if os.path.exists(m_path):
-            with open(m_path) as f:
+            with open(m_path, encoding="utf-8") as f:
                 for c in json.load(f):
                     m_names[c["id"]] = (c["name"], c.get("pos"))
         for cid, label, price, stock, lead in items:

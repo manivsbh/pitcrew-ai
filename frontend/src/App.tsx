@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { PitCrewMark } from "./PitCrewMark"
+import RenderSkillsPanel from "./RenderSkillsPanel"
 import {
   Activity,
   Box,
@@ -260,6 +261,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
       (p) => {
         setPack(p)
         setSelected(p.components[0]?.name ?? machines[g].parts[0])
+        setSelectedCompId(null)
         setCopilotSuspect(null)
         setCopilotExplode(null)
         const dims = p.meta.dimensions
@@ -345,6 +347,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
   const [attachedWav, setAttachedWav] = useState<File | null>(null)
   const [copilotSuspect, setCopilotSuspect] = useState<string | null>(null)
   const [copilotExplode, setCopilotExplode] = useState<number | null>(null)
+  const [selectedCompId, setSelectedCompId] = useState<string | null>(null)
   const [distillMsg, setDistillMsg] = useState("")
   const [invKit, setInvKit] = useState<RepairKit | null>(null)
   const [roomId] = useState<string>(resolveInitialRoomId)
@@ -366,6 +369,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
     Record<string, { name: string; parent: string }>
   >({})
   const [newComp, setNewComp] = useState("")
+  const [draftNotes, setDraftNotes] = useState("")
   const [seg, setSeg] = useState<SegmentResult | null>(null)
   const [segMsg, setSegMsg] = useState("")
   // ---- inventory / guide (Inventory + Agent lab pages) ----
@@ -558,7 +562,10 @@ export default function App({ visible = true }: { visible?: boolean }) {
           setCopilotExplode(act.payload.explode)
         }
         const comp = pack?.components.find((c) => c.id === cid)
-        if (comp) setSelected(comp.name)
+        if (comp) {
+          setSelected(comp.name)
+          setSelectedCompId(comp.id)
+        }
       } else if (act.type === "propose_physics" && act.payload?.patch) {
         setEngineering((prev) => {
           const cur = prev[geom]
@@ -851,7 +858,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
       .filter(Boolean)
       .map((name) => ({ name }))
     setDraftBusy(true)
-    draftApi.answer(draft.id, edits, news).then(
+    draftApi.answer(draft.id, edits, news, draftNotes).then(
       (d) => {
         setDraft(d)
         setCandEdits({})
@@ -1065,7 +1072,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
         <header>
           <div className="brand pitcrew-brand">
             <div className="brand-title">
-              PITCREW<span className="voltage-badge">⚡ AI</span>
+              PITCREW<span className="voltage-badge">.ai</span>
             </div>
             <span className="brand-tagline">GIVING HEAVY MACHINERY A BRAIN</span>
           </div>
@@ -1243,6 +1250,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                           matchComp(pack, id)
                         if (c) {
                           setSelected(c.name)
+                          setSelectedCompId(c.id)
                           setModal(`Component: ${c.name}`)
                         }
                       }}
@@ -1256,7 +1264,12 @@ export default function App({ visible = true }: { visible?: boolean }) {
                             null)
                           : null)
                       }
-                      selectedId={matchComp(pack, selected)?.id ?? null}
+                      selectedId={
+                        (selectedCompId &&
+                          pack.components.find((k) => k.id === selectedCompId)?.name === selected
+                          ? selectedCompId
+                          : matchComp(pack, selected)?.id) ?? null
+                      }
                       scales={scalesFor(engineeringSession.applied)}
                       externalExplode={copilotExplode}
                       stepPlacedIds={syncedStepPlaced}
@@ -1301,11 +1314,12 @@ export default function App({ visible = true }: { visible?: boolean }) {
                       {packErr ? ` · ${packErr}` : ""}
                     </small>
                   </div>
-                  {parts.map((p) => (
+                  {parts.map((p, i) => (
                     <button
-                      key={p}
+                      key={pack?.components[i]?.id ?? p}
                       onClick={() => {
                         setSelected(p)
+                        setSelectedCompId(pack?.components[i]?.id ?? null)
                         setModal(`Component: ${p}`)
                       }}
                       className={selected === p ? "part selected-part" : "part"}
@@ -1448,7 +1462,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                       <option value="">Replay a saved investigation trace…</option>
                       {savedTraces.slice(0, 12).map((t) => (
                         <option key={t.investigation_id} value={t.investigation_id}>
-                          {t.investigation_id} · {t.mode.toUpperCase()} ·{" "}
+                          {t.investigation_id} · {(t.mode ?? "v1").toUpperCase()} ·{" "}
                           {t.hypothesis ?? t.status}
                         </option>
                       ))}
@@ -2022,6 +2036,16 @@ export default function App({ visible = true }: { visible?: boolean }) {
                           ).join(" · ")}
                         </p>
                       )}
+                      <label className="dimension" style={{ display: "block", marginTop: 10 }}>
+                        Answer the agent (dimensions, corrections, push back)
+                        <textarea
+                          rows={3}
+                          style={{ width: "100%", marginTop: 6 }}
+                          placeholder="e.g. Impeller diameter 250 mm, shaft 45 mm, rated 1750 rpm. Model the seal simply."
+                          value={draftNotes}
+                          onChange={(e) => setDraftNotes(e.target.value)}
+                        />
+                      </label>
                       <div style={{ marginTop: 14 }}>
                         {draft.candidates.slice(0, 10).map((c) => (
                           <label key={c.id} className="dimension">
@@ -2283,6 +2307,7 @@ export default function App({ visible = true }: { visible?: boolean }) {
                       : " Speak, capture 5s live audio, or ask in the Workspace composer to watch live agent handoffs."}
                   </span>
                 </div>
+                <RenderSkillsPanel />
                 <AgentLabHub
                   machineId={machineId}
                   pack={pack}

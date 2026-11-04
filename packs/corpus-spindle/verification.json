@@ -1,0 +1,68 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 2,
+   "issues": [
+    "Motor rendered vertical, not coaxial with shaft",
+    "Bearing rings rendered as front-facing drum, not around shaft",
+    "Bearing center offset above shaft axis"
+   ],
+   "changes": [
+    {
+     "pos": "1",
+     "verdict": "move"
+    },
+    {
+     "pos": "4",
+     "verdict": "move"
+    },
+    {
+     "pos": "5",
+     "verdict": "move"
+    },
+    {
+     "pos": "6",
+     "verdict": "move"
+    },
+    {
+     "pos": "7",
+     "verdict": "move"
+    }
+   ],
+   "skills_added": [
+    "sk_f08a84185a",
+    "sk_40f5bbe073",
+    "sk_a85d13c376"
+   ],
+   "sam_regions": 7,
+   "response_id": "resp_6aeaaf96da5c8f93de8c4a7e",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:07:52Z"
+  },
+  {
+   "round": 2,
+   "score": 4,
+   "issues": [
+    "bearing internals concentric but balls read as loose parts"
+   ],
+   "changes": [
+    {
+     "pos": "6",
+     "verdict": "attach",
+     "mount": {
+      "on": "5",
+      "as": "shaft_ring"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_8727240981"
+   ],
+   "sam_regions": 7,
+   "response_id": "resp_6aeaafe4707d70e6f7774682",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:09:09Z"
+  }
+ ]
+}

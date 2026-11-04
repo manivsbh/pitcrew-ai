@@ -30,7 +30,7 @@ def main() -> int:
     os.makedirs(root, exist_ok=True)
     have_hashes = set()
     if os.path.exists("data/hashes.txt"):
-        with open("data/hashes.txt") as f:
+        with open("data/hashes.txt", encoding="utf-8") as f:
             have_hashes = {ln.split()[1] for ln in f if len(ln.split()) == 2}
     for b in BEARINGS:
         rar = os.path.join(root, f"{b}.rar")
@@ -43,7 +43,7 @@ def main() -> int:
                     f.write(chunk)
             print(f"  {os.path.getsize(rar) / 1e6:.0f} MB", flush=True)
         if f"{b}.rar" not in have_hashes:
-            with open("data/hashes.txt", "a") as f:
+            with open("data/hashes.txt", "a", encoding="utf-8") as f:
                 f.write(f"{sha256_of(rar)}  {b}.rar\n")
     print("hashes recorded", flush=True)
     subprocess.run([sys.executable, "scripts/extract_dev.py", "--reps", REPS],

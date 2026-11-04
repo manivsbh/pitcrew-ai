@@ -1,6 +1,23 @@
 import { useEffect, useRef, useState } from "react"
-import { initAssembly, type AssemblyHandle } from "./assembly"
+import { initAssembly, type AssemblyHandle, type RenderSkill } from "./assembly"
 import type { Pack, PackScenario } from "../api"
+
+interface VerifyResult {
+  round: number
+  score: number
+  issues: string[]
+  changes: { pos: string; verdict: string }[]
+  skills_added: string[]
+  sam_regions: number
+  response_id: string | null
+  again: boolean
+  reverted?: boolean
+}
+type VerifyState =
+  | { status: "idle" }
+  | { status: "running"; round: number }
+  | ({ status: "done" } & VerifyResult)
+  | { status: "error"; message: string }
 
 /** Mounts the verified simulation engine: sheet / assemble / run / fault / CAD wireframe. */
 export default function AssemblySim({
@@ -38,18 +55,80 @@ export default function AssemblySim({
   const [wireframe, setWireframeState] = useState(false)
   const [faultId, setFaultId] = useState("")
   const [caption, setCaption] = useState("")
+  const [hiddenParts, setHiddenParts] = useState<string[]>([])
+  const [skills, setSkills] = useState<RenderSkill[]>([])
+  const [live, setLive] = useState<Pack>(pack)
+  const [check, setCheck] = useState<VerifyState>({ status: "idle" })
+  const [showDrawing, setShowDrawing] = useState(false)
+  const pendingRound = useRef(0)
   const scenarios: PackScenario[] = pack.scenarios ?? []
-  const steps = pack.assembly?.order ?? []
+  const steps = live.assembly?.order ?? []
+  const hasDrawing = !!live.meta.drawing?.image
+
+  useEffect(() => {
+    setLive(pack)
+    setCheck({ status: "idle" })
+    pendingRound.current = 0
+  }, [pack])
+
+  useEffect(() => {
+    fetch("/api/render-skills")
+      .then((r) => (r.ok ? r.json() : { skills: [] }))
+      .then((b: { skills?: RenderSkill[] }) => setSkills(b.skills ?? []))
+      .catch(() => setSkills([]))
+  }, [pack])
+
+  const runVerify = async (round: number) => {
+    const h = handle.current
+    if (!h) return
+    setCheck({ status: "running", round })
+    try {
+      const r = await fetch(`/api/packs/${machineId}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: h.captureSideView(), round }),
+      })
+      const res = (await r.json()) as VerifyResult & { error?: string }
+      if (!r.ok || res.error) throw new Error(res.error ?? String(r.status))
+      setCheck({ status: "done", ...res })
+      if (res.changes.length || res.skills_added.length || res.reverted) {
+        pendingRound.current = res.again ? round + 1 : 0
+        const fresh = (await (await fetch(`/api/packs/${machineId}`)).json()) as Pack
+        if (res.skills_added.length) {
+          const sk = (await (await fetch("/api/render-skills")).json()) as { skills?: RenderSkill[] }
+          setSkills(sk.skills ?? [])
+        }
+        setLive(fresh)
+      }
+    } catch (e) {
+      setCheck({ status: "error", message: (e as Error).message })
+    }
+  }
+
+  useEffect(() => {
+    if (!hasDrawing) return
+    const round = pendingRound.current || (live.verification ? 0 : 1)
+    if (!round) return
+    pendingRound.current = 0
+    const t = window.setTimeout(() => void runVerify(round), 2200)
+    return () => window.clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, hasDrawing])
 
   useEffect(() => {
     if (!host.current) return
     const h = initAssembly(host.current, {
-      onSelect,
+      onSelect: (id) => {
+        picked.current = true
+        onSelect(id)
+      },
       labelFor,
       machine: machineId,
-      components: pack.components,
-      kind: pack.meta.kind,
+      components: live.components,
+      kind: live.meta.kind,
       scales,
+      drawing: live.meta.drawing ?? null,
+      skills,
     })
     handle.current = h
     setLayoutState("assembled")
@@ -57,27 +136,39 @@ export default function AssemblySim({
     setWireframeState(false)
     setFaultId(scenarios[0]?.id ?? "")
     const cov = h.getCoverage()
+    setHiddenParts(cov?.hidden ?? [])
     setCaption(
-      cov
-        ? `Schematic model — ${cov.matched}/${cov.total} parts matched to asset templates.` +
-          (cov.unclassified.length
-            ? ` Needs drawings: ${cov.unclassified.slice(0, 4).join(", ")}${cov.unclassified.length > 4 ? ` +${cov.unclassified.length - 4} more` : ""}.`
-            : " All parts classified.")
-        : "",
+      cov?.sources
+        ? `Built from the drawing — ${cov.total - (cov.hidden?.length ?? 0)}/${cov.total} parts placed; ` +
+          `shapes: ${cov.sources.model} from the model, ${cov.sources.skill} from skills, ${cov.sources.rules} from name rules.`
+        : cov
+          ? `Schematic model — ${cov.matched}/${cov.total} parts matched to asset templates.` +
+            (cov.unclassified.length
+              ? ` Needs drawings: ${cov.unclassified.slice(0, 4).join(", ")}${cov.unclassified.length > 4 ? ` +${cov.unclassified.length - 4} more` : ""}.`
+              : " All parts classified.")
+          : "",
     )
     return () => {
       h.dispose()
       handle.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [machineId, pack])
+  }, [machineId, live, skills])
 
   useEffect(() => {
     handle.current?.setSuspect(suspect)
     if (suspect) handle.current?.setExplode(0.85)
   }, [suspect])
 
+  const loadSelection = useRef<string | null>(null)
+  const picked = useRef(false)
   useEffect(() => {
+    loadSelection.current = selectedId
+    picked.current = false
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [machineId, pack])
+  useEffect(() => {
+    if (selectedId !== loadSelection.current) picked.current = true
     if (selectedId) handle.current?.select(selectedId)
   }, [selectedId])
 
@@ -163,10 +254,10 @@ export default function AssemblySim({
       setIsolatedState(false)
       handle.current?.setIsolated(null)
       setCaption("Isolation cleared.")
-    } else if (selectedId) {
+    } else if (selectedId && picked.current) {
       setIsolatedState(true)
       handle.current?.setIsolated(selectedId)
-      setCaption(`Isolated ${labelFor(selectedId)}.`)
+      setCaption(`Isolated ${labelFor(selectedId)}. Show all to return.`)
     } else {
       setCaption("Select a component first, then isolate it.")
     }
@@ -238,10 +329,45 @@ export default function AssemblySim({
             ))}
           </select>
         </label>
+        {hasDrawing && (
+          <>
+            <button className="btn" aria-pressed={showDrawing} onClick={() => setShowDrawing((v) => !v)}>
+              {showDrawing ? "Hide drawing" : "Compare drawing"}
+            </button>
+            <button className="btn" disabled={check.status === "running"} onClick={() => void runVerify(1)}>
+              {check.status === "running" ? `Verifying (round ${check.round})…` : "Verify again"}
+            </button>
+          </>
+        )}
       </div>
+      {showDrawing && hasDrawing && (
+        <img className="sim-drawing" src={`/api/packs/${machineId}/drawing`} alt="Source drawing" />
+      )}
+      {check.status !== "idle" && (
+        <p className="muted sim-verify" aria-live="polite">
+          <span className="tag">Meta vision check</span>{" "}
+          {check.status === "running" && `Round ${check.round}: SAM 2.1 segments the drawing, muse-spark-1.3 compares it with this render…`}
+          {check.status === "done" &&
+            `Round ${check.round}: score ${check.score}/5 · ` +
+              (check.reverted
+                ? "score dropped, kept the previous layout"
+                : `${check.changes.length} fix${check.changes.length === 1 ? "" : "es"}`) +
+              ` · ${check.sam_regions} drawing regions` +
+              (check.skills_added.length ? ` · ${check.skills_added.length} new skill${check.skills_added.length === 1 ? "" : "s"}` : "") +
+              (check.issues.length ? ` — ${check.issues.slice(0, 2).join("; ")}` : "")}
+          {check.status === "error" && `Could not verify: ${check.message}`}
+        </p>
+      )}
       {caption && (
         <p className="muted" aria-live="polite">
           {caption}
+        </p>
+      )}
+      {hiddenParts.length > 0 && (
+        <p className="muted sim-hidden" title={hiddenParts.join(", ")}>
+          <span className="tag">Not located in drawing ({hiddenParts.length})</span>{" "}
+          {hiddenParts.slice(0, 6).join(", ")}
+          {hiddenParts.length > 6 ? ` +${hiddenParts.length - 6} more` : ""}. Shown in Parts sheet and inventory.
         </p>
       )}
     </div>

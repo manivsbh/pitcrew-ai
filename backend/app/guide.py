@@ -29,7 +29,7 @@ def _load(guide_id: str) -> dict | None:
     path = _path(guide_id)
     if path is None or not os.path.exists(path):
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -38,7 +38,7 @@ def _save(guide: dict) -> None:
     os.makedirs(GUIDES_DIR, exist_ok=True)
     path = _path(guide["id"])
     assert path is not None
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(guide, f)
 
 

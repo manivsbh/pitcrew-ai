@@ -1,0 +1,118 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 1,
+   "issues": [
+    "V cylinder banks not modeled, top is flat block",
+    "fuel/injector/plug hardware missing from exterior"
+   ],
+   "changes": [
+    {
+     "pos": "5",
+     "verdict": "move"
+    },
+    {
+     "pos": "6",
+     "verdict": "move"
+    },
+    {
+     "pos": "7",
+     "verdict": "attach",
+     "mount": {
+      "on": "5",
+      "as": "surface"
+     }
+    },
+    {
+     "pos": "8",
+     "verdict": "attach",
+     "mount": {
+      "on": "6",
+      "as": "surface"
+     }
+    },
+    {
+     "pos": "9",
+     "verdict": "attach",
+     "mount": {
+      "on": "6",
+      "as": "surface"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_c58f1df69e",
+    "sk_d05bd7c11b"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeab0342b972b29f40f4fab",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:10:29Z"
+  },
+  {
+   "round": 2,
+   "score": 1,
+   "issues": [
+    "solid exterior hides crankshaft rods pistons",
+    "V banks merged into flat block in render",
+    "fuel rail injector plugs not mounted"
+   ],
+   "changes": [
+    {
+     "pos": "2",
+     "verdict": "hide"
+    },
+    {
+     "pos": "3",
+     "verdict": "hide"
+    },
+    {
+     "pos": "4",
+     "verdict": "hide"
+    },
+    {
+     "pos": "5",
+     "verdict": "move"
+    },
+    {
+     "pos": "6",
+     "verdict": "move"
+    },
+    {
+     "pos": "7",
+     "verdict": "attach",
+     "mount": {
+      "on": "5",
+      "as": "surface"
+     }
+    },
+    {
+     "pos": "8",
+     "verdict": "attach",
+     "mount": {
+      "on": "6",
+      "as": "surface"
+     }
+    },
+    {
+     "pos": "9",
+     "verdict": "attach",
+     "mount": {
+      "on": "6",
+      "as": "surface"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_262ae5557b",
+    "sk_a2becf2ef7",
+    "sk_e47e6f499d"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeab0910535a9ca56f144a3",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:12:02Z"
+  }
+ ]
+}

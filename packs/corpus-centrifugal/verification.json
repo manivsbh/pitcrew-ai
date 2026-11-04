@@ -1,0 +1,75 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 3,
+   "issues": [
+    "seal and coupling share same box overlapping",
+    "diffuser offset below impeller instead of enclosing it",
+    "o-ring drawn as full stage size not shaft ring"
+   ],
+   "changes": [
+    {
+     "pos": "3",
+     "verdict": "move"
+    },
+    {
+     "pos": "5",
+     "verdict": "move"
+    },
+    {
+     "pos": "6",
+     "verdict": "attach",
+     "mount": {
+      "on": "4",
+      "as": "shaft_ring"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_95de910576",
+    "sk_2c0ff82188",
+    "sk_0d0a8fa294"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeaaee134f8e608672549ac",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:04:50Z"
+  },
+  {
+   "round": 2,
+   "score": 2,
+   "issues": [
+    "middle 3-stage impeller/diffuser stack from drawing is missing in render - shaft left bare",
+    "Sleeve O-Ring modeled as large stage-sized disc instead of small shaft ring"
+   ],
+   "changes": [
+    {
+     "pos": "2",
+     "verdict": "move"
+    },
+    {
+     "pos": "3",
+     "verdict": "move"
+    },
+    {
+     "pos": "6",
+     "verdict": "attach",
+     "mount": {
+      "on": "4",
+      "as": "shaft_ring"
+     }
+    }
+   ],
+   "skills_added": [
+    "sk_dd35c6d1cf",
+    "sk_2fa2b43254",
+    "sk_f69e3a08f7"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeaaf1b54a3d2f948284ba8",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T04:05:48Z"
+  }
+ ]
+}

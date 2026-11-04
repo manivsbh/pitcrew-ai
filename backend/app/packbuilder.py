@@ -15,6 +15,8 @@ import uuid
 from PIL import Image
 from pypdf import PdfReader
 
+from . import layout as layout_mod
+
 DRAFTS_DIR = "data/pack_drafts"
 
 # "Coupling Halves (Pos. 10a)". Name = up to 5 capitalized words so a
@@ -26,6 +28,20 @@ _POS_RE = re.compile(
 _TORQUE_RE = re.compile(
     r"^\s*(\d+[a-z]?)\s+([A-Z][A-Za-z0-9 /&\-]{3,44}?)\s+\.{2,}", re.MULTILINE)
 _DIM_RE = re.compile(r"\b\d+(?:\.\d+)?\s*(?:mm|cm|Nm|ft\.?-lbs?|in\.?|°)\b")
+# Patent-style reference numerals: "an end cap 60", "the elongated shaft 72".
+_REFNUM_RE = re.compile(
+    r"\b(?:[Aa]n?|[Tt]he|[Ss]aid)\s+((?:[a-z][a-z\-]{2,}\s+){0,3}[a-z][a-z\-]{2,})"
+    r"\s+(\d{2,3})\b(?!\s*(?:mm|cm|in\b|rpm|%|°))")
+_OCR_NOISE = re.compile(r"[‘’`'\"]")
+_REFNUM_HEADS = {
+    "portion", "portions", "hole", "holes", "surface", "surfaces",
+    "thread", "threads", "end", "bore", "recess", "slot", "position",
+    "numeral", "plurality", "indentation", "claim", "claims", "patent",
+    "figure", "fig", "direction", "speed", "angle", "axis", "relationship"}
+_REFNUM_FILLER = {"with", "said", "includes", "including", "the", "and",
+                  "being", "overcoming", "is", "are", "of", "to", "by", "for",
+                  "from", "into", "which", "has", "having", "right", "left"}
+_PASSAGE_CHARS = 900
 _VERB_LEAD = re.compile(
     r"^(remove|insert|install|check|place|loosen|tighten|slide|lift|rotate|"
     r"inspect|clean|apply|mount|fit|seat|press|pull|push|turn|hold|replace|"
@@ -40,12 +56,19 @@ def pdf_text(data: bytes) -> str:
 
 
 def pdf_first_image_jpeg(data: bytes, max_dim: int = 1280) -> bytes | None:
-    """Extract the largest embedded diagram/blueprint image from a PDF, if any."""
+    """Extract the largest embedded diagram/blueprint image from a PDF, if any.
+
+    Scanned PDFs carry an image on every page, so pages with little text
+    (drawing sheets) are preferred over scanned text pages.
+    """
     try:
         rdr = PdfReader(io.BytesIO(data))
         best: bytes | None = None
         best_area = 0
-        for page in rdr.pages[:8]:
+        pages = list(rdr.pages[:40])
+        drawing = [p for p in pages
+                   if len((p.extract_text() or "").strip()) < 600]
+        for page in (drawing or pages)[:8]:
             for img_file in getattr(page, "images", []) or []:
                 raw = getattr(img_file, "data", None)
                 if not raw:
@@ -91,9 +114,18 @@ _NAMED_DIMS = [
 ]
 
 
+_IMPELLER_DIA = re.compile(
+    r"\bimpeller(?:\s+(?:outer\s+)?dia(?:meter)?)?\s*(?:of|is|[:=])?\s*"
+    r"(\d+(?:\.\d+)?)\s*mm\b", re.I)
+
+
 def extract_blueprint_dimensions(text: str) -> dict:
     """Extract numeric physical dimensions & ratings for 3D scaling & physics."""
     out: dict[str, float | int] = {}
+    imp = _IMPELLER_DIA.search(text)
+    if imp:
+        out["impeller_diameter_mm"] = round(float(imp.group(1)), 2)
+        text = _IMPELLER_DIA.sub(" ", text)
     for key, rx in _NAMED_DIMS:
         vals = []
         for m in rx.finditer(text):
@@ -140,6 +172,22 @@ def extract_candidates(text: str) -> list[dict]:
         if re.search(r"[a-z]{4,}\s+[a-z]{3,}", m.group(1)):
             continue  # sentence fragment, not a part name
         add(m.group(1), m.group(2))
+    if len(found) < 3:
+        clean = re.sub(r"-\s*\n\s*", "", _OCR_NOISE.sub("", text))
+        for m in _REFNUM_RE.finditer(clean):
+            words = m.group(1).split()
+            num = m.group(2)
+            if words[-1] == "means" and len(words) > 1:
+                words = words[:-1]
+            if words[-1] in _REFNUM_HEADS or words[-1] == "means":
+                continue
+            if any(w in _REFNUM_FILLER for w in words):
+                continue
+            name = " ".join(words)
+            if num in found and len(found[num]["name"]) >= len(name):
+                found[num]["mentions"] += 1
+                continue
+            add(name.title(), num)
     cands = sorted(found.values(), key=lambda d: -d["mentions"])
     seen: set[str] = set()
     for d in cands:
@@ -152,13 +200,38 @@ def extract_candidates(text: str) -> list[dict]:
     return cands
 
 
+def select_context(text: str, budget: int = 12_000) -> str:
+    """Local, token-free retrieval for the model prompt.
+
+    Short documents pass through unchanged. Long ones are cut into passages
+    and only those densest in part callouts, reference numerals, dimensions
+    and torque rows are kept (in document order), so prompt size stays flat
+    no matter how large the manual is.
+    """
+    if len(text) <= budget:
+        return text
+    passages = [text[i:i + _PASSAGE_CHARS]
+                for i in range(0, len(text), _PASSAGE_CHARS)]
+    clean = [_OCR_NOISE.sub("", p) for p in passages]
+    scores = [(len(_POS_RE.findall(c)) * 3 + len(_TORQUE_RE.findall(c)) * 3
+               + len(_REFNUM_RE.findall(c)) * 2 + len(_DIM_RE.findall(c)), i)
+              for i, c in enumerate(clean)]
+    keep: list[int] = []
+    for score, i in sorted(scores, reverse=True):
+        if score == 0 or (len(keep) + 1) * _PASSAGE_CHARS > budget:
+            break
+        keep.append(i)
+    return "\n…\n".join(passages[i] for i in sorted(keep)) or text[:budget]
+
+
 def assess(candidates: list[dict], text: str) -> dict:
     """Rule-based 3D-readiness assessment + questions for the user."""
     n = len(candidates)
     with_pos = sum(1 for c in candidates if c["pos"])
     dims = len(_DIM_RE.findall(text))
     has_exploded = bool(re.search(r"exploded|sectional|assembly drawing|"
-                                  r"parts list|spare parts", text,
+                                  r"parts list|spare parts|longitudinal "
+                                  r"section|cross[\- ]section", text,
                                   re.IGNORECASE))
     has_steps = bool(re.search(r"dismantl|reassembl|remov\w+ .*step|step \d+",
                                text, re.IGNORECASE))
@@ -222,6 +295,28 @@ callout balloons, BOM/parts table rows, title-block specs, and geometric
 dimensions directly from the image and return them in `extracted_components`
 and `dimensions`.
 
+If an image is attached, ALSO return `drawing` and `layout` so the machine can be
+built in 3D from the drawing itself:
+- `drawing.view`: section | elevation | plan | exploded | schematic;
+  `drawing.main_axis`: the machine's main axis as drawn (horizontal | vertical |
+  depth | none); depth means the shafts point out of the page (an end view);
+  `drawing.up`: which edge of the image points UP in the real machine
+  (top | right | bottom | left). Patent and manual sheets are often printed
+  sideways: the base, feet or mounting plate sit at the real bottom.
+- `layout`: one entry per numbered callout (or clearly labelled part) you can
+  actually locate in the drawing, including small parts whose leader lines you
+  can follow. Never guess positions for parts you cannot see.
+  - `cx`, `cy`: centre of the part in the drawing, normalised 0..1
+    (x from the left edge, y from the top edge);
+  - `w`, `h`: the part's bounding box width and height in the drawing, 0..1;
+  - `axis`: the part's own axis of symmetry as drawn (horizontal | vertical |
+    depth | none); use depth for shafts, gears and bearings seen end-on as circles;
+  - `revolved`: true if the part is round about that axis (shaft, bearing, ring,
+    impeller, casing, gear), false for flat or boxy parts (base, bracket, plate);
+  - `shape`: the closest of {shapes};
+  - `mount`: only for small hardware fastened to another part:
+    {{"on": "<callout of that part>", "as": "shaft_ring" | "bolt_circle" | "surface"}}.
+
 Reply with JSON only, exactly this shape:
 {{"verdict": "enough" | "needs_info", "confidence": 0.0-1.0,
   "kind": "engine" | "pump" | "bearing-rig" | "generic",
@@ -231,6 +326,8 @@ Reply with JSON only, exactly this shape:
   "parents": {{"child-id": "parent-id or null"}},
   "roles": {{"candidate-id": "one-sentence role"}},
   "extracted_components": [{{"name": "Part Name", "pos": "1", "parent": null, "role": "one-sentence role"}}],
+  "drawing": {{"view": "section", "main_axis": "horizontal", "up": "top"}},
+  "layout": [{{"pos": "1", "cx": 0.5, "cy": 0.5, "w": 0.1, "h": 0.2, "axis": "horizontal", "revolved": true, "shape": "bearing", "mount": null}}],
   "dimensions": {{"bore_mm": null, "stroke_mm": null, "shaft_diameter_mm": null, "rated_rpm": null, "max_torque_nm": null}},
   "assembly_steps": [{{"caption": "Step instruction with torque if shown", "parts": ["part-slug"]}}]}}
 """
@@ -239,9 +336,35 @@ Reply with JSON only, exactly this shape:
 REVIEW_PROMPT_VERSION = "review-v2-multimodal"
 
 
+def _unit(v, default: float | None = None) -> float | None:
+    try:
+        return round(min(1.0, max(0.0, float(v))), 3)
+    except (TypeError, ValueError):
+        return default
+
+
+def _clean_layout(raw) -> list[dict]:
+    """Model-read part placement in the drawing plane (see layout.py)."""
+    return layout_mod.clean_layout(raw)
+
+
+def _first_json_object(text: str) -> dict | None:
+    """First decodable JSON object in a model reply (fences/prose tolerated)."""
+    dec = json.JSONDecoder()
+    for m in re.finditer(r"\{", text):
+        try:
+            obj, _ = dec.raw_decode(text, m.start())
+        except json.JSONDecodeError:
+            continue
+        if isinstance(obj, dict):
+            return obj
+    return None
+
+
 def reason_with_model(text: str, candidates: list[dict],
                       client_factory,
-                      image_b64: str | None = None) -> dict:
+                      image_b64: str | None = None,
+                      answers: str = "") -> dict:
     """One bounded model call reviewing text and/or 2D blueprint image. Never raises."""
     from .config import MODEL_ID
     fallback = {"verdict": "needs_info", "confidence": 0.0,
@@ -249,7 +372,7 @@ def reason_with_model(text: str, candidates: list[dict],
                            "assessment only.",
                 "questions": [], "drop": [], "parents": {}, "roles": {},
                 "extracted_components": [], "dimensions": {},
-                "assembly_steps": [],
+                "assembly_steps": [], "layout": [], "drawing": {},
                 "model_id": MODEL_ID,
                 "prompt_version": REVIEW_PROMPT_VERSION,
                 "usage": {"input_tokens": 0, "output_tokens": 0}}
@@ -259,7 +382,12 @@ def reason_with_model(text: str, candidates: list[dict],
         slim = [{"id": c["id"], "name": c["name"], "pos": c["pos"]}
                 for c in candidates[:80]]
         prompt_text = REVIEW_PROMPT.format(
-            text=text[:12_000], cands=json.dumps(slim))
+            text=select_context(text), cands=json.dumps(slim),
+            shapes=", ".join(layout_mod.SHAPES))
+        if answers:
+            prompt_text += ("\nThe engineer answered your earlier questions; "
+                            "use these answers and only ask what is still "
+                            f"open:\n{answers}\n")
         if image_b64:
             inp: object = [{"role": "user", "content": [
                 {"type": "input_text", "text": prompt_text},
@@ -268,15 +396,18 @@ def reason_with_model(text: str, candidates: list[dict],
             ]}]
         else:
             inp = prompt_text
-        resp = client.responses.create(
-            model=MODEL_ID, reasoning={"effort": REASONING_EFFORT},
-            input=inp)
-        out = getattr(resp, "output_text", "") or ""
-        m = re.search(r"\{.*\}", out, re.DOTALL)
-        if not m:
-            return fallback
-        data = json.loads(m.group(0))
-        if data.get("verdict") not in ("enough", "needs_info"):
+        from . import meta_calls
+        data = None
+        for _attempt in range(2):
+            with meta_calls.role("blueprint-reviewer"):
+                resp = client.responses.create(
+                    model=MODEL_ID, reasoning={"effort": REASONING_EFFORT},
+                    input=inp)
+            data = _first_json_object(getattr(resp, "output_text", "") or "")
+            if data and data.get("verdict") in ("enough", "needs_info"):
+                break
+            data = None
+        if data is None:
             return fallback
         for key in ("questions", "drop"):
             data[key] = list(data.get(key) or [])[:5]
@@ -290,6 +421,8 @@ def reason_with_model(text: str, candidates: list[dict],
             if isinstance(v, (int, float)) and v > 0
         } if isinstance(raw_dims, dict) else {}
         data["assembly_steps"] = list(data.get("assembly_steps") or [])[:25]
+        data["layout"] = _clean_layout(data.get("layout"))
+        data["drawing"] = layout_mod.clean_drawing(data.get("drawing"))
         data["confidence"] = float(data.get("confidence", 0.0) or 0.0)
         data["summary"] = str(data.get("summary", ""))[:500]
         u = getattr(resp, "usage", None)
@@ -313,7 +446,7 @@ def save_draft(draft: dict) -> None:
     os.makedirs(DRAFTS_DIR, exist_ok=True)
     path = _path(draft["id"])
     assert path is not None
-    with open(path, "w") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(draft, f)
 
 
@@ -321,7 +454,7 @@ def load_draft(draft_id: str) -> dict | None:
     path = _path(draft_id)
     if path is None or not os.path.exists(path):
         return None
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -358,12 +491,24 @@ def new_draft(machine: str, title: str, data: bytes,
 def merge_vision_candidates(draft: dict, review: dict) -> dict:
     """Merge vision-extracted components & dimensions into a draft."""
     by_id = {c["id"]: c for c in draft.get("candidates", [])}
+    by_pos = {str(c["pos"]): c for c in by_id.values() if c.get("pos")}
     for raw in review.get("extracted_components") or []:
         if not isinstance(raw, dict):
             continue
         name = str(raw.get("name", "")).strip()[:80]
         cid = slug(name)
         if len(name) < 2 or not cid:
+            continue
+        pos = str(raw["pos"]) if raw.get("pos") is not None else None
+        same = by_pos.get(pos) if pos else None
+        if same is not None and cid not in by_id:
+            # Same callout number: the model's reading of the drawing names
+            # the part better than the OCR heuristic, so rename in place.
+            same["name"] = name
+            if raw.get("role"):
+                same["role"] = str(raw["role"])[:240]
+            if raw.get("parent") and not same.get("parent"):
+                same["parent"] = slug(str(raw["parent"]))
             continue
         if cid not in by_id:
             by_id[cid] = {
@@ -380,6 +525,13 @@ def merge_vision_candidates(draft: dict, review: dict) -> dict:
             if raw.get("role") and not by_id[cid].get("role"):
                 by_id[cid]["role"] = str(raw["role"])[:240]
     draft["candidates"] = list(by_id.values())
+    by_pos = {str(c["pos"]): c for c in by_id.values() if c.get("pos")}
+    for entry in review.get("layout") or []:
+        target = by_pos.get(str(entry.get("pos")))
+        if target is not None:
+            target["layout"] = {k: v for k, v in entry.items() if k != "pos"}
+    if review.get("drawing"):
+        draft["drawing"] = review["drawing"]
     dims = dict(draft.get("dimensions") or {})
     for k, v in (review.get("dimensions") or {}).items():
         if isinstance(v, (int, float)) and v > 0:
@@ -394,8 +546,17 @@ def merge_vision_candidates(draft: dict, review: dict) -> dict:
 
 
 def apply_edits(draft: dict, edits: list[dict],
-                new_components: list[dict]) -> dict:
-    """User answers: rename/reparent/drop candidates, add new ones."""
+                new_components: list[dict], notes: str = "") -> dict:
+    """User answers: rename/reparent/drop candidates, add new ones.
+
+    Free-text `notes` answer the reviewer's questions; any dimensions in
+    them ("shaft 45 mm, 1750 rpm") are merged into the draft.
+    """
+    if notes.strip():
+        draft["answers"] = notes.strip()[:2000]
+        dims = dict(draft.get("dimensions") or {})
+        dims.update(extract_blueprint_dimensions(notes))
+        draft["dimensions"] = dims
     by_id = {c["id"]: c for c in draft["candidates"]}
     for e in edits:
         c = by_id.get(e.get("id", ""))
@@ -553,6 +714,83 @@ def classify_kind(components: list[dict]) -> str:
     return best if scores[best] else "generic"
 
 
+_SMALL_PART = re.compile(r"nut|washer|screw|bolt|pin|plug|nipple|key|stud",
+                         re.IGNORECASE)
+
+
+def fill_layout_from_text(components: list[dict], text: str) -> None:
+    """Unplaced parts inherit the slot of a placed part named beside them.
+
+    Patent and manual prose locates small parts relative to big ones ("an oil
+    seal 66 is supported by the inner portion of end cap 60"), so the nearest
+    placed numeral in the same sentence anchors the part.
+    """
+    placed = {str(c["pos"]): c for c in components
+              if c.get("pos") and c.get("layout")}
+    if not placed or not text:
+        return
+    clean = re.sub(r"-\s*\n\s*", "", _OCR_NOISE.sub("", text))
+    sentences = re.split(r"(?<=[.;])\s+", clean)
+    for c in components:
+        pos = c.get("pos")
+        if c.get("layout") or not pos:
+            continue
+        best: tuple[int, dict] | None = None
+        for s in sentences:
+            for m in re.finditer(rf"\b{re.escape(str(pos))}\b", s):
+                for n in re.finditer(r"\b(\d{2,3})\b", s):
+                    anchor = placed.get(n.group(1))
+                    if anchor is None or n.group(1) == str(pos):
+                        continue
+                    dist = abs(n.start() - m.start())
+                    if best is None or dist < best[0]:
+                        best = (dist, anchor)
+        if best is None:
+            continue
+        anchor = best[1]
+        a = anchor["layout"]
+        mount = layout_mod.infer_mount(c["name"], anchor)
+        small = mount is not None or bool(_SMALL_PART.search(c["name"]))
+        lay = {"cx": a["cx"], "cy": a["cy"],
+               "w": round(min(a["w"] * 0.5, 0.04), 4) if small else round(a["w"] * 0.6, 4),
+               "h": round(min(a["h"] * 0.5, 0.04), 4) if small else round(min(a["h"] * 0.9, 0.2), 4),
+               "axis": a.get("axis", "horizontal"),
+               "revolved": not small and a.get("revolved", True),
+               "source": "text-anchor", "anchor": str(anchor["pos"])}
+        if mount:
+            lay["mount"] = mount
+        c["layout"] = lay
+
+
+def fill_layout_from_assembly(components: list[dict], order: list[dict],
+                              main_axis: str = "horizontal") -> None:
+    """Parts the drawing did not place get a slot from assembly order.
+
+    Marked `source: assembly-order` so the 3D view can say which positions
+    were read from the drawing and which are only sequenced.
+    """
+    if not order:
+        return
+    step_of: dict[str, int] = {}
+    for k, st in enumerate(order):
+        for pid in st.get("parts", []):
+            step_of.setdefault(pid, k)
+    n = len(order)
+    by_step: dict[int, list[dict]] = {}
+    for c in components:
+        if not c.get("layout") and c["id"] in step_of:
+            by_step.setdefault(step_of[c["id"]], []).append(c)
+    vertical = main_axis == "vertical"
+    for k, group in by_step.items():
+        for j, c in enumerate(group):
+            t = round(0.08 + 0.84 * (k + (j + 0.5) / len(group)) / n, 4)
+            c["layout"] = {"cx": 0.5 if vertical else t,
+                           "cy": 1 - t if vertical else 0.5,
+                           "w": 0.06, "h": 0.06,
+                           "axis": "vertical" if vertical else "horizontal",
+                           "revolved": True, "source": "assembly-order"}
+
+
 def finalize(draft: dict, packs_dir: str = "packs") -> dict:
     """Write a validated pack from user-confirmed candidates."""
     machine = draft["machine"]
@@ -572,12 +810,14 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
             parent = None
         role = c.get("role") or roles.get(c["id"]) or (
             f"{c['name']}: role not yet confirmed; see {draft['title']}.")
-        components.append(
-            {"id": c["id"], "name": c["name"], "pos": c.get("pos"),
-             "parent": parent, "role": role,
-             "role_source": "manual" if c["id"] in roles else "standard",
-             "service_ref": draft["title"],
-             "failure_modes": [], "failure_source": None})
+        comp = {"id": c["id"], "name": c["name"], "pos": c.get("pos"),
+                "parent": parent, "role": role,
+                "role_source": "manual" if c["id"] in roles else "standard",
+                "service_ref": draft["title"],
+                "failure_modes": [], "failure_source": None}
+        if c.get("layout"):
+            comp["layout"] = c["layout"]
+        components.append(comp)
     if len(components) < 3:
         raise ValueError("need at least 3 confirmed components")
     base = os.path.join(packs_dir, machine)
@@ -598,10 +838,15 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
     }
     if dimensions:
         pack_meta["dimensions"] = dimensions
-    with open(os.path.join(base, "pack.json"), "w") as f:
+    drawing = layout_mod.clean_drawing(draft.get("drawing") or review.get("drawing"))
+    pack_meta["drawing"] = drawing
+    if draft.get("image_b64"):
+        with open(os.path.join(base, "drawing.jpg"), "wb") as f:
+            f.write(base64.b64decode(draft["image_b64"]))
+        pack_meta["drawing"]["image"] = "drawing.jpg"
+    with open(os.path.join(base, "pack.json"), "w", encoding="utf-8") as f:
         json.dump(pack_meta, f, indent=1)
-    with open(os.path.join(base, "components.json"), "w") as f:
-        json.dump(components, f, indent=1)
+    layout_mod.normalize_components(components)
     # Prefer vision/manual-extracted ordered assembly steps if valid, else BFS
     asm = derive_assembly(components)
     raw_steps = review.get("assembly_steps") or []
@@ -614,9 +859,18 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
                                     "parts": pts})
     if len(valid_steps) >= 2:
         asm = {"order": valid_steps, "source": "blueprint-vision"}
-    with open(os.path.join(base, "assembly.json"), "w") as f:
+    fill_layout_from_text(components, draft.get("text") or "")
+    fill_layout_from_assembly(components, asm.get("order") or [],
+                              drawing["main_axis"])
+    if layout_mod.upright(components, drawing):
+        pack_meta["drawing"] = drawing
+        with open(os.path.join(base, "pack.json"), "w", encoding="utf-8") as f:
+            json.dump(pack_meta, f, indent=1)
+    with open(os.path.join(base, "components.json"), "w", encoding="utf-8") as f:
+        json.dump(components, f, indent=1)
+    with open(os.path.join(base, "assembly.json"), "w", encoding="utf-8") as f:
         json.dump(asm, f, indent=1)
-    with open(os.path.join(base, "scenarios.json"), "w") as f:
+    with open(os.path.join(base, "scenarios.json"), "w", encoding="utf-8") as f:
         json.dump(derive_scenarios(components, kind, draft["title"]), f,
                   indent=1)
     # Write a concise markdown excerpt + index into FTS5 RAG when using the
@@ -637,7 +891,7 @@ def finalize(draft: dict, packs_dir: str = "packs") -> dict:
         summary_lines.extend(["", "## Assembly Sequence"])
         for idx_s, st in enumerate(asm["order"], 1):
             summary_lines.append(f"{idx_s}. {st['caption']}")
-    with open(os.path.join(ex_dir, "blueprint-spec.md"), "w") as f:
+    with open(os.path.join(ex_dir, "blueprint-spec.md"), "w", encoding="utf-8") as f:
         f.write("\n".join(summary_lines) + "\n")
     if packs_dir == "packs":
         try:

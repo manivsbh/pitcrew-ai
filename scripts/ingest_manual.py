@@ -46,7 +46,7 @@ def clean(text: str) -> str:
 
 
 def cmd_extract(cfg_path: str) -> None:
-    cfg = json.loads(Path(cfg_path).read_text())
+    cfg = json.loads(Path(cfg_path).read_text(encoding="utf-8"))
     pdf = ROOT / cfg["pdf"]
     outdir = ROOT / cfg["out"]
     outdir.mkdir(parents=True, exist_ok=True)
@@ -57,7 +57,7 @@ def cmd_extract(cfg_path: str) -> None:
                   f"section {sec['section']}, manual pp. {sec['man_pages']}.\n"
                   f"> (File: {cfg['pdf']}, PDF pp. {sec['pdf_start']}-"
                   f"{sec['pdf_end']}.)\n\n")
-        (outdir / sec["file"]).write_text(header + body + "\n")
+        (outdir / sec["file"]).write_text(header + body + "\n", encoding="utf-8")
         print(f"wrote {sec['file']} ({len(body)} chars)")
 
 
@@ -87,7 +87,7 @@ def cmd_validate(packdir: str) -> int:
     pack = ROOT / packdir
     errors: list[str] = []
     try:
-        meta = json.loads((pack / "pack.json").read_text())
+        meta = json.loads((pack / "pack.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         return _fail([f"pack.json unreadable: {e}"])
     for key in ("machine", "name", "kind", "sources"):
@@ -102,7 +102,7 @@ def cmd_validate(packdir: str) -> int:
     if not excerpts:
         errors.append("no excerpts/*.md files")
     for ex in excerpts:
-        text = ex.read_text()
+        text = ex.read_text(encoding="utf-8")
         if not text.startswith("# "):
             errors.append(f"{ex.name}: must start with '# ' title")
         if "> Source:" not in "\n".join(text.splitlines()[:6]):
@@ -114,7 +114,7 @@ def cmd_validate(packdir: str) -> int:
                 errors.append(f"{ex.name}: pack-gate hit ({what}): {m.group(0)!r}")
 
     try:
-        comps = json.loads((pack / "components.json").read_text())
+        comps = json.loads((pack / "components.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         return _fail(errors + [f"components.json unreadable: {e}"])
     ids = set()
@@ -133,7 +133,7 @@ def cmd_validate(packdir: str) -> int:
             errors.append(f"component {c['id']}: dangling parent {p!r}")
 
     try:
-        playbooks = json.loads((pack / "playbooks.json").read_text())
+        playbooks = json.loads((pack / "playbooks.json").read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as e:
         return _fail(errors + [f"playbooks.json unreadable: {e}"])
     for pb in playbooks:

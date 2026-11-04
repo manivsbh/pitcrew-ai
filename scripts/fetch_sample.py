@@ -64,7 +64,7 @@ def main() -> int:
     if not os.path.exists(rar):
         download(f"{ARCHIVE_BASE}/{args.bearing}.rar", rar)
     digest = sha256_of(rar)
-    with open(rar + ".sha256", "w") as f:
+    with open(rar + ".sha256", "w", encoding="utf-8") as f:
         f.write(f"{digest}  {os.path.basename(rar)}\n")
     print(f"sha256: {digest}")
 

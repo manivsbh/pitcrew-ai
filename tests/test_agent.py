@@ -11,7 +11,7 @@ import pytest
 
 from _fakes import FakeDocs, FakeStore, refs, synth_recording
 from backend.app import tools as T
-from backend.app.agent import load_trace, run, save_trace
+from backend.app.agent import list_traces, load_trace, run, save_trace
 from backend.app.config import MAX_TOOL_CALLS
 
 
@@ -261,3 +261,21 @@ def test_submit_drops_unknown_fields():
     assert set(r["data"]["finding"]) == {
         "hypothesis", "component", "evidence_ids", "reasoning",
         "contradictions", "next_measurement"}
+
+
+def test_list_traces_always_reports_mode_and_step_count(tmp_path):
+    (tmp_path / "inv_old.json").write_text(json.dumps(
+        {"investigation_id": "inv_old", "status": "complete",
+         "steps": [{"turn": 1}, {"turn": 2}]}), encoding="utf-8")
+    [entry] = list_traces(reports_dir=str(tmp_path))
+    assert entry["mode"] == "v1"
+    assert entry["n_steps"] == 2
+
+
+def test_list_traces_always_reports_mode_and_step_count(tmp_path):
+    (tmp_path / "inv_old.json").write_text(json.dumps(
+        {"investigation_id": "inv_old", "status": "complete",
+         "steps": [{"turn": 1}, {"turn": 2}]}), encoding="utf-8")
+    [entry] = list_traces(reports_dir=str(tmp_path))
+    assert entry["mode"] == "v1"
+    assert entry["n_steps"] == 2

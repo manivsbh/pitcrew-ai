@@ -1,0 +1,112 @@
+[
+ {
+  "id": "crankcase-block",
+  "name": "Crankcase Block",
+  "pos": "1",
+  "parent": null,
+  "role": "Main housing supporting crankshaft and cylinder banks.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "forged-crankshaft",
+  "name": "Forged Crankshaft",
+  "pos": "2",
+  "parent": null,
+  "role": "Converts piston reciprocation to rotary output.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "connecting-rods",
+  "name": "Connecting Rods",
+  "pos": "3",
+  "parent": null,
+  "role": "Links pistons to crankshaft journals.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "piston-assembly",
+  "name": "Piston Assembly",
+  "pos": "4",
+  "parent": null,
+  "role": "Reciprocates in bore to compress and receive combustion.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "cylinder-bank-l",
+  "name": "Cylinder Bank L",
+  "pos": "5",
+  "parent": null,
+  "role": "Left cylinder housing guiding left pistons.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "cylinder-bank-r",
+  "name": "Cylinder Bank R",
+  "pos": "6",
+  "parent": null,
+  "role": "Right cylinder housing guiding right pistons.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "fuel-rail-l",
+  "name": "Fuel Rail L",
+  "pos": "7",
+  "parent": null,
+  "role": "Distributes fuel to left bank injectors.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "direct-fuel-injector",
+  "name": "Direct Fuel Injector",
+  "pos": "8",
+  "parent": null,
+  "role": "Sprays direct-injection fuel into combustion chamber.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "iridium-spark-plugs",
+  "name": "Iridium Spark Plugs",
+  "pos": "9",
+  "parent": null,
+  "role": "Ignites air-fuel mixture.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "oil-pan-sump",
+  "name": "Oil Pan Sump",
+  "pos": "10",
+  "parent": null,
+  "role": "Collects lubricating oil below crankcase.",
+  "role_source": "standard",
+  "service_ref": "v6-engine-blueprint.png",
+  "failure_modes": [],
+  "failure_source": null
+ }
+]

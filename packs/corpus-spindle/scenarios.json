@@ -1,0 +1,49 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "Spindle 6203 blueprint",
+  "wobble": 0.0
+ },
+ {
+  "id": "inner-race",
+  "illustrative": true,
+  "label": "Inner-ring damage",
+  "note": "Inner-race defect: pulses at the inner-ring rate. Illustrative.",
+  "parts": [
+   "test-bearing-inner-ring"
+  ],
+  "slow": 0.9,
+  "source": "Spindle 6203 blueprint",
+  "wobble": 1.0
+ },
+ {
+  "id": "outer-race",
+  "illustrative": true,
+  "label": "Outer-ring damage",
+  "note": "Outer-race defect: pulses at the outer-ring rate. Illustrative.",
+  "parts": [
+   "test-bearing-outer-ring"
+  ],
+  "slow": 0.9,
+  "source": "Spindle 6203 blueprint",
+  "wobble": 1.0
+ },
+ {
+  "id": "rolling-wear",
+  "illustrative": true,
+  "label": "Rolling-element wear",
+  "note": "Worn rolling elements: elevated broadband vibration. Illustrative.",
+  "parts": [
+   "rolling-elements",
+   "bearing-cage"
+  ],
+  "slow": 0.95,
+  "source": "Spindle 6203 blueprint",
+  "wobble": 0.6
+ }
+]

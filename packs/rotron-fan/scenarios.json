@@ -1,0 +1,26 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "Rotron fan motor (US 3,513,339)",
+  "wobble": 0.0
+ },
+ {
+  "id": "wear",
+  "illustrative": true,
+  "label": "Component wear",
+  "note": "Wear in the matched running parts: output sags. Illustrative.",
+  "parts": [
+   "tubular-bearing-support",
+   "stationary-bearing",
+   "sealing-ring"
+  ],
+  "slow": 0.8,
+  "source": "Rotron fan motor (US 3,513,339)",
+  "wobble": 0.6
+ }
+]

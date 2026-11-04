@@ -1,0 +1,110 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 1,
+   "reverted": false,
+   "issues": [
+    "render is vertically exploded not assembled concentric",
+    "motor core stacked at bottom instead of center",
+    "fan and venturi detached at top"
+   ],
+   "changes": [
+    {
+     "pos": "60",
+     "verdict": "move"
+    },
+    {
+     "pos": "64",
+     "verdict": "move"
+    },
+    {
+     "pos": "38",
+     "verdict": "move"
+    },
+    {
+     "pos": "40",
+     "verdict": "move"
+    },
+    {
+     "pos": "18",
+     "verdict": "move"
+    },
+    {
+     "pos": "22",
+     "verdict": "move"
+    }
+   ],
+   "skills_added": [
+    "sk_0a90ef9b7a",
+    "sk_1db352819e",
+    "sk_909f2ca538"
+   ],
+   "sam_regions": 9,
+   "response_id": "resp_6aead131d90ede8d9ce64bd0",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T06:31:14Z"
+  },
+  {
+   "round": 2,
+   "score": 2,
+   "reverted": false,
+   "issues": [
+    "upper housing / venturi exploded far above motor axis",
+    "bearing support shown vertical off-axis instead of coaxial horizontal",
+    "shaft hardware floating free and opening modeled as solid"
+   ],
+   "changes": [
+    {
+     "pos": "60",
+     "verdict": "move"
+    },
+    {
+     "pos": "64",
+     "verdict": "move"
+    },
+    {
+     "pos": "22",
+     "verdict": "move"
+    },
+    {
+     "pos": "40",
+     "verdict": "move"
+    },
+    {
+     "pos": "18",
+     "verdict": "move"
+    },
+    {
+     "pos": "46",
+     "verdict": "attach",
+     "mount": {
+      "on": "38",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "48",
+     "verdict": "attach",
+     "mount": {
+      "on": "38",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "20",
+     "verdict": "hide"
+    }
+   ],
+   "skills_added": [
+    "sk_49bb8679a6",
+    "sk_20d09db393",
+    "sk_efede7caea"
+   ],
+   "sam_regions": 9,
+   "response_id": "resp_6aead1776d6a29c6e9994d72",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T06:32:25Z"
+  }
+ ]
+}

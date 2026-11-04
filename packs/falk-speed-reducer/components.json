@@ -1,0 +1,563 @@
+[
+ {
+  "id": "two-bearing-plates",
+  "name": "Bearing Plate",
+  "pos": "11",
+  "parent": null,
+  "role": "Thick circular plate seated on cover buttons, carries bearing bores",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "dish-shaped-cover",
+  "name": "Dish-Shaped Cover",
+  "pos": "10",
+  "parent": null,
+  "role": "Thin drawn housing half forming enclosed lubricant housing",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.488,
+   "w": 0.68,
+   "h": 0.71,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "end-walls",
+  "name": "End Wall",
+  "pos": "12",
+  "parent": null,
+  "role": "Cover end with shaft openings and locating buttons",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "mating-dowels",
+  "name": "Mating Dowels",
+  "pos": "43",
+  "parent": "dish-shaped-cover",
+  "role": "Flange dowels and holes aligning housing halves",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.488,
+   "w": 0.408,
+   "h": 0.2,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "mount": {
+    "on": "14",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "quill-output-shaft",
+  "name": "Quill Output Shaft",
+  "pos": "24",
+  "parent": "two-bearing-plates",
+  "role": "Hollow output shaft on tapered roller bearings",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.415,
+   "w": 0.21,
+   "h": 0.21,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "registering-dowels",
+  "name": "Registering Dowels",
+  "pos": "41",
+  "parent": "dish-shaped-cover",
+  "role": "Cover dowels locating bearing plate radially",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.279,
+   "cy": 0.51,
+   "w": 0.06,
+   "h": 0.07,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "small"
+  }
+ },
+ {
+  "id": "remaining-plug-opening",
+  "name": "Remaining Plug Opening",
+  "pos": "55",
+  "parent": null,
+  "role": "Remaining Plug Opening: role not yet confirmed; see Falk speed reducer (US 3,348,430).",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.554,
+   "cy": 0.65,
+   "w": 0.03,
+   "h": 0.03,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "small",
+   "mount": {
+    "on": "15",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "gasket",
+  "name": "Gasket",
+  "pos": "15",
+  "parent": "dish-shaped-cover",
+  "role": "Sealing gasket between flange faces",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "bull-gear",
+  "name": "Bull Gear",
+  "pos": "25",
+  "parent": "quill-output-shaft",
+  "role": "Output gear keyed to quill shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "intermediate-shaft",
+  "name": "Intermediate Shaft",
+  "pos": "28",
+  "parent": "two-bearing-plates",
+  "role": "Countershaft with pinion 27 and gear 30",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.585,
+   "cy": 0.6,
+   "w": 0.08,
+   "h": 0.08,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "input-shaft",
+  "name": "Input Shaft",
+  "pos": "33",
+  "parent": "two-bearing-plates",
+  "role": "Input shaft with pinion 32, projects through cover",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.426,
+   "cy": 0.616,
+   "w": 0.08,
+   "h": 0.08,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "outer-races",
+  "name": "Outer Races",
+  "pos": "21",
+  "parent": "two-bearing-plates",
+  "role": "Outer cups of output tapered bearings in plate bores",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "tapered-roller-bear-ings",
+  "name": "Tapered Roller Bearing",
+  "pos": "22",
+  "parent": null,
+  "role": "Paired bearings supporting output shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "intermediate-gear",
+  "name": "Intermediate Gear",
+  "pos": "30",
+  "parent": "intermediate-shaft",
+  "role": "Gear on intermediate shaft driven by input pinion",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "lips",
+  "name": "Lips",
+  "pos": "47",
+  "parent": null,
+  "role": "Lips: role not yet confirmed; see Falk speed reducer (US 3,348,430).",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.67,
+   "cy": 0.368,
+   "w": 0.042,
+   "h": 0.063,
+   "axis": "depth",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "38"
+  }
+ },
+ {
+  "id": "lip",
+  "name": "Lip",
+  "pos": "48",
+  "parent": null,
+  "role": "Lip: role not yet confirmed; see Falk speed reducer (US 3,348,430).",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.67,
+   "cy": 0.368,
+   "w": 0.042,
+   "h": 0.063,
+   "axis": "depth",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "38"
+  }
+ },
+ {
+  "id": "cap",
+  "name": "Cap",
+  "pos": "51",
+  "parent": "dish-shaped-cover",
+  "role": "Cap closing unused input opening",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.42,
+   "cy": 0.65,
+   "w": 0.03,
+   "h": 0.03,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "small",
+   "mount": {
+    "on": "15",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "oil-seals",
+  "name": "Oil Seal",
+  "pos": "49",
+  "parent": null,
+  "role": "Seal in output lip against output shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.42,
+   "w": 0.12,
+   "h": 0.12,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "seal"
+  }
+ },
+ {
+  "id": "four-pockets",
+  "name": "Lubricant Pocket and Plug",
+  "pos": "56",
+  "parent": null,
+  "role": "Quadrant pockets with fill and vent plugs 57 58",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.67,
+   "cy": 0.368,
+   "w": 0.035,
+   "h": 0.035,
+   "axis": "depth",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "38",
+   "mount": {
+    "on": "38",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "inner-races",
+  "name": "Inner Races",
+  "pos": "23",
+  "parent": "quill-output-shaft",
+  "role": "Inner cones of output bearings on quill shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "snap-ring",
+  "name": "Snap Ring",
+  "pos": "26",
+  "parent": "quill-output-shaft",
+  "role": "Retainer axially locating bull gear",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.415,
+   "w": 0.09,
+   "h": 0.09,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "ring",
+   "mount": {
+    "on": "24",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "intermediate-pinion",
+  "name": "Intermediate Pinion",
+  "pos": "27",
+  "parent": "intermediate-shaft",
+  "role": "Pinion on intermediate shaft meshing bull gear",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "spacer",
+  "name": "Spacer",
+  "pos": "31",
+  "parent": "intermediate-shaft",
+  "role": "Spacer locating intermediate gear",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "input-pinion",
+  "name": "Input Pinion",
+  "pos": "32",
+  "parent": "input-shaft",
+  "role": "Pinion on input shaft driving intermediate gear",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "additional-oil-seal",
+  "name": "Additional Oil Seal",
+  "pos": "59",
+  "parent": "dish-shaped-cover",
+  "role": "Seal in input lip sealing against input shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.384,
+   "cy": 0.645,
+   "w": 0.084,
+   "h": 0.126,
+   "axis": "depth",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "33"
+  }
+ },
+ {
+  "id": "annular-por-tions",
+  "name": "Annular Por Tions",
+  "pos": "45",
+  "parent": null,
+  "role": "Annular Por Tions: role not yet confirmed; see Falk speed reducer (US 3,348,430).",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.42,
+   "w": 0.15,
+   "h": 0.15,
+   "axis": "depth",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "flange",
+  "name": "Flange",
+  "pos": "14",
+  "parent": "dish-shaped-cover",
+  "role": "Bolted flange with dowels 43 and holes 44 joining halves",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.49,
+   "cy": 0.488,
+   "w": 0.695,
+   "h": 0.725,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "flange"
+  }
+ },
+ {
+  "id": "ball-bearings",
+  "name": "Ball Bearing",
+  "pos": "29",
+  "parent": null,
+  "role": "Bearings supporting intermediate shaft",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "air-vent-plug",
+  "name": "Air Vent Plug",
+  "pos": "58",
+  "parent": "dish-shaped-cover",
+  "role": "Vent plug in lubricant pocket",
+  "role_source": "manual",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "button-por-tions",
+  "name": "Button Por Tions",
+  "pos": "38",
+  "parent": null,
+  "role": "Button Por Tions: role not yet confirmed; see Falk speed reducer (US 3,348,430).",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.67,
+   "cy": 0.368,
+   "w": 0.07,
+   "h": 0.07,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "small"
+  }
+ },
+ {
+  "id": "oil-seal",
+  "name": "Oil Seal",
+  "pos": "50",
+  "parent": null,
+  "role": "Seal in input lip against input shaft",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "bolt-and-nut",
+  "name": "Bolt and Nut",
+  "pos": "53",
+  "parent": null,
+  "role": "Fasteners securing housing halves",
+  "role_source": "standard",
+  "service_ref": "Falk speed reducer (US 3,348,430)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.658,
+   "cy": 0.309,
+   "w": 0.045,
+   "h": 0.045,
+   "axis": "depth",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "fastener"
+  }
+ }
+]

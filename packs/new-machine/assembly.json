@@ -1,0 +1,35 @@
+{
+ "order": [
+  {
+   "caption": "Mount crankshaft Pos.2 into crankcase Pos.1 and attach oil pan Pos.10 below",
+   "parts": [
+    "crankcase-block",
+    "forged-crankshaft",
+    "oil-pan-sump"
+   ]
+  },
+  {
+   "caption": "Bolt cylinder banks L Pos.5 and R Pos.6 at 60-deg V to crankcase Pos.1",
+   "parts": [
+    "cylinder-bank-l",
+    "cylinder-bank-r"
+   ]
+  },
+  {
+   "caption": "Install connecting rods Pos.3 on crankshaft and piston assemblies Pos.4 in bores",
+   "parts": [
+    "connecting-rods",
+    "piston-assembly"
+   ]
+  },
+  {
+   "caption": "Fit fuel rail L Pos.7, direct injectors Pos.8 and spark plugs Pos.9 to banks",
+   "parts": [
+    "fuel-rail-l",
+    "direct-fuel-injector",
+    "iridium-spark-plugs"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

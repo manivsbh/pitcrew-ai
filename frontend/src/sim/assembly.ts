@@ -25,8 +25,9 @@ export interface AssemblyHandle {
   setFault(regIds: string[], wobble: number): void;
   setCameraHome(): void;
   setPaused(p: boolean): void;
-  getCoverage(): { matched: number; total: number; unclassified: string[] } | null;
+  getCoverage(): Cov | null;
   setDesign(s: { bore: number; stroke: number; shaft: number }): void;
+  captureSideView(): string;
   dispose(): void;
 }
 
@@ -56,7 +57,13 @@ function xRing(rIn: number, rOut: number, x: number): THREE.Mesh {
   return m;
 }
 
-interface Parts { parts: Map<string, THREE.Group>; visualOf: Map<string, string>; scene: THREE.Scene; coverage?: { matched: number; total: number; unclassified: string[] } }
+interface Parts {
+  parts: Map<string, THREE.Group>;
+  visualOf: Map<string, string>;
+  scene: THREE.Scene;
+  coverage?: Cov;
+  home?: { target: THREE.Vector3; pos: THREE.Vector3 };
+}
 function makePart(P: Parts, id: string, ex: number, ey: number): THREE.Group {
   const g = new THREE.Group();
   g.userData.componentId = id;
@@ -565,7 +572,7 @@ function makePerfTexture(): THREE.Texture {
 type Tpl = 'fastener' | 'nut' | 'washer' | 'flange' | 'seal' | 'spring' | 'shaft'
   | 'impeller' | 'piston' | 'ring' | 'coupling' | 'motor' | 'rotor' | 'fan'
   | 'coil' | 'shell' | 'plate' | 'boxy' | 'pipe' | 'small' | 'rod' | 'sphere'
-  | 'pumpbox' | 'bearing' | 'bank' | 'manifold' | 'pan' | 'crank' | 'unknown';
+  | 'pumpbox' | 'bearing' | 'bank' | 'manifold' | 'pan' | 'crank' | 'gear' | 'unknown';
 interface TplHit { tpl: Tpl; matched: boolean }
 const TPL_RULES: [RegExp, Tpl][] = [
   [/ball bearing|roller bearing|needle bearing|bearing 62|620\d|front bearing|rear bearing/i, 'bearing'],
@@ -579,9 +586,12 @@ const TPL_RULES: [RegExp, Tpl][] = [
   [/fuel pump|oil pump|water pump/i, 'pumpbox'],
   [/pump\b|volute/i, 'shell'],
   [/impeller/i, 'impeller'],
-  [/diffuser|bowl/i, 'shell'],
+  [/diffuser|bowl|\bcase\b(?! (plate|cover))|actuator body/i, 'shell'],
+  [/spider|yoke|\bhub\b/i, 'ring'],
+  [/\bgear\b|pinion|sprocket|worm wheel/i, 'gear'],
+  [/weight member|flyweight/i, 'sphere'],
   [/piston/i, 'piston'],
-  [/connecting rod|conrod/i, 'rod'],
+  [/connecting rod|conrod|push rod|\brods?\b/i, 'rod'],
   [/injector|spark|glow plug|sensor|valve/i, 'small'],
   [/fuel rail|rail/i, 'pipe'],
   [/motor\b|stator housing/i, 'motor'],
@@ -614,7 +624,7 @@ function numSuffix(name: string): number | null {
   const m = name.match(/(\d+)\s*$/);
   return m ? parseInt(m[1], 10) : null;
 }
-interface SpinDef { ax: 'x' | 'y'; rate: number }
+interface SpinDef { ax: 'x' | 'y' | 'z'; rate: number }
 function spinFor(name: string, kind: string): SpinDef | null {
   const n = name.toLowerCase();
   if (/(cage|rolling element|needle|[^a-z]balls?)/.test(n)) return { ax: kind === 'bearing-rig' ? 'x' : 'y', rate: 0.42 };
@@ -751,6 +761,17 @@ function tplGeo(g: THREE.Group, tpl: Tpl, mat: THREE.Material): void {
       g.userData.role = 'shaft';
       break;
     }
+    case 'gear': {
+      mesh(g, new THREE.CylinderGeometry(0.36, 0.36, 0.16, 32), mat);
+      mesh(g, new THREE.CylinderGeometry(0.08, 0.08, 0.24, 16), MAT_DARK);
+      for (let t = 0; t < 18; t++) {
+        const a = (t / 18) * Math.PI * 2;
+        const tooth = mesh(g, new THREE.BoxGeometry(0.08, 0.16, 0.07), mat, Math.cos(a) * 0.4, 0, Math.sin(a) * 0.4);
+        tooth.rotation.y = -a;
+      }
+      g.userData.role = 'shaft';
+      break;
+    }
     case 'unknown': {
       const u = mesh(g, new THREE.BoxGeometry(0.55, 0.55, 0.55),
         new THREE.MeshStandardMaterial({ color: 0x8a8f94, metalness: 0.2, roughness: 0.7, transparent: true, opacity: 0.45 }));
@@ -759,7 +780,13 @@ function tplGeo(g: THREE.Group, tpl: Tpl, mat: THREE.Material): void {
     }
   }
 }
-interface Cov { matched: number; total: number; unclassified: string[] }
+export interface Cov {
+  matched: number;
+  total: number;
+  unclassified: string[];
+  hidden?: string[];
+  sources?: { model: number; skill: number; rules: number };
+}
 function levelsOf(components: PackComponent[]): Map<string, number> {
   const ids = new Set(components.map((c) => c.id));
   const kids = new Map<string, PackComponent[]>();
@@ -822,6 +849,237 @@ function buildGeneric(P: Parts, components: PackComponent[], kind: string): void
       }
       P.visualOf.set(c.id, c.id);
     });
+  }
+  P.coverage = cov;
+}
+
+/* ---------------- planar builder (any drawing) --------------------------
+   Parts onboarded from a drawing carry a `layout` in the drawing plane:
+   centre and box (normalised, y down), their own axis as drawn, whether they
+   are round about it, the shape the model picked and, for small hardware, the
+   part it is fastened to. Each part's template is fitted into its drawn box
+   (round parts revolve about their axis), the drawing is centred on the floor
+   and hardware is mounted onto its target. Parts the drawing did not locate
+   are hidden from the assembled view but stay in the pack and parts sheet. */
+type Lay = NonNullable<PackComponent['layout']>;
+export interface RenderSkill {
+  id: string;
+  when: { name_regex: string; near_shape?: string };
+  then: { shape?: string; mount_as?: string; hide?: boolean };
+  enabled?: boolean;
+}
+const FIT_SPAN = 6.0;
+const PLANAR_FLOOR = -1.78;
+const TINY: Tpl[] = ['fastener', 'nut', 'washer', 'small', 'sphere'];
+const SHAPES = new Set<string>(['bearing', 'shell', 'ring', 'seal', 'impeller', 'shaft', 'plate',
+  'flange', 'fastener', 'nut', 'washer', 'spring', 'pipe', 'rod', 'coupling', 'motor', 'rotor',
+  'fan', 'coil', 'boxy', 'piston', 'crank', 'small', 'sphere', 'gear']);
+const BASE_RX = /\bbase\b|pedestal(?! cap)|\bfoot\b|\bframe\b|\bskid\b/i;
+
+/** Legacy axial layouts (x along the shaft, len, d) -> drawing-plane layout. */
+export function toPlanar(L: PackComponent['layout'] | undefined, name = ''): Lay | null {
+  if (!L) return null;
+  const raw = L as Lay & { x?: number; len?: number; d?: number | null; axial?: boolean };
+  if (typeof raw.cx === 'number' && typeof raw.cy === 'number') return raw;
+  if (typeof raw.x !== 'number') return null;
+  const axial = raw.axial !== false;
+  const base = !axial && BASE_RX.test(name);
+  return {
+    cx: raw.x, cy: axial ? 0.5 : base ? 0.72 : 0.28, w: Math.max(raw.len ?? 0, 0.03),
+    h: base ? 0.03 : raw.d ? raw.d * 0.37 : 0.03, axis: 'horizontal', revolved: axial,
+    source: raw.source, anchor: raw.anchor,
+  };
+}
+
+export function layoutCoverage(components: PackComponent[]): number {
+  if (!components.length) return 0;
+  return components.filter((c) => toPlanar(c.layout, c.name) !== null).length / components.length;
+}
+
+function shapeFor(name: string, L: Lay, skills: RenderSkill[]): { tpl: Tpl; source: 'model' | 'skill' | 'rules' } {
+  if (L.shape && SHAPES.has(L.shape)) return { tpl: L.shape as Tpl, source: 'model' };
+  for (const s of skills) {
+    if (s.enabled === false || !s.then.shape || !SHAPES.has(s.then.shape)) continue;
+    try {
+      if (new RegExp(s.when.name_regex, 'i').test(name)) return { tpl: s.then.shape as Tpl, source: 'skill' };
+    } catch { /* invalid pattern: skip */ }
+  }
+  const hit = classify(name);
+  if (hit.matched) return { tpl: hit.tpl, source: 'rules' };
+  return { tpl: L.revolved === false ? 'boxy' : L.w > L.h * 2 || L.h > L.w * 2 ? 'shell' : 'ring', source: 'rules' };
+}
+
+function skillMount(name: string, skills: RenderSkill[]): 'shaft_ring' | 'bolt_circle' | 'surface' | null {
+  for (const s of skills) {
+    const as = s.then.mount_as;
+    if (s.enabled === false || (as !== 'shaft_ring' && as !== 'bolt_circle' && as !== 'surface')) continue;
+    try { if (new RegExp(s.when.name_regex, 'i').test(name)) return as; } catch { /* skip */ }
+  }
+  return null;
+}
+
+function skillHides(name: string, skills: RenderSkill[]): boolean {
+  return skills.some((s) => {
+    if (s.enabled === false || !s.then.hide) return false;
+    try { return new RegExp(s.when.name_regex, 'i').test(name); } catch { return false; }
+  });
+}
+
+/** Fit a template into a target box: `fit` scales, `inner` holds the oriented geometry. */
+function fitTemplate(g: THREE.Group, tpl: Tpl, mat: THREE.Material, axis: string, dims: THREE.Vector3): void {
+  const fit = new THREE.Group();
+  const inner = new THREE.Group();
+  fit.add(inner);
+  g.add(fit);
+  tplGeo(inner, tpl, mat);
+  if (axis === 'horizontal') inner.rotation.z = -Math.PI / 2;
+  else if (axis === 'depth') inner.rotation.x = Math.PI / 2;
+  fit.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(inner);
+  if (box.isEmpty()) return;
+  const size = box.getSize(new THREE.Vector3());
+  inner.position.sub(box.getCenter(new THREE.Vector3()));
+  fit.scale.set(dims.x / Math.max(size.x, 1e-3), dims.y / Math.max(size.y, 1e-3), dims.z / Math.max(size.z, 1e-3));
+}
+
+function buildPlanar(P: Parts, components: PackComponent[], mainAxis: string, skills: RenderSkill[]): void {
+  const cov: Cov = { matched: 0, total: components.length, unclassified: [], hidden: [], sources: { model: 0, skill: 0, rules: 0 } };
+  const palette = [0x3e5a76, 0x55665a, 0x8a6d2f, 0x6e7276, 0x4a6b8a, 0x6b5a3a];
+  const lay = new Map<string, Lay>();
+  for (const c of components) {
+    let L = toPlanar(c.layout, c.name);
+    if (L && !L.mount && L.anchor) {
+      const as = skillMount(c.name, skills);
+      if (as) L = { ...L, mount: { on: L.anchor, as } };
+    }
+    if (L && !skillHides(c.name, skills)) lay.set(c.id, L);
+  }
+  const idOfPos = new Map(components.filter((c) => c.pos).map((c) => [String(c.pos), c.id]));
+  const isMounted = (c: PackComponent): boolean => {
+    const m = lay.get(c.id)?.mount;
+    return !!m && idOfPos.has(String(m.on)) && lay.has(idOfPos.get(String(m.on))!);
+  };
+  const body = components.filter((c) => lay.has(c.id) && !isMounted(c));
+  let minX = 1, maxX = 0, minY = 1, maxY = 0;
+  for (const c of body) {
+    const L = lay.get(c.id)!;
+    minX = Math.min(minX, L.cx - L.w / 2); maxX = Math.max(maxX, L.cx + L.w / 2);
+    minY = Math.min(minY, L.cy - L.h / 2); maxY = Math.max(maxY, L.cy + L.h / 2);
+  }
+  const span = Math.max(maxX - minX, maxY - minY, 0.05);
+  const S = FIT_SPAN / span;
+  const midX = (minX + maxX) / 2;
+  const midY = (minY + maxY) / 2;
+  const area = (maxX - minX) * (maxY - minY);
+  const explodeOf = (L: Lay): [number, number] => mainAxis === 'vertical'
+    ? [0, ((midY - L.cy) / span) * 3.2]
+    : [((L.cx - midX) / span) * 3.2, 0];
+
+  components.forEach((c, i) => {
+    P.visualOf.set(c.id, c.id);
+    const mat = std(palette[i % palette.length], 0.7, 0.4);
+    const L = lay.get(c.id);
+    if (!L) {
+      const hit = classify(c.name);
+      const g = makePart(P, c.id, 0, 0);
+      tplGeo(g, hit.matched ? hit.tpl : 'boxy', mat);
+      g.scale.setScalar(0.42);
+      g.userData.baseScale = 0.42;
+      g.userData.hidden = true;
+      cov.hidden!.push(c.name);
+      return;
+    }
+    if (isMounted(c)) return;
+    const { tpl, source } = shapeFor(c.name, L, skills);
+    cov.sources![source]++;
+    if (source !== 'rules' || classify(c.name).matched) cov.matched++;
+    else cov.unclassified.push(c.name);
+    const W = Math.max(L.w * S, 0.05);
+    const H = Math.max(L.h * S, 0.05);
+    const [ex, ey] = explodeOf(L);
+    const g = makePart(P, c.id, ex, ey);
+    g.position.set((L.cx - midX) * S, (midY - L.cy) * S, 0);
+    g.userData.spinAxis = L.axis === 'vertical' ? 'y' : L.axis === 'depth' ? 'z' : 'x';
+    g.userData.layout = { W, H, axis: L.axis ?? 'horizontal', revolved: L.revolved !== false };
+    if (L.revolved === false && BASE_RX.test(c.name)) {
+      mesh(g, new THREE.BoxGeometry(W, Math.max(H, 0.12), Math.min(W, FIT_SPAN * 0.3)), mat);
+      return;
+    }
+    const axis = L.revolved === false ? 'none' : (L.axis ?? 'horizontal');
+    const tiny = TINY.includes(tpl);
+    const d = tiny ? Math.min(W, H, 0.3) : 0;
+    const dims = tiny ? new THREE.Vector3(d, d, d)
+      : axis === 'horizontal' ? new THREE.Vector3(W, H, H)
+        : axis === 'vertical' ? new THREE.Vector3(W, H, W)
+          // shortcut: end-on parts get a fixed depth; the drawing gives no length along the view
+          : axis === 'depth' ? new THREE.Vector3(W, H, Math.max(Math.min(W, H) * 0.35, 0.08))
+            : new THREE.Vector3(W, H, Math.max(Math.min(W, H) * 0.6, 0.08));
+    fitTemplate(g, tpl, mat, axis, dims);
+    if ((tpl === 'shell' || tpl === 'plate' || tpl === 'boxy') && L.w * L.h >= area * 0.15) {
+      mat.transparent = true;
+      mat.opacity = 0.3;
+      mat.depthWrite = false;
+    }
+  });
+
+  /* hardware mounted onto its target */
+  let mountIdx = 0;
+  for (const c of components) {
+    if (!lay.has(c.id) || !isMounted(c)) continue;
+    const L = lay.get(c.id)!;
+    const target = P.parts.get(idOfPos.get(String(L.mount!.on))!);
+    if (!target) continue;
+    const t = target.userData.layout as { W: number; H: number; axis: string; revolved: boolean } | undefined;
+    const tw = t?.W ?? 0.6, th = t?.H ?? 0.6;
+    const ax = t?.axis === 'vertical' ? 'y' : t?.axis === 'depth' ? 'z' : 'x';
+    const horiz = ax !== 'y';
+    const perp = ax === 'x' ? th : ax === 'y' ? tw : Math.min(tw, th);
+    const along = ax === 'x' ? tw : ax === 'y' ? th : Math.max(Math.min(tw, th) * 0.35, 0.08);
+    const onAxis = (d: number) => new THREE.Vector3(ax === 'x' ? d : 0, ax === 'y' ? d : 0, ax === 'z' ? d : 0);
+    const mat = std(0x9aa0a6, 0.9, 0.35);
+    const g = makePart(P, c.id, target.userData.explodeX as number, (target.userData.explodeY as number) + 0.4);
+    const k = mountIdx++;
+    if (L.mount!.as === 'shaft_ring') {
+      const r = Math.max(perp * 0.28, 0.08);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(r, Math.max(r * 0.18, 0.025), 10, 32), mat);
+      if (ax === 'x') ring.rotation.y = Math.PI / 2;
+      else if (ax === 'y') ring.rotation.x = Math.PI / 2;
+      ring.castShadow = true;
+      g.add(ring);
+      g.position.copy(target.position).add(onAxis(along / 2 + 0.06));
+    } else if (L.mount!.as === 'bolt_circle') {
+      const face = new THREE.Group();
+      if (ax === 'x') face.rotation.z = -Math.PI / 2;
+      else if (ax === 'z') face.rotation.x = Math.PI / 2;
+      g.add(face);
+      const rr = Math.max(perp * 0.42, 0.12);
+      for (let b = 0; b < 6; b++) {
+        const a = (b / 6) * Math.PI * 2 + k * 0.2;
+        bolt(face, Math.max(perp * 0.04, 0.03), Math.max(perp * 0.06, 0.04), Math.cos(a) * rr, 0, Math.sin(a) * rr, mat);
+      }
+      g.position.copy(target.position).add(onAxis(along / 2 + 0.02));
+    } else {
+      tplGeo(g, 'small', mat);
+      g.scale.setScalar(Math.max(perp * 0.5, 0.25));
+      g.position.copy(target.position).add(new THREE.Vector3(
+        horiz ? ((k % 3) - 1) * along * 0.2 : perp / 2 + 0.08,
+        horiz ? perp / 2 + 0.08 : ((k % 3) - 1) * along * 0.2, 0));
+    }
+    cov.sources!.model++;
+    cov.matched++;
+  }
+
+  /* sit the drawing on the floor and frame it */
+  const box = new THREE.Box3();
+  for (const [, g] of P.parts) if (!g.userData.hidden) box.expandByObject(g);
+  if (!box.isEmpty()) {
+    const dy = PLANAR_FLOOR + 0.04 - box.min.y;
+    for (const [, g] of P.parts) g.position.y += dy;
+    box.translate(new THREE.Vector3(0, dy, 0));
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const dist = Math.max(size.x, size.y * 1.5, size.z) * 1.45 + 2.2;
+    P.home = { target: center, pos: center.clone().add(new THREE.Vector3(0.62, 0.38, 0.69).normalize().multiplyScalar(dist)) };
   }
   P.coverage = cov;
 }
@@ -1025,11 +1283,15 @@ export function initAssembly(
     chrome?: boolean;
     height?: number;
     explode?: number;
+    drawing?: { view?: string; main_axis?: string } | null;
+    skills?: RenderSkill[];
   },
 ): AssemblyHandle {
   const W = () => el.clientWidth || 300;
   const H = opts.height ?? 380;
-  const vertical = opts.machine !== 'rig';
+  const axial = opts.machine !== 'rig' && opts.machine !== 'cr-pump'
+    && (opts.kind ?? 'generic') !== 'engine' && layoutCoverage(opts.components) >= 0.3;
+  const vertical = opts.machine !== 'rig' && !axial;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -1088,6 +1350,7 @@ export function initAssembly(
   if (opts.machine === 'rig') buildRig(P);
   else if (opts.machine === 'cr-pump') buildPump(P);
   else if (kind === 'engine') engRefs = buildEngine(P, opts.components);
+  else if (axial) buildPlanar(P, opts.components, opts.drawing?.main_axis ?? 'horizontal', opts.skills ?? []);
   else buildGeneric(P, opts.components, kind);
   if (engRefs) hemi.intensity = 0.62;
 
@@ -1134,7 +1397,7 @@ export function initAssembly(
   /* Speed groups (PRD §5): shaft/impellers/coupling/rotor/fan 1.0x,
      bearing cage+balls 0.42x, outer rings stationary. Generic builds derive
      spin + reciprocation from component names (data-driven motion). */
-  const SPIN: Record<string, { ax: 'x' | 'y'; rate: number }> = opts.machine === 'rig'
+  const SPIN: Record<string, SpinDef> = opts.machine === 'rig'
     ? { shaft: { ax: 'x', rate: 1 }, ring_inner: { ax: 'x', rate: 1 }, rollers: { ax: 'x', rate: 0.42 }, cage: { ax: 'x', rate: 0.42 } }
     : opts.machine === 'cr-pump'
       ? { shaft: { ax: 'y', rate: 1 }, impeller: { ax: 'y', rate: 1 }, 'coupling-half': { ax: 'y', rate: 1 }, 'bearing-cage': { ax: 'y', rate: 0.42 }, 'bearing-balls': { ax: 'y', rate: 0.42 } }
@@ -1143,9 +1406,10 @@ export function initAssembly(
   if (opts.machine !== 'rig' && opts.machine !== 'cr-pump') {
     let ri = 0;
     for (const c of opts.components) {
-      const sp = spinFor(c.name, kind);
+      const sp = spinFor(c.name, axial ? 'bearing-rig' : kind);
       const v = resolve(c.id);
-      if (sp && v && !(v in SPIN)) SPIN[v] = sp;
+      const own = v ? P.parts.get(v)?.userData.spinAxis as SpinDef['ax'] | undefined : undefined;
+      if (sp && v && !(v in SPIN)) SPIN[v] = own ? { ...sp, ax: own } : sp;
       if (!engRefs && recipFor(c.name) && v && !recipList.some((r) => r.id === v)) {
         recipList.push({ id: v, dx: 0, dy: 1, dz: 0, amp: 0.12, phase: (ri++) * Math.PI / 3 });
       }
@@ -1206,7 +1470,10 @@ export function initAssembly(
     anims.set(id, { from: pos.get(id)!.clone(), to: to.clone(), t0: performance.now(), dur: reduceMotion ? 1 : dur });
   }
   function frameCamera(): void {
-    if (layout === 'sheet') {
+    if (layout !== 'sheet' && P.home) {
+      controls.target.copy(P.home.target);
+      camera.position.copy(P.home.pos);
+    } else if (layout === 'sheet') {
       const span = Math.max(cols, Math.ceil(idList.length / cols)) * cell;
       controls.target.set(0, FLOOR + 0.8, 0);
       camera.position.set(span * 0.62, span * 0.55, span * 0.85);
@@ -1236,6 +1503,7 @@ export function initAssembly(
     frameCamera();
   }
   syncLoose();
+  if (P.home) frameCamera();
 
   let running = false;
   let spinSpeed = 1;
@@ -1263,17 +1531,24 @@ export function initAssembly(
     }
   }
   const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
+  let assembleTrace: { step: number; total: number; resolved: number[] } = { step: 0, total: 0, resolved: [] };
+  let wireframeOn = false;
   async function assembleSteps(visualSteps: string[][], onStep?: (k: number, n: number) => void): Promise<void> {
     running = false;
     setLayout('sheet', true);
     const ep = assembleEpoch;
     const placed = new Set<string>();
+    assembleTrace = { step: 0, total: visualSteps.length, resolved: [] };
     for (let i = 0; i < visualSteps.length; i++) {
       if (ep !== assembleEpoch) return;
+      let hit = 0;
       for (const id of visualSteps[i]) {
         const v = resolve(id);
+        if (v && P.parts.get(v)?.visible !== false) hit++;
         if (v && !placed.has(v)) { placed.add(v); tweenTo(v, homeOf.get(v)!, 650); }
       }
+      assembleTrace.resolved.push(hit);
+      assembleTrace.step = i + 1;
       onStep?.(i, visualSteps.length);
       await wait(reduceMotion ? 80 : 720);
     }
@@ -1387,6 +1662,32 @@ export function initAssembly(
   ro.observe(el);
 
   let paused = false;
+
+  /* Read-only state for the automated control check (control-matrix.mjs). */
+  const spreadOf = (): number[] => {
+    const box = new THREE.Box3();
+    for (const id of idList) if (P.parts.get(id)!.visible) box.expandByPoint(pos.get(id)!);
+    const s = box.isEmpty() ? new THREE.Vector3() : box.getSize(new THREE.Vector3());
+    return [+s.x.toFixed(3), +s.y.toFixed(3), +s.z.toFixed(3)];
+  };
+  (window as unknown as { __pitcrewSim?: unknown }).__pitcrewSim = {
+    machine: opts.machine,
+    builder: opts.machine === 'rig' ? 'rig' : opts.machine === 'cr-pump' ? 'cr-pump'
+      : kind === 'engine' ? 'engine' : axial ? 'planar' : 'generic',
+    parts: () => idList.length,
+    visible: () => idList.filter((id) => P.parts.get(id)!.visible).length,
+    isolated: () => isolatedId,
+    selected: () => selected,
+    layout: () => layout,
+    running: () => running,
+    angle: () => +angle.toFixed(3),
+    spinning: () => Object.keys(SPIN).length,
+    wireframe: () => wireframeOn,
+    fault: () => faultVisuals.length,
+    spread: spreadOf,
+    camera: () => camera.position.toArray().map((v: number) => +v.toFixed(2)),
+    assemble: () => ({ ...assembleTrace, resolved: [...assembleTrace.resolved] }),
+  };
   let prevNow = 0;
   renderer.setAnimationLoop((now: number) => {
     if (paused) return;
@@ -1404,15 +1705,14 @@ export function initAssembly(
     for (const id of idList) {
       const p = pos.get(id)!;
       const g = P.parts.get(id)!;
-      g.visible = !isolatedId || id === isolatedId;
+      g.visible = isolatedId ? id === isolatedId : layout === 'sheet' || !g.userData.hidden;
       const isFault = faultWobble > 0 && faultVisuals.includes(id);
       const wobbleAmp = isFault ? 0.08 : 0; // 8% radial wobble on faulted bearing
       g.position.set(p.x + (isFault && vertical ? Math.sin(now / 55) * wobbleAmp + wob * 0 : isFault && !vertical ? 0 : isFault ? wob : 0), p.y, p.z + (isFault && !vertical ? wob : 0));
       const sp = SPIN[id];
       if (sp && running) {
         const rate = sp.rate < 1 ? cageRate * (sp.rate / 0.42) : sp.rate;
-        if (sp.ax === 'x') g.rotation.x = angle * rate;
-        else g.rotation.y = angle * rate;
+        g.rotation[sp.ax] = angle * rate;
       }
     }
     for (const r of recipList) {
@@ -1516,11 +1816,40 @@ export function initAssembly(
   if (opts.scales) applyDesign(opts.scales);
 
   return {
-    getCoverage(): { matched: number; total: number; unclassified: string[] } | null { return P.coverage ?? null; },
+    getCoverage(): Cov | null { return P.coverage ?? null; },
+    captureSideView(): string {
+      const prev = { pos: camera.position.clone(), target: controls.target.clone() };
+      const box = new THREE.Box3();
+      for (const [, g] of P.parts) if (g.visible) box.expandByObject(g);
+      if (!box.isEmpty()) {
+        const c = box.getCenter(new THREE.Vector3());
+        const s = box.getSize(new THREE.Vector3());
+        const dist = (Math.max(s.x, s.y) / 2) / Math.tan((camera.fov * Math.PI) / 360) * 1.15 + s.z;
+        controls.target.copy(c);
+        camera.position.set(c.x, c.y, c.z + dist);
+        camera.lookAt(c);
+      }
+      renderer.render(scene, camera);
+      const url = renderer.domElement.toDataURL('image/png');
+      camera.position.copy(prev.pos);
+      controls.target.copy(prev.target);
+      return url;
+    },
     setDesign(sc: { bore: number; stroke: number; shaft: number }): void { applyDesign(sc); },
     select(id: string): void { selected = resolve(id); repaint(0); },
     setSuspect(id: string | null): void { suspect = id ? resolve(id) : null; repaint(0); },
-    setIsolated(id: string | null): void { isolatedId = id ? resolve(id) : null; repaint(0); },
+    setIsolated(id: string | null): void {
+      isolatedId = id ? resolve(id) : null;
+      repaint(0);
+      if (!isolatedId) { frameCamera(); return; }
+      const box = new THREE.Box3().setFromObject(P.parts.get(isolatedId)!);
+      if (box.isEmpty()) return;
+      const center = box.getCenter(new THREE.Vector3());
+      const size = Math.max(...box.getSize(new THREE.Vector3()).toArray(), 0.3);
+      const dir = camera.position.clone().sub(controls.target).normalize();
+      controls.target.copy(center);
+      camera.position.copy(center).addScaledVector(dir, size * 3.2 + 1.2);
+    },
     setExplode(f: number): void {
       explodeF = Math.min(1, Math.max(0, f));
       slider.value = String(Math.round(explodeF * 100));
@@ -1540,6 +1869,7 @@ export function initAssembly(
       repaint(0);
     },
     setWireframe(on: boolean): void {
+      wireframeOn = on;
       for (const id of P.parts.keys()) {
         for (const m of materialsOf(id)) {
           m.wireframe = on;

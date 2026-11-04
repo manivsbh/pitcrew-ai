@@ -423,7 +423,7 @@ def detect_lan_ips() -> list[str]:
 def _load_persisted_tunnel() -> dict[str, Any]:
     if os.path.exists(TUNNEL_STATE_PATH):
         try:
-            with open(TUNNEL_STATE_PATH) as f:
+            with open(TUNNEL_STATE_PATH, encoding="utf-8") as f:
                 data = json.load(f)
             if isinstance(data, dict) and data.get("url"):
                 return data
@@ -435,7 +435,7 @@ def _load_persisted_tunnel() -> dict[str, Any]:
 def _save_persisted_tunnel(state: dict[str, Any]) -> None:
     try:
         os.makedirs(os.path.dirname(TUNNEL_STATE_PATH), exist_ok=True)
-        with open(TUNNEL_STATE_PATH, "w") as f:
+        with open(TUNNEL_STATE_PATH, "w", encoding="utf-8") as f:
             json.dump(state, f, indent=2)
     except Exception:
         pass
@@ -762,11 +762,11 @@ def process_mobile_capture(
                 seg_res = segment.segment_photo(photo_bytes)
                 seg_overlay_b64 = seg_res.get("overlay_b64")
                 top_regions = seg_res.get("regions", [])
-                guessed_part = pack_files["components"][0]["id"] if pack_files["components"] else None
                 vision = {
-                    "part_id": guessed_part,
-                    "confidence": 0.78 if top_regions else 0.0,
-                    "rationale": f"Meta SAM 2.1 segmented {len(top_regions)} physical component masks.",
+                    "part_id": None,
+                    "confidence": 0.0,
+                    "rationale": (f"Meta SAM 2.1 segmented {len(top_regions)} physical "
+                                  "component masks; part naming needs MODEL_API_KEY."),
                     "regions": len(top_regions),
                     "overlay_b64": seg_overlay_b64,
                 }

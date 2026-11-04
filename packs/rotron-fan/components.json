@@ -1,0 +1,484 @@
+[
+ {
+  "id": "tubular-bearing-support",
+  "name": "Tubular Bearing Support",
+  "pos": "22",
+  "parent": "cylindrical-outer-wall",
+  "role": "Thin-walled thermally conductive tube carrying bearing",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.55,
+   "cy": 0.557,
+   "w": 0.08,
+   "h": 0.025,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "pipe"
+  }
+ },
+ {
+  "id": "inner-sleeve",
+  "name": "Inner Sleeve",
+  "pos": "34",
+  "parent": "center-section",
+  "role": "Long sleeve tightly fitting shaft in cantilever",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.24,
+   "cy": 0.595,
+   "w": 0.12,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "shaft",
+  "name": "Shaft",
+  "pos": "38",
+  "parent": "inner-sleeve",
+  "role": "Rotating shaft in stationary bearing",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.36,
+   "cy": 0.583,
+   "w": 0.3,
+   "h": 0.035,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "cylindrical-outer-wall",
+  "name": "Stator housing",
+  "pos": "14",
+  "parent": null,
+  "role": "Base 14a plus cylindrical wall 14b housing stator",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.6,
+   "cy": 0.41,
+   "w": 0.04,
+   "h": 0.1,
+   "axis": "vertical",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "stationary-bearing",
+  "name": "Sleeve Bearing",
+  "pos": "26",
+  "parent": null,
+  "role": "Stationary sintered sleeve bearing",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.53,
+   "cy": 0.62,
+   "w": 0.08,
+   "h": 0.02,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "bearing"
+  }
+ },
+ {
+  "id": "generally-cupwshaped-hub",
+  "name": "Cup-shaped Hub",
+  "pos": "30",
+  "parent": "shaft",
+  "role": "Rotor hub with end wall 30a and side wall 30b",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.2,
+   "cy": 0.4,
+   "w": 0.05,
+   "h": 0.06,
+   "axis": "none",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "outer-sleeve",
+  "name": "Outer Sleeve",
+  "pos": "36",
+  "parent": "center-section",
+  "role": "Short outer sleeve engaging rotor end ring",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.24,
+   "cy": 0.623,
+   "w": 0.06,
+   "h": 0.03,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "conventional-laminated-stack",
+  "name": "Rotor Stack",
+  "pos": "40",
+  "parent": null,
+  "role": "Laminated rotor stack with conductors",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.31,
+   "cy": 0.648,
+   "w": 0.18,
+   "h": 0.05,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "rotor"
+  }
+ },
+ {
+  "id": "fan-blades",
+  "name": "Fan Blades",
+  "pos": "64",
+  "parent": "generally-cupwshaped-hub",
+  "role": "Blades on rotor hub side wall",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.3,
+   "cy": 0.305,
+   "w": 0.26,
+   "h": 0.14,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "fan"
+  }
+ },
+ {
+  "id": "stator-stack",
+  "name": "Stator Stack",
+  "pos": "16",
+  "parent": "cylindrical-outer-wall",
+  "role": "Annular laminations fitted in housing recess",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.39,
+   "w": 0.03,
+   "h": 0.04,
+   "axis": "none",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "small"
+  }
+ },
+ {
+  "id": "center-section",
+  "name": "Center Section",
+  "pos": "32",
+  "parent": "generally-cupwshaped-hub",
+  "role": "Shaft and rotor supporting section",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.18,
+   "cy": 0.572,
+   "w": 0.05,
+   "h": 0.04,
+   "axis": "none",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "small"
+  }
+ },
+ {
+  "id": "end-rings",
+  "name": "End Ring",
+  "pos": "42",
+  "parent": null,
+  "role": "Stepped end ring engaging outer sleeve",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.21,
+   "cy": 0.633,
+   "w": 0.05,
+   "h": 0.04,
+   "axis": "none",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "rotor"
+  }
+ },
+ {
+  "id": "rubber-plug",
+  "name": "Rubber Plug",
+  "pos": "53",
+  "parent": "rigid-ring",
+  "role": "Dust seal for bearing",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.58,
+   "cy": 0.574,
+   "w": 0.04,
+   "h": 0.03,
+   "axis": "none",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "seal"
+  }
+ },
+ {
+  "id": "circular-opening",
+  "name": "Circular Opening",
+  "pos": "20",
+  "parent": "cylindrical-outer-wall",
+  "role": "Central opening in housing base",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "axially-extending-annular-rim",
+  "name": "Annular Rim",
+  "pos": "24",
+  "parent": null,
+  "role": "Axially extending rim retaining tubular member",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.54,
+   "cy": 0.542,
+   "w": 0.06,
+   "h": 0.03,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "retaining-ring",
+  "name": "Retaining Ring",
+  "pos": "46",
+  "parent": "shaft",
+  "role": "Snap ring on shaft free end",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.54,
+   "cy": 0.572,
+   "w": 0.04,
+   "h": 0.03,
+   "axis": "none",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "fastener",
+   "mount": {
+    "on": "38",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "sealing-ring",
+  "name": "Sealing Ring",
+  "pos": "52",
+  "parent": "tubular-bearing-support",
+  "role": "Foam seal against lubricant escape",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.26,
+   "cy": 0.609,
+   "w": 0.08,
+   "h": 0.02,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "seal"
+  }
+ },
+ {
+  "id": "rigid-ring",
+  "name": "Rigid Ring",
+  "pos": "54",
+  "parent": "tubular-bearing-support",
+  "role": "Rigid ring holding rubber plug",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.55,
+   "cy": 0.6,
+   "w": 0.05,
+   "h": 0.025,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "venturi-ring",
+  "name": "Venturi Ring",
+  "pos": "60",
+  "parent": "venturi-supporting-spokes",
+  "role": "Concentric venturi around fan",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.43,
+   "cy": 0.225,
+   "w": 0.5,
+   "h": 0.03,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "stator-winding",
+  "name": "Stator Winding",
+  "pos": "18",
+  "parent": "stator-stack",
+  "role": "Windings on stator stack at periphery",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.57,
+   "cy": 0.465,
+   "w": 0.1,
+   "h": 0.06,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "coil"
+  }
+ },
+ {
+  "id": "venturi-supporting-spokes",
+  "name": "Spokes",
+  "pos": "62",
+  "parent": null,
+  "role": "Radial arms supporting venturi",
+  "role_source": "manual",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.61,
+   "cy": 0.32,
+   "w": 0.04,
+   "h": 0.2,
+   "axis": "vertical",
+   "revolved": false,
+   "source": "drawing",
+   "shape": "rod"
+  }
+ },
+ {
+  "id": "end-ring",
+  "name": "End Ring",
+  "pos": "44",
+  "parent": null,
+  "role": "Opposite rotor end ring",
+  "role_source": "standard",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.53,
+   "cy": 0.645,
+   "w": 0.09,
+   "h": 0.07,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "rotor"
+  }
+ },
+ {
+  "id": "thrust-washers",
+  "name": "Thrust Washers",
+  "pos": "48",
+  "parent": null,
+  "role": "Washers between inner sleeve and bearing",
+  "role_source": "standard",
+  "service_ref": "Rotron fan motor (US 3,513,339)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.22,
+   "cy": 0.556,
+   "w": 0.06,
+   "h": 0.02,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "washer",
+   "mount": {
+    "on": "38",
+    "as": "shaft_ring"
+   }
+  }
+ }
+]

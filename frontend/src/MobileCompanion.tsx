@@ -733,7 +733,7 @@ export function MobileFieldView({
           </div>
           <div>
             <strong style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "1.2px", display: "flex", alignItems: "center", gap: "6px" }}>
-              PITCREW <span className="voltage-badge" style={{ fontSize: "9px", padding: "1px 5.5px" }}>⚡ AI</span>
+              PITCREW<span className="voltage-badge">.ai</span>
             </strong>
             <span className="sync-dot-pill">
               <i className={syncWsLive ? "live" : ""} /> FIELD ROOM {roomId}

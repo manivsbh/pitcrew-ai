@@ -28,7 +28,7 @@ def main() -> int:
     args = ap.parse_args()
 
     store, docs = Store(), DocsStore()
-    refs = json.load(open(REFS_PATH)) if os.path.exists(REFS_PATH) else {}
+    refs = json.load(open(REFS_PATH, encoding="utf-8")) if os.path.exists(REFS_PATH) else {}
     imp = store.import_case(args.case)
     print(f"recording: {imp['recording_id']} ({imp['display_label']})")
     trace = run_agent(store, docs, refs, imp["recording_id"], args.question)

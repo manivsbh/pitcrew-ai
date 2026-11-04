@@ -35,7 +35,7 @@ def build_corrupted_assets():
         f.write(b"RIFF\x00\x10\x02\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\x80>\x00\x00")
 
     # 4. Malformed CSV
-    with open(os.path.join(corrupt_dir, "malformed.csv"), "w") as f:
+    with open(os.path.join(corrupt_dir, "malformed.csv"), "w", encoding="utf-8") as f:
         f.write("time,val,extra\nnot_a_number,,\ninf,nan,999\n1.234,foo,bar\n")
 
 

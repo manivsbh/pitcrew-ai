@@ -275,7 +275,7 @@ def build_workbench_photos() -> None:
 
     im.save(os.path.join(ph_dir, "exploded-bearing-workbench.png"))
 
-    with open(os.path.join(ph_dir, "README.md"), "w") as f:
+    with open(os.path.join(ph_dir, "README.md"), "w", encoding="utf-8") as f:
         f.write(
             "# Real-World Demo Photos Drop-In Folder\n\n"
             "Drop your phone/camera workbench photos here (`JPG`, `PNG`, or `WEBP`) —\n"
@@ -366,7 +366,7 @@ def build_audio_and_csv() -> None:
         ("open-outer-fault-1500rpm.csv", outer[:n_csv]),
         ("open-inner-fault-1500rpm.csv", inner[:n_csv]),
     ]:
-        with open(os.path.join(sg_dir, fn), "w") as f:
+        with open(os.path.join(sg_dir, fn), "w", encoding="utf-8") as f:
             f.write("\n".join(f"{v:.6f}" for v in arr) + "\n")
 
 

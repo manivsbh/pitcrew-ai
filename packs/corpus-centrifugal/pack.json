@@ -1,0 +1,24 @@
+{
+ "machine": "corpus-centrifugal",
+ "name": "Centrifugal pump blueprint",
+ "kind": "pump",
+ "created": "2026-10-30",
+ "source_kind": "blueprint_image",
+ "notes": "Agent-drafted pack: user-confirmed from manual/blueprint via pack-builder Q&A.",
+ "sources": [
+  {
+   "title": "Centrifugal pump blueprint"
+  }
+ ],
+ "dimensions": {
+  "shaft_diameter_mm": 22.0,
+  "rated_rpm": 2900.0,
+  "max_torque_nm": 28.0
+ },
+ "drawing": {
+  "view": "schematic",
+  "main_axis": "vertical",
+  "up": "top",
+  "image": "drawing.jpg"
+ }
+}

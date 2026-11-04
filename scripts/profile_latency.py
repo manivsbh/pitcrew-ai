@@ -25,7 +25,7 @@ RESULTS = "evals/results.jsonl"
 
 
 def _rows():
-    with open(RESULTS) as f:
+    with open(RESULTS, encoding="utf-8") as f:
         return [json.loads(ln) for ln in f if ln.strip()]
 
 
@@ -51,7 +51,7 @@ def arm_stats(rows, split, arm):
 
 def replay_trace(store, docs, refs, bearing, cond, rep, inv_id):
     """Re-execute a saved investigate trace; return stage timings."""
-    trace = json.load(open(f"data/reports/{inv_id}.json"))
+    trace = json.load(open(f"data/reports/{inv_id}.json", encoding="utf-8"))
     rid = store.import_case(f"{bearing}/{cond}_{bearing}_{rep}.mat")[
         "recording_id"]
     ctx = ToolContext(store, docs, refs)
@@ -100,7 +100,7 @@ def main() -> int:
         out.append("")
 
     store, docs = Store(), DocsStore()
-    refs = json.load(open("backend/app/refs.json"))
+    refs = json.load(open("backend/app/refs.json", encoding="utf-8"))
     inv_rows = [r for r in rows if r["split"] == "val"
                 and r["arm"] == "investigate" and r.get("investigation_id")]
     hist: Counter = Counter()
@@ -142,7 +142,7 @@ def main() -> int:
                "milliseconds; cutting rounds (fewer doc reads, earlier "
                "submit) is the only latency lever that matters.")
     out.append("")
-    with open("evals/latency.md", "w") as f:
+    with open("evals/latency.md", "w", encoding="utf-8") as f:
         f.write("\n".join(out))
     print("\n".join(out))
     print(f"\nwrote evals/latency.md ({replayed} traces replayed)")
