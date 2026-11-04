@@ -72,7 +72,7 @@ demo it as T5 instead.
   gate shows the identical sha both times; `lines-*` stay 0/245.
 - [ ] **T7 figure QA (author-level).** `cd figures/cr-pump`:
   `node build.mjs && node build.mjs --light`, then
-  `node ../../.claude/skills/anatomy/scripts/lines.mjs cr-pump.html --wait 1500,8000`
+  `node ../../skills/anatomy/scripts/lines.mjs cr-pump.html --wait 1500,8000`
   (expect `0 of 245 ... float`, console clean) and the same for
   `cr-pump-light.html`. Spot-check one station close-up with `capture.mjs
   --zoom` and confirm the lit marker sits on the readout fastener.

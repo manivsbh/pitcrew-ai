@@ -1,0 +1,51 @@
+{
+ "order": [
+  {
+   "caption": "Mount rear and front bearings on shaft in cylindrical housing, retain with lock nuts and end caps with oil seals",
+   "parts": [
+    "rear-bearing",
+    "front-bearing",
+    "end-cap",
+    "front-bearing-cap"
+   ]
+  },
+  {
+   "caption": "Attach case bracket to housing and case plate with labyrinth ring and seal ring housing",
+   "parts": [
+    "case-bracket",
+    "case-plate",
+    "labyrinth-ring",
+    "seal-ring-housing"
+   ]
+  },
+  {
+   "caption": "Fit shaft sleeve, fixed seal and impeller on shaft end, install movable seal retainer on push rods",
+   "parts": [
+    "shaft-sleeve",
+    "sealing-members",
+    "retainer",
+    "rods"
+   ]
+  },
+  {
+   "caption": "Install push rod housing, springs, yoke, spider, actuator and weights for centrifugal seal actuation",
+   "parts": [
+    "rod-housing",
+    "three-compression-springs",
+    "annular-yoke",
+    "spider",
+    "actuator-body",
+    "weight-members"
+   ]
+  },
+  {
+   "caption": "Close volute case over impeller and support housing on base pedestal",
+   "parts": [
+    "case",
+    "base-mean-s",
+    "pedestal-cap"
+   ]
+  }
+ ],
+ "source": "blueprint-vision"
+}

@@ -1,0 +1,64 @@
+[
+ {
+  "id": "healthy",
+  "illustrative": true,
+  "label": "Healthy",
+  "note": "Baseline motion: running parts rotate together. Illustrative simulation.",
+  "parts": [],
+  "slow": 1.0,
+  "source": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "wobble": 0.0
+ },
+ {
+  "id": "seal-leak",
+  "illustrative": true,
+  "label": "Shaft seal leak",
+  "note": "Leakage at the shaft seal: motion unchanged, fluid lost. Illustrative.",
+  "parts": [
+   "seal-ring-housing",
+   "oil-seal",
+   "oil-seal-2",
+   "seal",
+   "seal-retainer",
+   "seal-2",
+   "sealing-members",
+   "sealing-portion"
+  ],
+  "slow": 1.0,
+  "source": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "wobble": 0.0
+ },
+ {
+  "id": "worn-impeller",
+  "illustrative": true,
+  "label": "Worn impeller",
+  "note": "Worn impeller or ring clearances: head and flow fall. Illustrative.",
+  "parts": [
+   "case-wear-ring",
+   "impeller"
+  ],
+  "slow": 0.7,
+  "source": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "wobble": 0.5
+ },
+ {
+  "id": "clogged-passage",
+  "illustrative": true,
+  "label": "Clogged passage",
+  "note": "Clogged impeller or diffuser passage: flow starved. Illustrative.",
+  "parts": [],
+  "slow": 0.5,
+  "source": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "wobble": 0.3
+ },
+ {
+  "id": "coupling-misset",
+  "illustrative": true,
+  "label": "Coupling misset",
+  "note": "Improper coupling setting: tight rotation and rub. Illustrative.",
+  "parts": [],
+  "slow": 0.9,
+  "source": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "wobble": 1.0
+ }
+]

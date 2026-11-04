@@ -1,0 +1,147 @@
+{
+ "rounds": [
+  {
+   "round": 1,
+   "score": 2,
+   "reverted": false,
+   "issues": [
+    "base block too short and only under front",
+    "bearing housing shell transparent and undersized",
+    "shaft and bearings shifted forward and hard to see",
+    "small fasteners floating instead of mounted"
+   ],
+   "changes": [
+    {
+     "pos": "10",
+     "verdict": "move"
+    },
+    {
+     "pos": "34",
+     "verdict": "move"
+    },
+    {
+     "pos": "72",
+     "verdict": "move"
+    },
+    {
+     "pos": "100",
+     "verdict": "move"
+    },
+    {
+     "pos": "76",
+     "verdict": "move"
+    },
+    {
+     "pos": "60",
+     "verdict": "move"
+    },
+    {
+     "pos": "138",
+     "verdict": "move"
+    },
+    {
+     "pos": "12",
+     "verdict": "move"
+    },
+    {
+     "pos": "156",
+     "verdict": "attach",
+     "mount": {
+      "on": "72",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "110",
+     "verdict": "attach",
+     "mount": {
+      "on": "100",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "82",
+     "verdict": "attach",
+     "mount": {
+      "on": "76",
+      "as": "shaft_ring"
+     }
+    },
+    {
+     "pos": "310",
+     "verdict": "hide"
+    }
+   ],
+   "skills_added": [
+    "sk_ea80f5c74b",
+    "sk_2e473ec77d",
+    "sk_f03bd6a045"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeb01dcfb18b25a88214549",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T09:58:53Z"
+  },
+  {
+   "round": 2,
+   "score": 2,
+   "reverted": false,
+   "issues": [
+    "phantom centrifugal-actuator parts in bearing housing",
+    "seal spring shapes missing",
+    "truncated base vs drawing"
+   ],
+   "changes": [
+    {
+     "pos": "244",
+     "verdict": "hide"
+    },
+    {
+     "pos": "262",
+     "verdict": "hide"
+    },
+    {
+     "pos": "272",
+     "verdict": "hide"
+    },
+    {
+     "pos": "280",
+     "verdict": "hide"
+    },
+    {
+     "pos": "152",
+     "verdict": "hide"
+    },
+    {
+     "pos": "310",
+     "verdict": "hide"
+    },
+    {
+     "pos": "312",
+     "verdict": "hide"
+    },
+    {
+     "pos": "314",
+     "verdict": "hide"
+    },
+    {
+     "pos": "292",
+     "verdict": "move"
+    },
+    {
+     "pos": "296",
+     "verdict": "move"
+    }
+   ],
+   "skills_added": [
+    "sk_5aa26dc253",
+    "sk_9a3b5e91ea",
+    "sk_e425e34cf7"
+   ],
+   "sam_regions": 6,
+   "response_id": "resp_6aeb0278677f25640f3e4966",
+   "prompt_version": "render-verify-v3",
+   "at": "2026-11-04T10:01:29Z"
+  }
+ ]
+}

@@ -18,7 +18,7 @@ Attachment:
 
 - ID: `8c500be5-e36d-46d1-8fde-f50f8d8596db`.
 - Resolved source: `/tmp/attachments/8c500be5_Electric_motor_product_film_fa8e9e7e.mp4`.
-- Fetch again using `figma attachments get` if the temporary path disappears; never reconstruct its path.
+- If that temporary path disappears, fetch the attachment by its id again; never reconstruct the path.
 - 2,487,403 bytes; 8.00 seconds; 1280×720, landscape 16:9; H.264 High, 24 fps; AAC stereo audio.
 - Visually inspected extracted contact sheet: dark studio motor, green blueprint/dimension overlays, exposed/exploded bearing, amber bearing highlight, then assembled motor.
 - The film contains generated dimension markings and a small lower-right mark. Preserve the asset; do not remove watermarks or imply these labels are verified.

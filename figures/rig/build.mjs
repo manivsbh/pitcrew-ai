@@ -1,9 +1,9 @@
 import { writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import * as k from "../../.claude/skills/anatomy/kit/iso-kit.mjs";
-import { sphereOf } from "../../.claude/skills/anatomy/kit/lathe.mjs";
-import { kitScript } from "../../.claude/skills/anatomy/scripts/inline-kit.mjs";
+import * as k from "../../skills/anatomy/kit/iso-kit.mjs";
+import { sphereOf } from "../../skills/anatomy/kit/lathe.mjs";
+import { kitScript } from "../../skills/anatomy/scripts/inline-kit.mjs";
 import { GEO6203, faultFreq, SLOW, RPM_MIN, RPM_MAX, START_RPM } from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));

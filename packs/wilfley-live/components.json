@@ -1,0 +1,1070 @@
+[
+ {
+  "id": "seal-ring-housing",
+  "name": "Seal Ring Housing",
+  "pos": "166",
+  "parent": "case-plate",
+  "role": "Supports seals 186,188 and drain bore to drain tube.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.58,
+   "w": 0.12,
+   "h": 0.22,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "three-compression-springs",
+  "name": "Three Compression Springs",
+  "pos": "244",
+  "parent": "rod-housing",
+  "role": "Urge push rods and movable seal left to open.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "compression-spring",
+  "name": "Compression Spring",
+  "pos": "292",
+  "parent": "spider",
+  "role": "Holds actuator and movable seal closed at rest.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.42,
+   "cy": 0.5,
+   "w": 0.2,
+   "h": 0.24,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "spring"
+  }
+ },
+ {
+  "id": "weight-members",
+  "name": "Weight Members",
+  "pos": "310",
+  "parent": "spider",
+  "role": "Centrifugal weights that shift actuator at speed.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "base-mean-s",
+  "name": "Base Means",
+  "pos": "10",
+  "parent": null,
+  "role": "Base and pedestal supporting pump.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.53,
+   "cy": 0.82,
+   "w": 0.6,
+   "h": 0.2,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "shape": "plate"
+  }
+ },
+ {
+  "id": "case",
+  "name": "Case",
+  "pos": "12",
+  "parent": null,
+  "role": "Volute casing containing impeller.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.2,
+   "cy": 0.52,
+   "w": 0.22,
+   "h": 0.7,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "lock-nut",
+  "name": "Lock Nut",
+  "pos": "110",
+  "parent": "front-bearing",
+  "role": "Retains front bearing on shaft.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.55,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "mount": {
+    "on": "100",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "shaft-sleeve",
+  "name": "Shaft Sleeve",
+  "pos": "156",
+  "parent": null,
+  "role": "Sleeve on shaft sealing surface.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.44,
+   "cy": 0.43,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "mount": {
+    "on": "72",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "labyrinth-ring",
+  "name": "Labyrinth Ring",
+  "pos": "164",
+  "parent": "case-plate",
+  "role": "Labyrinth seal around impeller flange.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.34,
+   "cy": 0.5,
+   "w": 0.06,
+   "h": 0.24,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "rods",
+  "name": "Push Rod",
+  "pos": "236",
+  "parent": null,
+  "role": "Push rods transmitting yoke motion to seal retainer.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.43,
+   "cy": 0.59,
+   "w": 0.15,
+   "h": 0.05,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "rod",
+   "mount": {
+    "on": "220",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "case-wear-ring",
+  "name": "Case Wear Ring",
+  "pos": "16",
+  "parent": "case",
+  "role": "Wear ring mating with impeller flange.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "nut",
+  "name": "Nut",
+  "pos": "26",
+  "parent": "case-bracket",
+  "role": "Fastener for case assembly.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.42,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "20",
+   "mount": {
+    "on": "20",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "case-bracket",
+  "name": "Case Bracket",
+  "pos": "20",
+  "parent": null,
+  "role": "Bracket connecting case to bearing housing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.42,
+   "cy": 0.5,
+   "w": 0.3,
+   "h": 0.4,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "flange"
+  }
+ },
+ {
+  "id": "washer",
+  "name": "Washer",
+  "pos": "38",
+  "parent": null,
+  "role": "Washer under bolt 36.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "nut-2",
+  "name": "Nut",
+  "pos": "40",
+  "parent": null,
+  "role": "Nut for bracket bolts.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.86,
+   "cy": 0.5,
+   "w": 0.025,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "60",
+   "mount": {
+    "on": "60",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "pedestal-cap",
+  "name": "Pedestal Cap",
+  "pos": "52",
+  "parent": "base-mean-s",
+  "role": "Cap retaining bearing housing on pedestal.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.53,
+   "cy": 0.82,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "10",
+   "mount": {
+    "on": "10",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "end-cap",
+  "name": "End Cap",
+  "pos": "60",
+  "parent": null,
+  "role": "Rear closure of bearing housing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.86,
+   "cy": 0.5,
+   "w": 0.05,
+   "h": 0.18,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "flange"
+  }
+ },
+ {
+  "id": "oil-seal",
+  "name": "Oil Seal",
+  "pos": "66",
+  "parent": "end-cap",
+  "role": "Seals rear shaft exit.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.86,
+   "cy": 0.5,
+   "w": 0.045,
+   "h": 0.108,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "60"
+  }
+ },
+ {
+  "id": "reduced-end-por-tion",
+  "name": "Reduced End Por Tion",
+  "pos": "70",
+  "parent": null,
+  "role": "Rear reduced end of shaft.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.86,
+   "cy": 0.5,
+   "w": 0.045,
+   "h": 0.108,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "60"
+  }
+ },
+ {
+  "id": "rear-bearing",
+  "name": "Rear Bearing",
+  "pos": "76",
+  "parent": null,
+  "role": "Rear shaft support bearing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.82,
+   "cy": 0.5,
+   "w": 0.06,
+   "h": 0.16,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "bearing"
+  }
+ },
+ {
+  "id": "lock-washer",
+  "name": "Lock Washer",
+  "pos": "82",
+  "parent": "rear-bearing",
+  "role": "Locks rear bearing nut.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.82,
+   "cy": 0.5,
+   "w": 0.03,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "vision-verified",
+   "mount": {
+    "on": "76",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "nipple",
+  "name": "Nipple",
+  "pos": "92",
+  "parent": null,
+  "role": "Oil filler nipple.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "34",
+   "mount": {
+    "on": "34",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "cap",
+  "name": "Cap",
+  "pos": "94",
+  "parent": "nipple",
+  "role": "Cap for oil filler.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "34",
+   "mount": {
+    "on": "34",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "plug",
+  "name": "Plug",
+  "pos": "96",
+  "parent": null,
+  "role": "Drain plug.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "34",
+   "mount": {
+    "on": "34",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "front-bearing",
+  "name": "Front Bearing",
+  "pos": "100",
+  "parent": null,
+  "role": "Front shaft support bearing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.55,
+   "cy": 0.5,
+   "w": 0.08,
+   "h": 0.2,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "bearing"
+  }
+ },
+ {
+  "id": "lock-washer-2",
+  "name": "Lock Washer",
+  "pos": "108",
+  "parent": "front-bearing",
+  "role": "Locks front bearing nut.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.55,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "100",
+   "mount": {
+    "on": "100",
+    "as": "shaft_ring"
+   }
+  }
+ },
+ {
+  "id": "front-bearing-cap",
+  "name": "Front Bearing Cap",
+  "pos": "114",
+  "parent": null,
+  "role": "Retains front bearing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "34",
+   "mount": {
+    "on": "34",
+    "as": "surface"
+   }
+  }
+ },
+ {
+  "id": "washer-2",
+  "name": "Washer",
+  "pos": "118",
+  "parent": "front-bearing-cap",
+  "role": "Washer for front cap screws.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "cap-screws",
+  "name": "Cap Screws",
+  "pos": "116",
+  "parent": "front-bearing-cap",
+  "role": "Screws for front bearing cap.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "34",
+   "mount": {
+    "on": "34",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "oil-seal-2",
+  "name": "Oil Seal",
+  "pos": "120",
+  "parent": "front-bearing-cap",
+  "role": "Seals front shaft exit.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "case-bracket-cover",
+  "name": "Case Bracket Cover",
+  "pos": "124",
+  "parent": "case-bracket",
+  "role": "Cover on case bracket.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "gasket",
+  "name": "Gasket",
+  "pos": "158",
+  "parent": null,
+  "role": "Seal between sleeve and impeller hub.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "case-plate",
+  "name": "Case Plate",
+  "pos": "162",
+  "parent": "case-bracket",
+  "role": "Plate carrying labyrinth and seal housing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.34,
+   "cy": 0.5,
+   "w": 0.054,
+   "h": 0.144,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "164"
+  }
+ },
+ {
+  "id": "lock-washer-3",
+  "name": "Lock Washer",
+  "pos": "170",
+  "parent": "case-plate",
+  "role": "Washer for case plate screws.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "annular-flange",
+  "name": "Annular Flange",
+  "pos": "182",
+  "parent": null,
+  "role": "Impeller flange for labyrinth seal.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.86,
+   "cy": 0.5,
+   "w": 0.045,
+   "h": 0.108,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "60"
+  }
+ },
+ {
+  "id": "retainer",
+  "name": "Retainer Means",
+  "pos": "190",
+  "parent": null,
+  "role": "Axially moving seal retainer with drain hole.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.58,
+   "w": 0.108,
+   "h": 0.132,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "166"
+  }
+ },
+ {
+  "id": "drain-tube",
+  "name": "Drain Tube",
+  "pos": "202",
+  "parent": "seal-ring-housing",
+  "role": "Drains leakage past seal.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.58,
+   "w": 0.108,
+   "h": 0.132,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "166"
+  }
+ },
+ {
+  "id": "seal",
+  "name": "Seal",
+  "pos": "188",
+  "parent": "seal-ring-housing",
+  "role": "Stationary seal engaging retainer.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.58,
+   "w": 0.108,
+   "h": 0.132,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "166"
+  }
+ },
+ {
+  "id": "seal-retainer",
+  "name": "Seal Retainer",
+  "pos": "206",
+  "parent": "seal-ring-housing",
+  "role": "Holds seal 188.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.4,
+   "cy": 0.58,
+   "w": 0.108,
+   "h": 0.132,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "166"
+  }
+ },
+ {
+  "id": "rod-housing",
+  "name": "Push Rod Housing",
+  "pos": "220",
+  "parent": null,
+  "role": "Housing guiding push rods.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.44,
+   "cy": 0.43,
+   "w": 0.18,
+   "h": 0.18,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "drawing",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "lock-washer-4",
+  "name": "Lock Washer",
+  "pos": "224",
+  "parent": "rod-housing",
+  "role": "Washer for push rod housing screws.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "cap-screws-2",
+  "name": "Cap Screws",
+  "pos": "222",
+  "parent": "rod-housing",
+  "role": "Screws mounting push rod housing.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.44,
+   "cy": 0.43,
+   "w": 0.04,
+   "h": 0.04,
+   "axis": "horizontal",
+   "revolved": false,
+   "source": "text-anchor",
+   "anchor": "220",
+   "mount": {
+    "on": "220",
+    "as": "bolt_circle"
+   }
+  }
+ },
+ {
+  "id": "seal-2",
+  "name": "Seal",
+  "pos": "228",
+  "parent": "rod-housing",
+  "role": "Seal between push rod housing and sleeve.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.44,
+   "cy": 0.43,
+   "w": 0.162,
+   "h": 0.108,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "220"
+  }
+ },
+ {
+  "id": "bushing",
+  "name": "Bushing",
+  "pos": "240",
+  "parent": "rod-housing",
+  "role": "Guide bushing for push rod.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.43,
+   "cy": 0.59,
+   "w": 0.135,
+   "h": 0.03,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "text-anchor",
+   "anchor": "236"
+  }
+ },
+ {
+  "id": "annular-yoke",
+  "name": "Annular Yoke",
+  "pos": "262",
+  "parent": "rods",
+  "role": "Yoke linking push rods to actuator.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "nut-3",
+  "name": "Nut",
+  "pos": "266",
+  "parent": "rods",
+  "role": "Nut retaining yoke on push rods.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "spider",
+  "name": "Spider",
+  "pos": "272",
+  "parent": null,
+  "role": "Rotating spider carrying weights.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "locking-screw",
+  "name": "Locking Screw",
+  "pos": "274",
+  "parent": "spider",
+  "role": "Locks spider to shaft.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ },
+ {
+  "id": "retainer-ring",
+  "name": "Retainer Ring",
+  "pos": "296",
+  "parent": null,
+  "role": "Retainer for actuator spring.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.42,
+   "cy": 0.5,
+   "w": 0.2,
+   "h": 0.24,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "ring"
+  }
+ },
+ {
+  "id": "ear",
+  "name": "Ear",
+  "pos": "312",
+  "parent": "spider",
+  "role": "Pivot ear for weight members.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "pivot-pin",
+  "name": "Pivot Pin",
+  "pos": "314",
+  "parent": "ear",
+  "role": "Pivot for weight members.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "actuator-body",
+  "name": "Actuator Body",
+  "pos": "280",
+  "parent": null,
+  "role": "Axial actuator moved by weights.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "sealing-members",
+  "name": "First Sealing Portion",
+  "pos": "152",
+  "parent": null,
+  "role": "Fixed sloped-face seal on impeller hub.",
+  "role_source": "manual",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "hidden_reason": "vision: not visible in drawing"
+ },
+ {
+  "id": "elongated-cylindrical-portion",
+  "name": "Elongated Cylindrical Portion",
+  "pos": "34",
+  "parent": null,
+  "role": "Bearing housing",
+  "role_source": "standard",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.62,
+   "cy": 0.5,
+   "w": 0.5,
+   "h": 0.32,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shell"
+  }
+ },
+ {
+  "id": "elongated-shaft",
+  "name": "Elongated Shaft",
+  "pos": "72",
+  "parent": null,
+  "role": "Main rotating shaft",
+  "role_source": "standard",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.54,
+   "cy": 0.5,
+   "w": 0.65,
+   "h": 0.08,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "shaft"
+  }
+ },
+ {
+  "id": "impeller",
+  "name": "Impeller",
+  "pos": "138",
+  "parent": null,
+  "role": "Pumping impeller with vanes",
+  "role_source": "standard",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null,
+  "layout": {
+   "cx": 0.21,
+   "cy": 0.5,
+   "w": 0.14,
+   "h": 0.22,
+   "axis": "horizontal",
+   "revolved": true,
+   "source": "vision-verified",
+   "shape": "impeller"
+  }
+ },
+ {
+  "id": "sealing-portion",
+  "name": "Sealing Portion",
+  "pos": "210",
+  "parent": null,
+  "role": "Movable seal face",
+  "role_source": "standard",
+  "service_ref": "Wilfley centrifugal pump (US 3,402,671, live)",
+  "failure_modes": [],
+  "failure_source": null
+ }
+]

@@ -34,7 +34,7 @@ from .segment import segment_photo
 FIGURES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "figures")
 PACKS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "packs")
 SKILL_DIR = os.path.join(os.path.dirname(__file__), "..", "..",
-                         ".claude", "skills", "anatomy")
+                         "skills", "anatomy")
 
 TIMEOUTS = {"build": 120, "lines": 240, "capture": 240}
 

@@ -1,7 +1,7 @@
 # Verdict: anatomy pilot (rig-6203 figure)
 
 Date: 2026-10-29. Pilot built per plan: one Figure-size SVG explainer from
-`packs/rig` via the anatomy skill (`.claude/skills/anatomy`, pinned at
+`packs/rig` via the anatomy kit (`skills/anatomy`, pinned at
 upstream `1482e84`). Figure: `figures/rig/` (build ~313 lines + 37-line
 pure model), committed built pages dark + light.
 
