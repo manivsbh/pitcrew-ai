@@ -7,6 +7,7 @@
 - [x] Video: 2:55, English, real screen footage with live Meta calls, sped-up
   spans marked (`submission/video/out/pitcrew-demo.mp4`)
 - [x] Repository public (`manivsbh/pitcrew-ai`) with setup and judge path in `README.md`
+- [x] Judge front-door `JUDGES.md` (run check, guided tour, live-call pointer), linked from top of `README.md`
 - [ ] Upload the video to YouTube as unlisted (copy in `submission/youtube.md`)
 - [ ] Post on X (copy in `submission/x-post.md`) and paste both links into the form
 - [ ] Submit before Wed Nov 4, 9:00 PM Eastern (02:00 UTC Nov 5)

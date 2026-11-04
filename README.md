@@ -1,5 +1,8 @@
 # ![PITCREW.AI: Giving Heavy Machinery a Brain](docs/figures/pitcrew-title.png)
 
+> **Judges:** start at **[`JUDGES.md`](JUDGES.md)** — a 60-second run check, a
+> 2-minute guided tour, and where to watch every live Meta call.
+
 Autonomous machine diagnostics, parametric 3D digital twins, and acoustic fault investigation for industrial equipment. The technician supplies a vibration or microphone recording; the multi-agent mesh consults technical documentation via RAG, runs numerical and acoustic analyses, explains the evidence, and highlights the suspected component in an interactive 3D assembly while auto-drafting the replacement BOM.
 
 ![PitCrew Studio: the interactive 3D twin, the 6-Agent Command Dock, and the live Meta model call log side by side](submission/video/shots/final-140.png)
@@ -27,8 +30,25 @@ three-arm comparison protocol.
 
 ## Setup (about 10 minutes)
 
-Requires Python 3.12 and Node 20 or newer. No GPU: SAM 2.1, wav2vec 2.0 and
-MMS-TTS run on the CPU.
+### Judge machine
+
+A normal laptop is enough. No GPU.
+
+- Windows 10/11, macOS, or Linux
+- Python 3.12 and Node.js 20 or newer. Node is only used to build the UI.
+- About 8 GB of RAM and 6 GB of free disk. The virtualenv includes PyTorch.
+  The first SAM 2.1, wav2vec 2.0, and MMS-TTS calls download a few hundred MB
+  into `data/models/`.
+- A current Chrome or Edge. The voice beat needs a microphone and permission
+  to use it. The 3D twin, blueprint review, and diagnosis playback work
+  without one.
+- Internet, for the install, the Meta API, and those first model downloads.
+- A `MODEL_API_KEY` in `.env`. Without it the 3D twin, analysis, and inventory
+  still run. Calls to muse-spark-1.3 say the key is missing.
+
+Follow the commands below. One process serves the built UI at
+<http://127.0.0.1:8000>. Use that native install: the voice beat records from
+the laptop microphone.
 
 1. Create a `.env` file in the repo root with your Meta API key (it is
    gitignored and only read by the server):
