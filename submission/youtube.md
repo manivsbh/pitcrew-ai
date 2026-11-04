@@ -2,6 +2,9 @@
 
 Upload `submission/video/out/pitcrew-launch.mp4` (2:54). Fallback cut: `pitcrew-demo.mp4`.
 
+**Thumbnail:** `submission/thumbnail.jpg` (1280×720). Background by Meta Muse
+Image; rebuild with `broll/gen.py thumbnail` then `video/thumbnail.py`.
+
 **Title:** PitCrew.ai: a 1968 pump patent to a working 3D twin, built on Meta Muse
 
 **Description:**

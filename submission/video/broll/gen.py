@@ -45,6 +45,10 @@ SHOTS = {
                  "focus, one bin lit lime.",
     "dawn-plant": "An industrial plant at dawn from a distance, cooling towers and pipe racks, "
                   "first light on the horizon, calm and hopeful.",
+    "thumbnail": "A yellowed 1960s patent drawing of a centrifugal pump lying flat on a dark "
+                 "table, its ink lines lifting off the paper and turning into a glowing "
+                 "lime-green holographic 3D pump floating above it, one bearing inside the "
+                 "hologram glowing warm amber (#f0b865), dramatic and high contrast.",
 }
 
 

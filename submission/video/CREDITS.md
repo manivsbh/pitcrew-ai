@@ -6,6 +6,8 @@
 - Launch cut (`pitcrew-launch.mp4`, built by `edit/build2.mjs`):
   - Narration: ElevenLabs, voice "Bella" (free tier, attribution), via `tts_bella.py`.
   - B-roll: generated with Meta Muse Image 1.0 (`broll/gen.py`).
+- Thumbnail (`submission/thumbnail.jpg`): Meta Muse Image 1.0 background,
+  text set in Segoe UI by `thumbnail.py`.
   - Music: "Inspiring Corporate" by Soundrider/Dope, CC BY 4.0, from Jamendo
     via Openverse.
   - Sound effects: HyperFrames bundled library.
