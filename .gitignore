@@ -34,7 +34,8 @@ submission/video/shots/*
 !submission/video/shots/final-140.png
 !submission/video/shots/final-20.png
 !submission/video/shots/phonevoice-last.png
-submission/video/out/
+submission/video/out/*
+!submission/video/out/pitcrew-launch-final.mp4
 submission/video/**/node_modules/
 submission/video/.ttsvenv/
 submission/video/voice/
