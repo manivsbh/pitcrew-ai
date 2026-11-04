@@ -1,0 +1,20 @@
+{
+  "voice": "ElevenLabs Bella (hpp4J3VqNfWAUOO0d1Us), eleven_multilingual_v2",
+  "scenes": [
+    { "id": "hook", "text": "This pump was drawn in 1968. Forty seconds ago, it became a working 3D machine." },
+    { "id": "friction", "text": "Machines fail quietly. And the fix is usually buried in a manual nobody has time to read." },
+    { "id": "reveal", "text": "Meet PitCrew. It gives heavy machinery a brain." },
+    { "id": "blueprint", "text": "Hand it any drawing. Meta's Muse Spark reads the sheet, asks what's missing, and builds the machine in 3D." },
+    { "id": "eyes", "text": "Then it checks its own work. SAM segments the drawing, Muse Spark compares it with the render, and fixes what's out of place." },
+    { "id": "twin", "text": "It's a real twin. Assemble it, explode it, run it. Ask what if, and the physics recalculates before anything changes." },
+    { "id": "floor", "text": "Out on the floor, you don't need a laptop. Just talk." },
+    { "id": "listen", "text": "Hold the phone to the machine. Five seconds of sound, and the fault shows up at seventy-six hertz. Outer race. Ninety-five percent sure." },
+    { "id": "sam", "text": "Snap the bench, and every part is found and named for the teardown." },
+    { "id": "argue", "text": "Push back, and it doesn't fold. It shows you the evidence." },
+    { "id": "stock", "text": "Then it lines up the parts to fix it." },
+    { "id": "harness", "text": "And it learns. Confirm what the teardown found, and Muse Spark distills the miss into a rule the whole fleet uses next time." },
+    { "id": "arch", "text": "Under the hood, one crew of agents. Muse Spark reads, reasons and supervises. SAM sees, wav2vec listens, and every call is logged live." },
+    { "id": "climax", "text": "Pumps. Gearboxes. Fans. Any blueprint." },
+    { "id": "close", "text": "PitCrew. Open source, and built on Meta models." }
+  ]
+}

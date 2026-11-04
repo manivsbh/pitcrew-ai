@@ -302,6 +302,32 @@ const BEATS = {
     }
   },
 
+  async harness(page, h) {
+    await h.pick("rig")
+    await h.click(h.button("Agent lab"), "Agent lab tab")
+    await h.pause(2500)
+    await page.getByText(/HARNESS² SELF-EVOLVING/).first().scrollIntoViewIfNeeded()
+    await h.pause(1500)
+    const pred = page.getByLabel("Predicted").first()
+    await h.moveTo(pred)
+    await pred.selectOption("healthy")
+    await page.getByLabel("Documented").first().selectOption("outer_ring_damage")
+    h.mark("predicted healthy, teardown found outer ring")
+    const note = page.getByPlaceholder(/Diagnostic observation to distill/).first()
+    await h.moveTo(note)
+    await note.pressSequentially("Missed a weak 76 Hz BPFO under motor hum; teardown showed an outer-race spall.", { delay: 26 })
+    await h.click(h.button("Distill lesson into Harness"), "Distill lesson into Harness²")
+    await h.waitCall("harness-distiller", 180000)
+    await h.pause(2500)
+    await page.getByText(/ACTIVE LEARNED SKILLS/).first().scrollIntoViewIfNeeded()
+    await h.pause(4500)
+    await h.shot("harness-distilled")
+    await page.getByText(/Render skills/).first().scrollIntoViewIfNeeded()
+    h.mark("render skills")
+    await h.pause(5000)
+    await h.shot("harness-skills")
+  },
+
   async inventory(page, h) {
     await h.pick("rig")
     await h.click(h.button("Inventory"), "Inventory tab")

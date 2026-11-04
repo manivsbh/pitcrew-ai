@@ -36,6 +36,12 @@ submission/video/**/node_modules/
 submission/video/.ttsvenv/
 submission/video/voice/
 submission/video/edit/assets/
+submission/video/edit/audition/
+submission/video/broll/*.png
+submission/video/music/*.wav
+submission/video/edit/audition/
+submission/video/broll/*.png
+submission/video/music/*.wav
 submission/video/edit/.hyperframes/
 submission/video/edit/AGENTS.md
 submission/video/edit/CLAUDE.md
