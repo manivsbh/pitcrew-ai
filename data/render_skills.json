@@ -1,86 +1,6 @@
 {
  "skills": [
   {
-   "id": "sk_d466f74dd2",
-   "when": {
-    "name_regex": ".*(Nut|Washer|Screw|Seal|Bushing|Sleeve).*"
-   },
-   "then": {
-    "mount_as": "shaft_ring"
-   },
-   "reason": "small hardware should be mounted on shaft/housing, not free-floating",
-   "source_response_id": "resp_6aea9e01723925cf06ac454c",
-   "created": "2026-11-04T02:52:50Z",
-   "enabled": true
-  },
-  {
-   "id": "sk_2874cf4fd9",
-   "when": {
-    "name_regex": ".*(Spring).*"
-   },
-   "then": {
-    "shape": "spring"
-   },
-   "reason": "compression springs must render as coiled springs, not solid rings",
-   "source_response_id": "resp_6aea9e01723925cf06ac454c",
-   "created": "2026-11-04T02:52:50Z",
-   "enabled": true
-  },
-  {
-   "id": "sk_2b8384fd2d",
-   "when": {
-    "name_regex": "(?i)nut|washer|screw|bolt"
-   },
-   "then": {
-    "mount_as": "shaft_ring"
-   },
-   "reason": "Small fasteners float in free space in renders; always mount nuts/washers/screws on shaft or bolt circle",
-   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
-   "created": "2026-11-04T02:54:07Z",
-   "enabled": true
-  },
-  {
-   "id": "sk_f8fd694f9a",
-   "when": {
-    "name_regex": "(?i)seal|gasket|o-ring"
-   },
-   "then": {
-    "mount_as": "surface"
-   },
-   "reason": "Seals/gaskets must sit on housing/flange surface, never free-standing revolved blobs",
-   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
-   "created": "2026-11-04T02:54:07Z",
-   "enabled": true
-  },
-  {
-   "id": "sk_6963b0eddf",
-   "when": {
-    "name_regex": "(?i)nipple|plug|cap|grease|oil cup",
-    "near_shape": "shell"
-   },
-   "then": {
-    "mount_as": "surface"
-   },
-   "reason": "Lubrication hardware sits on bearing housing surface; hide if housing port not visible",
-   "source_response_id": "resp_6aea9e4f5e86a52f812e4186",
-   "created": "2026-11-04T02:54:07Z",
-   "enabled": true
-  },
-  {
-   "id": "sk_3c71eba292",
-   "when": {
-    "name_regex": "Wear Ring",
-    "near_shape": "impeller"
-   },
-   "then": {
-    "shape": "ring"
-   },
-   "reason": "wear rings are thin revolved rings at impeller eye, never bearings at shaft end",
-   "source_response_id": "resp_6aeaa52264c2ad3a2d764b4c",
-   "created": "2026-11-04T03:23:16Z",
-   "enabled": true
-  },
-  {
    "id": "sk_6a2ebec9fe",
    "when": {
     "name_regex": "Sleeve",
@@ -667,6 +587,85 @@
    "reason": "thin circular shrouds are revolved rings, not solid bars",
    "source_response_id": "resp_6aead1776d6a29c6e9994d72",
    "created": "2026-11-04T06:32:25Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_ea80f5c74b",
+   "when": {
+    "name_regex": "(?i)bearing"
+   },
+   "then": {
+    "shape": "bearing"
+   },
+   "reason": "bearings must be opaque revolved toroids on shaft, not transparent",
+   "source_response_id": "resp_6aeb01dcfb18b25a88214549",
+   "created": "2026-11-04T09:58:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_2e473ec77d",
+   "when": {
+    "name_regex": "(?i)nut|washer|screw|lock"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "small lock hardware belongs as ring on its bearing or shaft",
+   "source_response_id": "resp_6aeb01dcfb18b25a88214549",
+   "created": "2026-11-04T09:58:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_f03bd6a045",
+   "when": {
+    "name_regex": "(?i)base|pedestal|case bracket"
+   },
+   "then": {
+    "shape": "plate"
+   },
+   "reason": "support base must be solid boxy plate spanning full machine length",
+   "source_response_id": "resp_6aeb01dcfb18b25a88214549",
+   "created": "2026-11-04T09:58:53Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_5aa26dc253",
+   "when": {
+    "name_regex": "(?i)spring"
+   },
+   "then": {
+    "shape": "spring"
+   },
+   "reason": "springs must be coils around shaft, not solid blocks",
+   "source_response_id": "resp_6aeb0278677f25640f3e4966",
+   "created": "2026-11-04T10:01:29Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_9a3b5e91ea",
+   "when": {
+    "name_regex": "(?i)spider|yoke|actuator|weight.member|ear|pivot.pin"
+   },
+   "then": {
+    "hide": true
+   },
+   "reason": "actuator vocabulary does not belong on a centrifugal pump",
+   "source_response_id": "resp_6aeb0278677f25640f3e4966",
+   "created": "2026-11-04T10:01:29Z",
+   "enabled": true
+  },
+  {
+   "id": "sk_e425e34cf7",
+   "when": {
+    "name_regex": "(?i)nut|washer|screw|bolt",
+    "near_shape": "bearing"
+   },
+   "then": {
+    "mount_as": "shaft_ring"
+   },
+   "reason": "small fasteners belong mounted on shaft/bearing, not floating",
+   "source_response_id": "resp_6aeb0278677f25640f3e4966",
+   "created": "2026-11-04T10:01:29Z",
    "enabled": true
   }
  ]

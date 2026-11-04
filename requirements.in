@@ -15,4 +15,5 @@ python-multipart>=0.0.18  # PDF manual uploads
 pillow>=11.0  # manual figure extraction
 torch>=2.4  # local SAM2 segmentation (CPU)
 sam2>=1.1  # Meta SAM 2 image segmentation
+transformers>=5.0  # Meta wav2vec 2.0 speech-to-text + MMS-TTS voice (local)
 opencv-python-headless>=4.10  # contours + overlay rendering

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { encodeWavFile } from "./useAcousticCapture"
+import { encodeWavFile, prepareTap, tapPcm } from "./useAcousticCapture"
 
 const MAX_TALK_MS = 7000
 const MIN_TALK_S = 0.5
@@ -93,34 +93,34 @@ export function useVoiceInput(
     }
     discard()
     stopSpeaking()
+    const ctx = new AudioContext()
+    await prepareTap(ctx)
     let stream: MediaStream
     try {
       stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        // browser DSP mutes the first seconds while it adapts; wav2vec wants raw audio
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       })
     } catch {
+      void ctx.close()
       setMessage("Microphone could not start. Check permissions or type instead.")
       return
     }
-    const ctx = new AudioContext()
+    await ctx.resume().catch(() => undefined)
     const source = ctx.createMediaStreamSource(stream)
-    const proc = ctx.createScriptProcessor(4096, 1, 1)
     const chunks: Float32Array[] = []
-    proc.onaudioprocess = (e) => chunks.push(new Float32Array(e.inputBuffer.getChannelData(0)))
-    source.connect(proc)
-    proc.connect(ctx.destination)
+    const untap = await tapPcm(ctx, source, (c) => chunks.push(c))
     setListening(true)
     setMessage("Listening… press again to send (Meta wav2vec 2.0, on-device).")
     const timer = window.setTimeout(() => finish.current?.(true), MAX_TALK_MS)
-    finish.current = (doSend) => {
+    finish.current = async (doSend) => {
       finish.current = null
       window.clearTimeout(timer)
-      proc.disconnect()
-      source.disconnect()
+      setListening(false)
+      await untap()
       stream.getTracks().forEach((t) => t.stop())
       const rate = ctx.sampleRate
       void ctx.close()
-      setListening(false)
       const total = chunks.reduce((n, c) => n + c.length, 0)
       if (!doSend) return
       if (total / rate < MIN_TALK_S) {

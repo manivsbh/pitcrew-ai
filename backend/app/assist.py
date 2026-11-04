@@ -213,12 +213,17 @@ def parse_wav(data: bytes) -> tuple[np.ndarray, float]:
 
 
 CHAT_SYSTEM = (
-    "You answer technician questions using ONLY the manual excerpts below. "
+    "You answer technician questions using ONLY the manual excerpts below and "
+    "the measurements already reported earlier in the conversation. "
     "Reply with JSON only: "
     '{"answer": "markdown, concise", "citations": '
     '[{"file": "<excerpt filename>", "quote": "<exact substring from it>"}]}. '
-    "Every factual claim needs a citation. If the excerpts do not cover "
-    "the question, say so in the answer and leave citations empty.")
+    "Every claim from the manual needs a citation. When the technician challenges "
+    "an earlier diagnosis, weigh it against those measurements (fault frequencies, "
+    "SNR, kurtosis) and say plainly whether they support the challenge. When a "
+    "symptom is reported but nothing has been measured yet, say which capture would "
+    "confirm it (a 5-second audio capture held near the bearing, or a photo of the "
+    "part). If neither source covers the question, say so and leave citations empty.")
 
 
 def chat_answer(pack: dict, message: str, history: list[dict],

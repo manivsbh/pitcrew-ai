@@ -33,6 +33,12 @@ submission/video/clips/
 submission/video/shots/
 submission/video/out/
 submission/video/**/node_modules/
+submission/video/.ttsvenv/
+submission/video/voice/
+submission/video/edit/assets/
+submission/video/edit/.hyperframes/
+submission/video/edit/AGENTS.md
+submission/video/edit/CLAUDE.md
 .playwright-mcp/
 
 # OS / editors
