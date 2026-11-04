@@ -26,9 +26,11 @@ addEventListener('DOMContentLoaded', () => {
 });`
 
 class Screencast {
-  constructor(page, dir) {
+  constructor(page, dir, w = W, h = H) {
     this.page = page
     this.dir = dir
+    this.w = w
+    this.h = h
     this.frames = []
   }
   async start() {
@@ -43,7 +45,7 @@ class Screencast {
       await this.cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {})
     })
     await this.cdp.send("Page.startScreencast", {
-      format: "jpeg", quality: 92, maxWidth: W, maxHeight: H, everyNthFrame: 1,
+      format: "jpeg", quality: 92, maxWidth: this.w, maxHeight: this.h, everyNthFrame: 1,
     })
     this.t0 = Date.now() / 1000
   }
@@ -60,7 +62,7 @@ class Screencast {
     const list = path.join(this.dir, "list.txt")
     fs.writeFileSync(list, lines.join("\n"))
     execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list,
-      "-vf", `scale=${W}:${H}:flags=lanczos,fps=30`, "-c:v", "libx264", "-preset", "slow",
+      "-vf", `scale=${this.w}:${this.h}:flags=lanczos,fps=30`, "-c:v", "libx264", "-preset", "slow",
       "-crf", "16", "-pix_fmt", "yuv420p", outMp4])
     fs.rmSync(this.dir, { recursive: true, force: true })
     return { frames: this.frames.length, duration_s: +(tEnd - this.t0).toFixed(2) }
@@ -68,8 +70,15 @@ class Screencast {
 }
 
 async function metaCallsSince(seq) {
-  const r = await fetch(`${BASE}/api/meta/calls?after=${seq}&limit=200`)
-  return (await r.json()).calls
+  for (let i = 0; ; i++) {
+    try {
+      const r = await fetch(`${BASE}/api/meta/calls?after=${seq}&limit=200`)
+      return (await r.json()).calls
+    } catch (e) {
+      if (i >= 4) throw e
+      await new Promise((res) => setTimeout(res, 1500))
+    }
+  }
 }
 
 async function lastSeq() {
@@ -118,10 +127,201 @@ function helpers(page, marks, t0, seq0) {
     }
     throw new Error(`no ${agent} call within ${timeout} ms`)
   }
-  return { mark, pause, click, button, waitText, shot, moveTo, waitCall }
+  const exact = (name) => page.getByRole("button", { name, exact: true })
+  const settle = async (timeout = 420000) => {
+    // wait until no Meta call is running and the vision check is not mid-round
+    const end = Date.now() + timeout
+    let quiet = 0
+    while (Date.now() < end && quiet < 3) {
+      const r = await fetch(`${BASE}/api/meta/calls?limit=1`).then((x) => x.json()).catch(() => ({ inflight: [1] }))
+      const verifying = await page.getByText(/Verifying \(round/).count()
+      quiet = r.inflight.length || verifying ? 0 : quiet + 1
+      await pause(2000)
+    }
+    mark("Meta calls settled")
+  }
+  const pick = async (machine) => {
+    await page.locator("select").first().selectOption(machine)
+    mark(`machine ${machine}`)
+    await pause(4500)
+  }
+  return { mark, pause, click, button, exact, waitText, shot, moveTo, waitCall, settle, pick }
+}
+
+const VOICE = path.join(HERE, "..", "voice")
+// Mic beats run headed and unmuted: headless Chrome starves WebAudio while the page renders.
+const PHONE = { viewport: { width: 390, height: 844 }, mobile: true, headed: true }
+const BEAT_OPTS = {
+  phonevoice: { ...PHONE, wav: path.join(VOICE, "ask-diagnose.wav") },
+  phone: { ...PHONE, wav: path.join(REPO, "data", "demo_assets", "audio", "outer-race-spall-1500rpm.wav") },
 }
 
 const BEATS = {
+  async patent(page, h) {
+    await h.click(h.button("Blueprints"), "Blueprints tab")
+    await h.pause(1200)
+    await page.getByLabel("Machine id").first().fill("wilfley-live")
+    await page.getByLabel("Title").first().fill("Wilfley centrifugal pump (US 3,402,671, live)")
+    h.mark("upload us3402671-centrifugal-pump-patent.pdf")
+    await page.setInputFiles("input[accept='application/pdf,image/png,image/jpeg,image/webp']",
+      path.join(REPO, "data", "demo_assets", "blueprints", "us3402671-centrifugal-pump-patent.pdf"))
+    await h.waitText(/candidates \(/, "patent parsed", 90000)
+    await h.pause(1500)
+    await h.click(h.button("Ask muse-spark-1.3 Vision"), "Ask muse-spark-1.3 Vision")
+    await h.waitCall("blueprint-reviewer")
+    await page.getByText(/^Agent:/).first().scrollIntoViewIfNeeded()
+    await h.pause(3000)
+    await h.shot("patent-review")
+    const notes = page.getByPlaceholder(/Impeller diameter 250 mm/)
+    await h.moveTo(notes)
+    await notes.pressSequentially("Impeller 250 mm, shaft 45 mm, rated 1750 rpm. Model the seal simply.", { delay: 28 })
+    h.mark("typed answer")
+    await h.click(h.exact("Save answers"), "Save answers")
+    await h.waitText(/Answers saved/, "answers saved", 30000)
+    await h.click(h.exact("Finalize 3D pack"), "Finalize 3D pack")
+    await h.waitText(/Finalized pack wilfley-live/, "pack finalized", 60000)
+    await h.pause(1500)
+    await h.click(h.button("Stock & Open in 3D"), "Stock & Open in 3D")
+    await h.pause(4000)
+    await page.locator("canvas").first().scrollIntoViewIfNeeded()
+    await h.shot("patent-3d")
+    await h.waitCall("render-verifier", 300000)
+    await h.settle()
+    await h.pause(2000)
+    await h.shot("patent-verified")
+    await h.click(h.exact("Compare drawing"), "Compare drawing")
+    await h.pause(4000)
+    await h.click(h.exact("Compare drawing"), "hide drawing")
+    await h.pause(1500)
+  },
+
+  async controls(page, h) {
+    await h.pick("wilfley-pump")
+    await page.locator("canvas").first().scrollIntoViewIfNeeded()
+    await h.click(h.exact("Assemble"), "Assemble")
+    await h.pause(9000)
+    await h.click(h.exact("Parts sheet"), "Parts sheet")
+    await h.pause(2500)
+    await h.click(h.exact("Assembled"), "Assembled")
+    await h.pause(1500)
+    const slider = page.getByLabel("Explode assembly")
+    await h.moveTo(slider)
+    for (const v of [25, 50, 75, 50, 0]) {
+      await slider.evaluate((el, val) => {
+        el.value = String(val)
+        el.dispatchEvent(new Event("input", { bubbles: true }))
+        el.dispatchEvent(new Event("change", { bubbles: true }))
+      }, v)
+      await h.pause(700)
+    }
+    h.mark("explode")
+    await h.click(h.exact("Run"), "Run")
+    await h.pause(3500)
+    await h.click(h.exact("Stop"), "Stop")
+    const parts = page.locator(".panel.components button.part")
+    await h.click(parts.nth(Math.min(6, (await parts.count()) - 1)), "pick a part")
+    await page.getByRole("button", { name: "Close dialog" }).first().click({ timeout: 2000 }).catch(() => {})
+    await h.click(h.exact("Isolate"), "Isolate")
+    await h.pause(3000)
+    await h.click(h.exact("Show all"), "Show all")
+    await h.pause(2000)
+    await h.shot("controls")
+  },
+
+  async numbers(page, h) {
+    await h.pick("wilfley-pump")
+    const cmd = page.getByLabel("Engineering what-if command")
+    await cmd.scrollIntoViewIfNeeded()
+    await h.pause(1500)
+    await h.click(h.exact("Increase speed by 20%"), "Increase speed by 20%")
+    await h.pause(1500)
+    const propose = h.exact("Propose")
+    if (await propose.count() && await propose.isEnabled()) {
+      await h.click(propose, "Propose")
+      await h.pause(2000)
+    }
+    await h.click(h.exact("Calculate"), "Calculate")
+    await h.pause(3500)
+    await h.shot("numbers-calc")
+    const apply = h.exact("Apply candidate")
+    if (await apply.isEnabled()) {
+      await h.click(apply, "Apply candidate")
+      await h.pause(3000)
+    }
+    await h.shot("numbers-applied")
+  },
+
+  async phonevoice(page, h) {
+    await h.pause(2500)
+    await h.click(page.getByRole("button", { name: /Push-to-Talk Voice Diagnosis/ }), "Push-to-talk (synthetic voice)")
+    await h.pause(7000)
+    await h.click(page.getByRole("button", { name: /Tap to stop/ }), "stop talking")
+    await h.waitCall("speech-to-text", 120000)
+    await h.waitCall("manual-chat", 240000)
+    await h.pause(2000)
+    await page.mouse.wheel(0, 650)
+    h.mark("scroll to reply")
+    await h.pause(7000)
+    await h.shot("phonevoice")
+  },
+
+  async phone(page, h) {
+    await h.pause(2500)
+    await h.click(page.getByRole("button", { name: /5s Live Acoustic/ }), "5s Live Acoustic (phone mic)")
+    await h.pause(6500)
+    await h.waitCall("manual-chat", 240000)
+    await h.settle(240000)
+    await h.pause(4000)
+    await page.mouse.wheel(0, 600)
+    await h.pause(4000)
+    await h.shot("phone-diagnosis")
+  },
+
+  async argue(page, h) {
+    await h.pick("rig")
+    await h.click(h.button("Live Copilot"), "Live Copilot")
+    await h.pause(800)
+    await h.click(h.button("outer-race-spall-1500rpm"), "outer-race spall 5 s clip")
+    await h.waitCall("supervisor")
+    await h.pause(4000)
+    const ask = page.getByPlaceholder(/Ask manual, diagnose fault/).first()
+    await h.moveTo(ask)
+    await ask.click()
+    await ask.pressSequentially("I think it's the seal, not the bearing. What in this recording rules the seal out?", { delay: 30 })
+    await h.click(page.getByRole("button", { name: "Send question" }), "Send push-back")
+    await h.waitCall("manual-chat", 180000)
+    await h.settle(180000)
+    await h.pause(4000)
+    await page.mouse.wheel(0, 500)
+    await h.pause(3000)
+    await h.shot("argue-reply")
+    const confirm = h.button("Confirm")
+    if (await confirm.count()) {
+      await h.click(confirm, "Confirm repair-kit PO")
+      await h.pause(3000)
+    }
+  },
+
+  async inventory(page, h) {
+    await h.pick("rig")
+    await h.click(h.button("Inventory"), "Inventory tab")
+    await h.pause(5000)
+    await page.mouse.wheel(0, 500)
+    await h.pause(3500)
+    await h.shot("inventory")
+  },
+
+  async anymachine(page, h) {
+    for (const m of ["falk-speed-reducer", "rotron-fan", "corpus-spindle"]) {
+      await h.pick(m)
+      await page.locator("canvas").first().scrollIntoViewIfNeeded()
+      await h.click(h.exact("Run"), `Run ${m}`)
+      await h.pause(3000)
+      await h.click(h.exact("Stop"), "Stop")
+      await h.shot(`any-${m}`)
+    }
+  },
+
   async blueprint(page, h) {
     await h.click(h.button("Blueprints"), "Blueprints tab")
     await h.pause(1200)
@@ -145,7 +345,11 @@ const BEATS = {
   async sam(page, h) {
     await h.click(h.button("Blueprints"), "Blueprints tab")
     await h.pause(1200)
-    await h.click(page.getByRole("button", { name: "exploded-bearing-workbench.png" }), "workbench photo")
+    const upload = page.locator("label.upload", { hasText: "Upload workbench" })
+    await h.moveTo(upload)
+    h.mark("upload exploded-bearing-workbench.png")
+    await upload.locator("input[type=file]").setInputFiles(
+      path.join(REPO, "data", "demo_assets", "photos", "exploded-bearing-workbench.png"))
     await h.waitCall("sam-segmenter")
     await h.waitCall("assembly-grounder")
     await h.pause(2500)
@@ -224,19 +428,36 @@ if (!wanted.length || wanted.some((b) => !BEATS[b])) {
 }
 fs.mkdirSync(CLIPS, { recursive: true })
 const headless = process.env.HEADED !== "1"
-const browser = await chromium.launch({ channel: "chrome", headless })
 
 for (const beat of wanted) {
   console.log(`== ${beat}`)
-  const ctx = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })
+  const opts = BEAT_OPTS[beat] ?? {}
+  const args = ["--autoplay-policy=no-user-gesture-required"]
+  if (opts.wav) {
+    args.push("--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream",
+      `--use-file-for-fake-audio-capture=${opts.wav}`)
+  }
+  const browser = await chromium.launch({
+    channel: "chrome", headless: opts.headed ? false : headless, args,
+    ignoreDefaultArgs: opts.wav ? ["--mute-audio"] : [],
+  })
+  const ctx = await browser.newContext({
+    viewport: opts.viewport ?? { width: W, height: H },
+    deviceScaleFactor: opts.mobile ? 2 : 1,
+    isMobile: !!opts.mobile, hasTouch: !!opts.mobile,
+    permissions: opts.wav ? ["microphone"] : [],
+  })
   await ctx.addInitScript(CURSOR_JS)
-  await ctx.addInitScript(() => localStorage.setItem("pitcrew.metaCallLog.open", "1"))
+  const logOpen = opts.mobile ? "0" : "1"
+  await ctx.addInitScript((v) => localStorage.setItem("pitcrew.metaCallLog.open", v), logOpen)
   const page = await ctx.newPage()
   const seq0 = await lastSeq()
-  await page.goto(`${BASE}/?calls=live#workspace`)
+  await page.goto(`${BASE}/?calls=${opts.mobile ? "0" : "live"}#workspace`)
   await page.waitForTimeout(3500)
-  await page.mouse.move(W / 2, H / 2)
-  const cast = new Screencast(page, path.join(CLIPS, `_frames_${beat}`))
+  const vp = opts.viewport ?? { width: W, height: H }
+  const scale = opts.mobile ? 2 : 1
+  await page.mouse.move(vp.width / 2, vp.height / 2)
+  const cast = new Screencast(page, path.join(CLIPS, `_frames_${beat}`), vp.width * scale, vp.height * scale)
   await cast.start()
   const marks = []
   const h = helpers(page, marks, cast.t0, seq0)
@@ -255,5 +476,5 @@ for (const beat of wanted) {
     { beat, recorded_at: new Date().toISOString(), error, ...info, marks, meta_calls: calls }, null, 1))
   console.log(`  ${info.frames} frames, ${info.duration_s}s, ${calls.length} Meta calls${error ? " (FAILED)" : ""}`)
   await ctx.close()
+  await browser.close()
 }
-await browser.close()

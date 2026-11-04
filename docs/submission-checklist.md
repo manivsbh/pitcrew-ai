@@ -2,10 +2,14 @@
 
 ## Must confirm from accepted participant instructions
 
-- [ ] CC BY-NC 4.0 dataset compatibility with competition terms
-- [ ] Required video length and format
-- [ ] Repository visibility (public/private) and required files
-- [ ] Submission fields and deadline (published: Nov 4, 9pm Eastern)
+- [x] CC BY-NC 4.0 dataset: not used in the video; demo uses bundled synthetic
+  signals and public-domain patents only
+- [x] Video: 2:55, English, real screen footage with live Meta calls, sped-up
+  spans marked (`submission/video/out/pitcrew-demo.mp4`)
+- [x] Repository public (`manivsbh/pitcrew-ai`) with setup and judge path in `README.md`
+- [ ] Upload the video to YouTube as unlisted (copy in `submission/youtube.md`)
+- [ ] Post on X (copy in `submission/x-post.md`) and paste both links into the form
+- [ ] Submit before Wed Nov 4, 9:00 PM Eastern (02:00 UTC Nov 5)
 
 ## In the repo
 

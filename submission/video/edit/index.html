@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      :root { --ground: #101314; --ink: #e6eeec; --lime: #c5f292; --cyan: #67d4ff; --amber: #f0b865; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--ground); font-family: "Montserrat", sans-serif; color: var(--ink); }
+      .media.full { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .media.phone { position: absolute; top: 70px; right: 300px; height: 940px; width: 434px; object-fit: cover; border-radius: 44px; border: 3px solid #2a3236; box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 10px #0b0e0f; }
+      .phoneback { position: absolute; inset: 0; background: radial-gradient(1200px 700px at 72% 50%, #1b2422 0%, var(--ground) 70%); }
+      .pb-text { position: absolute; left: 150px; top: 330px; width: 820px; }
+      .pb-k { font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: .08em; color: var(--lime); text-transform: uppercase; }
+      .pb-h { margin-top: 26px; font-size: 76px; font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; }
+      .pb-s { margin-top: 28px; font-family: "JetBrains Mono", monospace; font-size: 28px; line-height: 1.45; color: #9fb0ab; }
+      .ov { position: absolute; pointer-events: none; }
+      .ov span { display: inline-block; }
+      .kicker { left: 56px; top: 44px; }
+      .kicker span { font-family: "JetBrains Mono", monospace; font-size: 28px; letter-spacing: .06em; text-transform: uppercase; color: #0d1110; background: var(--lime); padding: 10px 18px; border-radius: 8px; }
+      .rate { right: 56px; top: 44px; }
+      .rate span { font-family: "JetBrains Mono", monospace; font-size: 28px; color: var(--amber); border: 2px solid var(--amber); background: rgba(16,19,20,.85); padding: 8px 16px; border-radius: 8px; }
+      .call { left: 56px; bottom: 168px; }
+      .call span { font-family: "JetBrains Mono", monospace; font-size: 28px; color: var(--ink); background: rgba(16,19,20,.92); border: 2px solid var(--cyan); padding: 10px 18px; border-radius: 10px; }
+      .call span::before { content: "● LIVE META CALL  "; color: var(--cyan); }
+      .synth { right: 56px; bottom: 168px; }
+      .synth span { font-family: "JetBrains Mono", monospace; font-size: 28px; color: var(--amber); background: rgba(16,19,20,.9); border: 1px dashed var(--amber); padding: 8px 14px; border-radius: 8px; }
+      .cap { left: 0; right: 0; bottom: 56px; text-align: center; }
+      .cap span { max-width: 1500px; font-size: 38px; font-weight: 600; line-height: 1.3; background: rgba(10,12,13,.86); padding: 14px 28px; border-radius: 12px; }
+      #intro, #endcard { position: absolute; inset: 0; background: radial-gradient(900px 600px at 50% 45%, #18201e 0%, var(--ground) 72%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .logo { width: 260px; height: 260px; }
+      .logo svg { width: 100%; height: 100%; }
+      .word { margin-top: 36px; font-size: 128px; font-weight: 800; letter-spacing: 0.02em; }
+      .word b { color: var(--lime); font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 96px; }
+      .tag { margin-top: 18px; font-family: "JetBrains Mono", monospace; font-size: 30px; letter-spacing: .12em; text-transform: uppercase; color: #9fb0ab; }
+      .models { margin-top: 56px; font-family: "JetBrains Mono", monospace; font-size: 28px; color: var(--cyan); }
+      .repo { margin-top: 40px; font-size: 44px; font-weight: 700; }
+      .fine { margin-top: 28px; font-family: "JetBrains Mono", monospace; font-size: 28px; color: #7f8f8a; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="175.23">
+      <section id="intro" class="clip" data-start="0" data-duration="9.37" data-track-index="0">
+        <div class="logo" id="intro-logo"><svg viewBox="0 0 64 64" fill="none"><circle class="ring" cx="32" cy="32" r="27" stroke="#e6eeec" stroke-width="4.5"/><circle class="ring" cx="32" cy="32" r="11" stroke="#e6eeec" stroke-width="4.5"/><g class="balls" fill="#e6eeec" opacity="0.55"><circle cx="32" cy="13" r="4.2"/><circle cx="48.5" cy="22.5" r="4.2"/><circle cx="48.5" cy="41.5" r="4.2"/><circle cx="32" cy="51" r="4.2"/><circle cx="15.5" cy="41.5" r="4.2"/></g><circle class="lit" cx="15.5" cy="22.5" r="5.4" fill="#c5f292"/><circle class="halo" cx="15.5" cy="22.5" r="9" stroke="#c5f292" stroke-width="1.6" opacity="0.55"/></svg></div>
+        <div class="word" id="intro-word">PITCREW<b>.ai</b></div>
+        <div class="tag" id="intro-tag">Giving heavy machinery a brain</div>
+        <div class="models" id="intro-models">Built on Meta muse-spark-1.3 · SAM 2.1 · wav2vec 2.0 · MMS-TTS</div>
+      </section>
+      <div id="pb-phonevoice" class="clip phoneback" data-start="68.86" data-duration="19.82" data-track-index="0"><div class="pb-text"><p class="pb-k">05 · Talk to it</p><p class="pb-h">The engineer just talks.</p><p class="pb-s">Synthetic voice · Meta wav2vec 2.0 on-device · MMS-TTS reply</p></div></div>
+      <div id="pb-phone" class="clip phoneback" data-start="88.68" data-duration="21.00" data-track-index="0"><div class="pb-text"><p class="pb-k">06 · Listen to the machine</p><p class="pb-h">The phone mic is the sensor.</p><p class="pb-s">5 s capture → FFT + envelope → bearing fault frequencies</p></div></div>
+      <video id="v0" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="9.37" data-duration="6" data-media-start="2" data-playback-rate="1.25" data-track-index="1"></video>
+      <video id="v1" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="15.37" data-duration="4.08" data-media-start="9.5" data-playback-rate="6" data-track-index="1"></video>
+      <video id="v2" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="19.45" data-duration="7.75" data-media-start="34" data-playback-rate="2" data-track-index="1"></video>
+      <video id="v3" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="27.2" data-duration="4" data-media-start="49.5" data-playback-rate="8" data-track-index="1"></video>
+      <video id="v4" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="31.2" data-duration="6" data-media-start="202" data-playback-rate="2" data-track-index="1"></video>
+      <video id="v5" class="clip media full" src="assets/clips/patent.mp4" muted playsinline data-start="37.2" data-duration="8" data-media-start="368" data-playback-rate="1.5" data-track-index="1"></video>
+      <video id="v6" class="clip media full" src="assets/clips/controls.mp4" muted playsinline data-start="45.2" data-duration="12.33" data-media-start="6.5" data-playback-rate="3" data-track-index="1"></video>
+      <video id="v7" class="clip media full" src="assets/clips/numbers.mp4" muted playsinline data-start="57.53" data-duration="11.33" data-media-start="9" data-playback-rate="1.5" data-track-index="1"></video>
+      <video id="v8" class="clip media phone" src="assets/clips/phonevoice.mp4" muted playsinline data-start="68.86" data-duration="10.13" data-media-start="2.89" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v9" class="clip media phone" src="assets/clips/phonevoice.mp4" muted playsinline data-start="78.99" data-duration="2.69" data-media-start="13.02" data-playback-rate="4" data-track-index="1"></video>
+      <video id="v10" class="clip media phone" src="assets/clips/phonevoice.mp4" muted playsinline data-start="81.68" data-duration="7" data-media-start="23.79" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v11" class="clip media phone" src="assets/clips/phone.mp4" muted playsinline data-start="88.68" data-duration="7.5" data-media-start="2" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v12" class="clip media phone" src="assets/clips/phone.mp4" muted playsinline data-start="96.18" data-duration="3.5" data-media-start="9.5" data-playback-rate="5" data-track-index="1"></video>
+      <video id="v13" class="clip media phone" src="assets/clips/phone.mp4" muted playsinline data-start="99.68" data-duration="6" data-media-start="27" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v14" class="clip media phone" src="assets/clips/phone.mp4" muted playsinline data-start="105.68" data-duration="4" data-media-start="52" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v15" class="clip media full" src="assets/clips/sam.mp4" muted playsinline data-start="109.68" data-duration="4" data-media-start="4" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v16" class="clip media full" src="assets/clips/sam.mp4" muted playsinline data-start="113.68" data-duration="11.62" data-media-start="8" data-playback-rate="10" data-track-index="1"></video>
+      <video id="v17" class="clip media full" src="assets/clips/sam.mp4" muted playsinline data-start="125.3" data-duration="5" data-media-start="124.15" data-playback-rate="2" data-track-index="1"></video>
+      <video id="v18" class="clip media full" src="assets/clips/argue.mp4" muted playsinline data-start="130.3" data-duration="4.67" data-media-start="10" data-playback-rate="3" data-track-index="1"></video>
+      <video id="v19" class="clip media full" src="assets/clips/argue.mp4" muted playsinline data-start="134.97" data-duration="9.55" data-media-start="24" data-playback-rate="2" data-track-index="1"></video>
+      <video id="v20" class="clip media full" src="assets/clips/argue.mp4" muted playsinline data-start="144.52" data-duration="2.38" data-media-start="43.1" data-playback-rate="3" data-track-index="1"></video>
+      <video id="v21" class="clip media full" src="assets/clips/argue.mp4" muted playsinline data-start="146.9" data-duration="6.5" data-media-start="50.25" data-playback-rate="1" data-track-index="1"></video>
+      <video id="v22" class="clip media full" src="assets/clips/inventory.mp4" muted playsinline data-start="153.4" data-duration="7.33" data-media-start="7" data-playback-rate="1.5" data-track-index="1"></video>
+      <video id="v23" class="clip media full" src="assets/clips/anymachine.mp4" muted playsinline data-start="160.73" data-duration="9" data-media-start="3" data-playback-rate="4" data-track-index="1"></video>
+      <section id="endcard" class="clip" data-start="169.73" data-duration="5.50" data-track-index="2">
+        <div class="logo" id="end-logo"><svg viewBox="0 0 64 64" fill="none"><circle class="ring" cx="32" cy="32" r="27" stroke="#e6eeec" stroke-width="4.5"/><circle class="ring" cx="32" cy="32" r="11" stroke="#e6eeec" stroke-width="4.5"/><g class="balls" fill="#e6eeec" opacity="0.55"><circle cx="32" cy="13" r="4.2"/><circle cx="48.5" cy="22.5" r="4.2"/><circle cx="48.5" cy="41.5" r="4.2"/><circle cx="32" cy="51" r="4.2"/><circle cx="15.5" cy="41.5" r="4.2"/></g><circle class="lit" cx="15.5" cy="22.5" r="5.4" fill="#c5f292"/><circle class="halo" cx="15.5" cy="22.5" r="9" stroke="#c5f292" stroke-width="1.6" opacity="0.55"/></svg></div>
+        <div class="word" id="end-word">PITCREW<b>.ai</b></div>
+        <div class="repo" id="end-repo">github.com/manivsbh/pitcrew-ai</div>
+        <div class="models" id="end-models">muse-spark-1.3 · SAM 2.1 · wav2vec 2.0 · MMS-TTS</div>
+        <div class="fine" id="end-fine">Real screen recordings · live Meta calls · sped-up spans marked · engineer voice is synthetic (Kokoro)</div>
+      </section>
+      <div id="o0" class="clip ov rate" data-start="9.37" data-duration="6" data-track-index="3"><span>1.25× speed</span></div>
+      <div id="o1" class="clip ov rate" data-start="15.37" data-duration="4.08" data-track-index="3"><span>6× speed</span></div>
+      <div id="o2" class="clip ov rate" data-start="19.45" data-duration="7.75" data-track-index="3"><span>2× speed</span></div>
+      <div id="o3" class="clip ov call" data-start="19.69" data-duration="3.2" data-track-index="3"><span>blueprint-reviewer · muse-spark-1.3 · 24.5 s</span></div>
+      <div id="o4" class="clip ov kicker" data-start="9.37" data-duration="6" data-track-index="3"><span>01 · Unknown blueprint to 3D</span></div>
+      <div id="o5" class="clip ov rate" data-start="27.2" data-duration="4" data-track-index="3"><span>8× speed</span></div>
+      <div id="o6" class="clip ov rate" data-start="31.2" data-duration="6" data-track-index="3"><span>2× speed</span></div>
+      <div id="o7" class="clip ov call" data-start="34.47" data-duration="3.2" data-track-index="3"><span>render-verifier · muse-spark-1.3 · 23.4 s</span></div>
+      <div id="o8" class="clip ov rate" data-start="37.2" data-duration="8" data-track-index="3"><span>1.5× speed</span></div>
+      <div id="o9" class="clip ov kicker" data-start="27.2" data-duration="6" data-track-index="3"><span>02 · Meta eyes verify the build</span></div>
+      <div id="o10" class="clip ov rate" data-start="45.2" data-duration="12.33" data-track-index="3"><span>3× speed</span></div>
+      <div id="o11" class="clip ov kicker" data-start="45.2" data-duration="6" data-track-index="3"><span>03 · A working twin</span></div>
+      <div id="o12" class="clip ov rate" data-start="57.53" data-duration="11.33" data-track-index="3"><span>1.5× speed</span></div>
+      <div id="o13" class="clip ov kicker" data-start="57.53" data-duration="6" data-track-index="3"><span>04 · What if?</span></div>
+      <div id="o14" class="clip ov synth" data-start="69.76" data-duration="5" data-track-index="3"><span>synthetic engineer voice (Kokoro)</span></div>
+      <div id="o15" class="clip ov rate" data-start="78.99" data-duration="2.69" data-track-index="3"><span>4× speed</span></div>
+      <div id="o16" class="clip ov call" data-start="81.3" data-duration="3.2" data-track-index="3"><span>speech-to-text · wav2vec 2.0 (local) · 1.9 s</span></div>
+      <div id="o17" class="clip ov call" style="bottom: 244px" data-start="81.68" data-duration="3.2" data-track-index="3"><span>manual-chat · muse-spark-1.3 · 7.6 s</span></div>
+      <div id="o18" class="clip ov kicker" data-start="68.86" data-duration="6" data-track-index="3"><span>05 · Talk to it</span></div>
+      <div id="o19" class="clip ov rate" data-start="96.18" data-duration="3.5" data-track-index="3"><span>5× speed</span></div>
+      <div id="o20" class="clip ov call" data-start="99.62" data-duration="3.2" data-track-index="3"><span>manual-chat · muse-spark-1.3 · 5.6 s</span></div>
+      <div id="o21" class="clip ov kicker" data-start="88.68" data-duration="6" data-track-index="3"><span>06 · Listen to the machine</span></div>
+      <div id="o22" class="clip ov rate" data-start="113.68" data-duration="11.62" data-track-index="3"><span>10× speed</span></div>
+      <div id="o23" class="clip ov rate" data-start="125.3" data-duration="5" data-track-index="3"><span>2× speed</span></div>
+      <div id="o24" class="clip ov call" data-start="125.3" data-duration="3.2" data-track-index="3"><span>sam-segmenter · SAM 2.1 (local) · 99.7 s</span></div>
+      <div id="o25" class="clip ov call" style="bottom: 244px" data-start="126.06" data-duration="3.2" data-track-index="3"><span>assembly-grounder · muse-spark-1.3 · 18.7 s</span></div>
+      <div id="o26" class="clip ov kicker" data-start="109.68" data-duration="6" data-track-index="3"><span>07 · See the parts</span></div>
+      <div id="o27" class="clip ov rate" data-start="130.3" data-duration="4.67" data-track-index="3"><span>3× speed</span></div>
+      <div id="o28" class="clip ov rate" data-start="134.97" data-duration="9.55" data-track-index="3"><span>2× speed</span></div>
+      <div id="o29" class="clip ov call" data-start="136.16" data-duration="3.2" data-track-index="3"><span>supervisor · muse-spark-1.3 · 11.4 s</span></div>
+      <div id="o30" class="clip ov rate" data-start="144.52" data-duration="2.38" data-track-index="3"><span>3× speed</span></div>
+      <div id="o31" class="clip ov call" data-start="146.9" data-duration="3.2" data-track-index="3"><span>manual-chat · muse-spark-1.3 · 4.6 s</span></div>
+      <div id="o32" class="clip ov kicker" data-start="130.3" data-duration="6" data-track-index="3"><span>08 · Push back</span></div>
+      <div id="o33" class="clip ov rate" data-start="153.4" data-duration="7.33" data-track-index="3"><span>1.5× speed</span></div>
+      <div id="o34" class="clip ov kicker" data-start="153.4" data-duration="6" data-track-index="3"><span>09 · Stock the fix</span></div>
+      <div id="o35" class="clip ov rate" data-start="160.73" data-duration="9" data-track-index="3"><span>4× speed</span></div>
+      <div id="o36" class="clip ov kicker" data-start="160.73" data-duration="6" data-track-index="3"><span>10 · Any machine</span></div>
+      <div id="o37" class="clip ov cap" data-start="0.4" data-duration="5.66" data-track-index="4"><span>Heavy machines fail quietly, and the fix is buried in a manual nobody can find.</span></div>
+      <div id="o38" class="clip ov cap" data-start="6.06" data-duration="2.51" data-track-index="4"><span>PitCrew gives the machine a brain.</span></div>
+      <div id="o39" class="clip ov cap" data-start="9.77" data-duration="6.06" data-track-index="4"><span>It starts from a drawing it has never seen, a 1968 public-domain pump patent.</span></div>
+      <div id="o40" class="clip ov cap" data-start="15.83" data-duration="6.69" data-track-index="4"><span>Meta's muse-spark reads the sheet, asks what's missing, and I answer in plain words.</span></div>
+      <div id="o41" class="clip ov cap" data-start="22.52" data-duration="3.78" data-track-index="4"><span>Finalize, and the drawing becomes a 3D machine.</span></div>
+      <div id="o42" class="clip ov cap" data-start="27.6" data-duration="2.42" data-track-index="4"><span>Then Meta's eyes check the work.</span></div>
+      <div id="o43" class="clip ov cap" data-start="30.02" data-duration="10.72" data-track-index="4"><span>SAM 2.1 segments the drawing, muse-spark compares it with the render, moves what's out of place, and writes rules it reuses on every machine.</span></div>
+      <div id="o44" class="clip ov cap" data-start="40.74" data-duration="2.57" data-track-index="4"><span>Every call in the corner is live.</span></div>
+      <div id="o45" class="clip ov cap" data-start="45.6" data-duration="5.72" data-track-index="4"><span>It's a working twin. Assemble it step by step, explode it, run it, isolate any part.</span></div>
+      <div id="o46" class="clip ov cap" data-start="57.93" data-duration="6.98" data-track-index="4"><span>Ask what if. Twenty percent more speed, and the physics sandbox recalculates before anything changes.</span></div>
+      <div id="o47" class="clip ov cap" data-start="74.46" data-duration="2.91" data-track-index="4"><span>On the floor, the engineer just talks.</span></div>
+      <div id="o48" class="clip ov cap" data-start="77.37" data-duration="7.82" data-track-index="4"><span>Meta wav2vec 2.0 transcribes on the device, and the crew answers out loud with Meta's text to speech.</span></div>
+      <div id="o49" class="clip ov cap" data-start="89.08" data-duration="3.08" data-track-index="4"><span>Five seconds of machine sound from the phone.</span></div>
+      <div id="o50" class="clip ov cap" data-start="92.16" data-duration="4.99" data-track-index="4"><span>The fault frequency lands at seventy six hertz, right on the outer race.</span></div>
+      <div id="o51" class="clip ov cap" data-start="97.15" data-duration="3.49" data-track-index="4"><span>Outer-ring damage, ninety five percent confidence.</span></div>
+      <div id="o52" class="clip ov cap" data-start="110.08" data-duration="2.12" data-track-index="4"><span>Snap the bench, and SAM 2.</span></div>
+      <div id="o53" class="clip ov cap" data-start="112.2" data-duration="3.26" data-track-index="4"><span>1 masks each part to guide the teardown.</span></div>
+      <div id="o54" class="clip ov cap" data-start="130.7" data-duration="1.87" data-track-index="4"><span>Push back, and it doesn't fold.</span></div>
+      <div id="o55" class="clip ov cap" data-start="132.57" data-duration="3.57" data-track-index="4"><span>It answers with evidence from the manual and the spectrum.</span></div>
+      <div id="o56" class="clip ov cap" data-start="153.8" data-duration="3.09" data-track-index="4"><span>Then it drafts the repair kit with real part numbers.</span></div>
+      <div id="o57" class="clip ov cap" data-start="161.13" data-duration="2.69" data-track-index="4"><span>Gearbox, fan, spindle. Any blueprint.</span></div>
+      <div id="o58" class="clip ov cap" data-start="163.82" data-duration="3.2" data-track-index="4"><span>PitCrew: open source, built on Meta models.</span></div>
+      <audio id="vo-intro" src="assets/voice/vo-intro.wav" data-start="0.4" data-duration="8.17" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-patent" src="assets/voice/vo-patent.wav" data-start="9.77" data-duration="16.53" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-eyes" src="assets/voice/vo-eyes.wav" data-start="27.6" data-duration="15.7" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-controls" src="assets/voice/vo-controls.wav" data-start="45.6" data-duration="5.72" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-numbers" src="assets/voice/vo-numbers.wav" data-start="57.93" data-duration="6.98" data-track-index="5" data-volume="1"></audio>
+      <audio id="eng-phonevoice" src="assets/voice/ask-diagnose.raw.wav" data-start="69.76" data-duration="2.82" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-phonevoice" src="assets/voice/vo-phonevoice.wav" data-start="74.46" data-duration="10.73" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-phone" src="assets/voice/vo-phone.wav" data-start="89.08" data-duration="11.56" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-sam" src="assets/voice/vo-sam.wav" data-start="110.08" data-duration="5.38" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-argue" src="assets/voice/vo-argue.wav" data-start="130.7" data-duration="5.44" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-inventory" src="assets/voice/vo-inventory.wav" data-start="153.8" data-duration="3.09" data-track-index="5" data-volume="1"></audio>
+      <audio id="vo-outro" src="assets/voice/vo-outro.wav" data-start="161.13" data-duration="5.89" data-track-index="5" data-volume="1"></audio>
+      <audio id="music" src="assets/music/bed.wav" data-start="0" data-duration="175.23" data-track-index="6" data-volume="0.16"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#intro-logo .ring", { scale: 0.6, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1, opacity: 1, duration: 0.9, ease: "power3.out", stagger: 0.15 }, 0.2);
+      tl.fromTo("#intro-logo .balls circle", { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.08 }, 0.9);
+      tl.fromTo("#intro-logo .lit", { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.5, ease: "back.out(3)" }, 1.6);
+      tl.fromTo("#intro-logo .halo", { scale: 0.6, opacity: 0, transformOrigin: "50% 50%" }, { scale: 1.6, opacity: 0, keyframes: [{ opacity: 0.8, duration: 0.3 }, { opacity: 0, duration: 0.9 }] }, 1.8);
+      tl.fromTo("#intro-word", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, 2.2);
+      tl.fromTo("#intro-tag", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 2.8);
+      tl.fromTo("#intro-models", { opacity: 0 }, { opacity: 1, duration: 0.8 }, 4.0);
+      document.querySelectorAll(".ov span").forEach((el) => {
+        const host = el.parentElement;
+        const s = +host.dataset.start;
+        tl.fromTo(el, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, s);
+      });
+      document.querySelectorAll(".media.full").forEach((el) => {
+        const s = +el.dataset.start, d = +el.dataset.duration;
+        tl.fromTo(el, { scale: 1.0 }, { scale: 1.03, duration: d, ease: "none" }, s);
+      });
+      const e = 169.73;
+      tl.fromTo("#end-logo", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "power3.out" }, e + 0.2);
+      tl.fromTo("#end-word", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, e + 0.6);
+      tl.fromTo("#end-repo", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, e + 1.1);
+      tl.fromTo("#end-models", { opacity: 0 }, { opacity: 1, duration: 0.6 }, e + 1.6);
+      tl.fromTo("#end-fine", { opacity: 0 }, { opacity: 1, duration: 0.6 }, e + 1.0);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

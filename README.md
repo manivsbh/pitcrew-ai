@@ -63,6 +63,25 @@ Expect those first calls to be slow.
 Without a key, the app still runs: analysis, 3D and inventory work. Calls
 to muse-spark-1.3 return a clear "MODEL_API_KEY is not set" message.
 
+## How PitCrew uses Meta models
+
+Every call appears live in the call log (`?calls=1`), labelled with the crew
+role that made it.
+
+| Role | Model | What it does | Code |
+| --- | --- | --- | --- |
+| blueprint-reviewer | muse-spark-1.3 | Reads a PDF or drawing, places each numbered part, asks what's missing | `backend/app/packbuilder.py` |
+| render-verifier | muse-spark-1.3 | Compares the drawing with the 3D render, fixes the layout, writes render skills | `backend/app/render_verify.py` |
+| sam-segmenter | SAM 2.1 (local) | Segments drawings and workbench photos into regions | `backend/app/segment.py` |
+| assembly-grounder | muse-spark-1.3 | Names SAM regions and orders the teardown steps | `backend/app/segment.py` |
+| manual-chat, supervisor | muse-spark-1.3 | Answers from the manual and the measurements, fuses sound + photo + manual | `backend/app/assist.py` |
+| investigator | muse-spark-1.3 | Runs the tool-calling fault investigation | `backend/app/agent.py` |
+| speech-to-text | wav2vec 2.0 (local) | Push-to-talk transcription | `backend/app/speech.py` |
+| voice | MMS-TTS (local) | Speaks replies | `backend/app/speech.py` |
+
+Demo video credits and the call ids behind each sped-up span:
+`submission/youtube.md`, `submission/video/CREDITS.md`.
+
 ## Judge path (2 minutes)
 
 1. **3D Twin**: pick *Wilfley centrifugal pump (US 3,402,671)*. It was built
