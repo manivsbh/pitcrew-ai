@@ -10,7 +10,7 @@
 ## In the repo
 
 - Runnable app (backend + built UI served locally), pinned `requirements.txt`
-  and `frontend/package-lock.json`, automated tests, eval protocol + results,
+  and `frontend/pnpm-lock.yaml`, automated tests, eval protocol + results,
   saved investigation examples (see `data/reports/`, local only), setup guide
   (`README.md`), attribution + acquisition (`data/README.md`).
 
@@ -18,5 +18,6 @@
 
 - Raw recordings (`*.mat`, archives), registry, traces, API keys.
 - Reviewer path without data: `pip install -r requirements.txt`,
-  `pytest tests/` (real-file tests skip cleanly), `npm run build` in
-  `frontend/`. With data: `python scripts/download_all.py` first.
+  `pytest tests/` (real-file tests skip cleanly), `npx -y pnpm@10.34.3 install`
+  then `npx -y pnpm@10.34.3 run build` in `frontend/`. With data:
+  `python scripts/download_all.py` first.

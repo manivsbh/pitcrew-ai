@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PITCREW.AI logo options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg:#0c1012; --panel:#141a1d; --line:#2a3439; --lime:#c5f292; --cyan:#67d4ff; --amber:#f0b865; --ink:#e6eeec; --muted:#93a29e; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:'Space Grotesk',sans-serif; padding:48px 56px; width:1920px; }
+  h1 { font-size:28px; margin:0 0 6px; letter-spacing:.5px; }
+  p.lead { color:var(--muted); margin:0 0 36px; font-size:15px; }
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:28px; }
+  .tag { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--lime); letter-spacing:1.5px; }
+  .name { font-size:24px; margin:6px 0 4px; }
+  .why { color:var(--muted); font-size:14px; line-height:1.55; min-height:66px; margin:0 0 18px; }
+  .hero { display:grid; place-items:center; height:260px; border-radius:12px; background:radial-gradient(circle at 50% 45%, #1b2a22 0%, var(--bg) 70%); }
+  .lockup { display:flex; align-items:center; gap:14px; margin:22px 0 10px; }
+  .word { font-weight:700; font-size:30px; letter-spacing:3px; }
+  .word b { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--lime); letter-spacing:0; font-size:22px; margin-left:2px; }
+  .sizes { display:flex; align-items:end; gap:22px; margin-top:14px; padding-top:16px; border-top:1px solid var(--line); }
+  .sizes span { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); display:block; margin-top:6px; text-align:center; }
+  .light { background:#eef1ee; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px; color:#161918; }
+  .light .word { font-size:20px; letter-spacing:2px; }
+  .light .word b { color:#0e6b5e; font-size:15px; }
+</style>
+</head>
+<body>
+<h1>PITCREW.AI · logo directions</h1>
+<p class="lead">Monoline marks on the product palette. Each is shown large, as a wordmark lockup, at 32 / 16 px (favicon), and on a light background.</p>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- A · Lit Bearing: the product's core moment, a bearing with the one faulty ball found -->
+    <symbol id="mark-a" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="currentColor" stroke-width="4.5" />
+      <circle cx="32" cy="32" r="11" fill="none" stroke="currentColor" stroke-width="4.5" />
+      <g fill="currentColor" opacity=".55">
+        <circle cx="32" cy="13" r="4.2" /><circle cx="48.5" cy="22.5" r="4.2" /><circle cx="48.5" cy="41.5" r="4.2" />
+        <circle cx="32" cy="51" r="4.2" /><circle cx="15.5" cy="41.5" r="4.2" />
+      </g>
+      <circle cx="15.5" cy="22.5" r="5.4" fill="var(--hot, #c5f292)" />
+      <circle cx="15.5" cy="22.5" r="9" fill="none" stroke="var(--hot, #c5f292)" stroke-width="1.6" opacity=".55" />
+    </symbol>
+
+    <!-- B · Pulse Socket: a hex socket (the crew's wrench) with a vibration trace through it -->
+    <symbol id="mark-b" viewBox="0 0 64 64">
+      <path d="M32 5 L55.4 18.5 L55.4 45.5 L32 59 L8.6 45.5 L8.6 18.5 Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round" />
+      <path d="M12 33 H22 L26 24 L31 43 L36 17 L40.5 38 L43.5 33 H52" fill="none" stroke="var(--hot, #c5f292)" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round" />
+    </symbol>
+
+    <!-- C · Crew Chevron: five crew members in a forward pit-lane chevron, the lead one lit -->
+    <symbol id="mark-c" viewBox="0 0 64 64">
+      <rect x="4" y="4" width="56" height="56" rx="15" fill="none" stroke="currentColor" stroke-width="4.5" />
+      <g fill="currentColor" opacity=".55">
+        <circle cx="19" cy="19" r="5" /><circle cx="29" cy="25.5" r="5" />
+        <circle cx="29" cy="38.5" r="5" /><circle cx="19" cy="45" r="5" />
+      </g>
+      <circle cx="41" cy="32" r="6.4" fill="var(--hot, #c5f292)" />
+      <path d="M49 32 H54" stroke="var(--hot, #c5f292)" stroke-width="4" stroke-linecap="round" />
+    </symbol>
+  </defs>
+</svg>
+
+<div class="grid">
+  <section class="card" style="color:var(--ink)">
+    <div class="tag">OPTION A</div>
+    <div class="name">Lit Bearing</div>
+    <p class="why">A 6203 bearing seen face-on, with the one damaged ball lit up. It says "we find the failing part" and matches the demo's hero moment, where the outer ring lights up in 3D.</p>
+    <div class="hero"><svg width="200" height="200"><use href="#mark-a" /></svg></div>
+    <div class="lockup"><svg width="46" height="46"><use href="#mark-a" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    <div class="sizes">
+      <div><svg width="32" height="32"><use href="#mark-a" /></svg><span>32</span></div>
+      <div><svg width="16" height="16"><use href="#mark-a" /></svg><span>16</span></div>
+      <div class="light" style="--hot:#0e6b5e"><svg width="28" height="28"><use href="#mark-a" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="tag">OPTION B</div>
+    <div class="name">Pulse Socket</div>
+    <p class="why">A hex socket, the tool a pit crew grabs first, with a vibration trace running through it. It combines the mechanical side and the signal side in one glyph and stays crisp at 16 px.</p>
+    <div class="hero"><svg width="200" height="200"><use href="#mark-b" /></svg></div>
+    <div class="lockup"><svg width="46" height="46"><use href="#mark-b" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    <div class="sizes">
+      <div><svg width="32" height="32"><use href="#mark-b" /></svg><span>32</span></div>
+      <div><svg width="16" height="16"><use href="#mark-b" /></svg><span>16</span></div>
+      <div class="light" style="--hot:#0e6b5e"><svg width="28" height="28"><use href="#mark-b" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="tag">OPTION C</div>
+    <div class="name">Crew Chevron</div>
+    <p class="why">Five crew members in a forward chevron, with the lead one lit. It represents the multi-agent crew (Chief Engineer, Inspector, Technician, and so on) moving as one, and ties into the crew avatar panel.</p>
+    <div class="hero"><svg width="200" height="200"><use href="#mark-c" /></svg></div>
+    <div class="lockup"><svg width="46" height="46"><use href="#mark-c" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    <div class="sizes">
+      <div><svg width="32" height="32"><use href="#mark-c" /></svg><span>32</span></div>
+      <div><svg width="16" height="16"><use href="#mark-c" /></svg><span>16</span></div>
+      <div class="light" style="--hot:#0e6b5e"><svg width="28" height="28"><use href="#mark-c" /></svg><div class="word">PITCREW<b>.ai</b></div></div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
