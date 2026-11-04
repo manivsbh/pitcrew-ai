@@ -30,7 +30,10 @@ frontend/.vite/
 
 # Demo video working files (sources and scripts are committed)
 submission/video/clips/
-submission/video/shots/
+submission/video/shots/*
+!submission/video/shots/final-140.png
+!submission/video/shots/final-20.png
+!submission/video/shots/phonevoice-last.png
 submission/video/out/
 submission/video/**/node_modules/
 submission/video/.ttsvenv/
